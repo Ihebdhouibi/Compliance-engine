@@ -32,3 +32,4 @@ qdrant_storage/
 # Docs and source text files
 Docs/
 *.txt
+!requirements.txt
