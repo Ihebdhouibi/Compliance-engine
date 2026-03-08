@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import search
+from api.routes import search, chat
 
 app = FastAPI(
     title="RICS Compliance Engine API",
@@ -17,6 +17,7 @@ app.add_middleware(
 )
 
 app.include_router(search.router)
+app.include_router(chat.router)
 
 
 @app.get("/health")
