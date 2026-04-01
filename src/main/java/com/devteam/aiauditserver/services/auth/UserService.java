@@ -243,9 +243,9 @@ public class UserService extends BaseController implements UserDetailsService {
         User user = findById(userid);
         user.setActive(!user.getActive());
         if(user.getActive()){
-            this.mailsSenderService.sendActivationEmail("Access Restored: AI Audit System Platform", user.getEmail(), user );
+            this.mailsSenderService.sendActivationEmail("Access Restored: Compliance Engine Platform", user.getEmail(), user );
         }else{
-            this.mailsSenderService.sendDeactivationEmail("Notice of Account Deactivation - AI Audit System", user.getEmail(), user );
+            this.mailsSenderService.sendDeactivationEmail("Notice of Account Deactivation - Compliance Engine Platform", user.getEmail(), user );
         }
         return this.userRepository.save(user);
 
@@ -345,7 +345,7 @@ public class UserService extends BaseController implements UserDetailsService {
         user.setLastName(req.getLastName());
         user.setGender(req.getGender());
         user =  this.saveAuditor(user);
-        this.mailsSenderService.sendAuditorWelcomeEmail("Onboarding: Auditor Account Activation: AI Audit System", req.getEmail(), user, generatedPassword );
+        this.mailsSenderService.sendAuditorWelcomeEmail("Onboarding: Auditor Account Activation: Compliance Engine Platform", req.getEmail(), user, generatedPassword );
         return user;
     }
 

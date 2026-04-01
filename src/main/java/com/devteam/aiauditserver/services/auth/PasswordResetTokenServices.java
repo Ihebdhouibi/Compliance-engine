@@ -25,7 +25,7 @@ public class PasswordResetTokenServices {
     public PasswordResetToken createPasswordResetTokenForUser(User user, String token) {
         try {
             PasswordResetToken myToken = new PasswordResetToken(token, user);
-            this.mailsSenderService.sendOtpEmail("Your Password Reset Code - AI Audit System Platform", user.getEmail(), user, myToken.getToken());
+            this.mailsSenderService.sendOtpEmail("Your Password Reset Code - Compliance Engine Platform", user.getEmail(), user, myToken.getToken());
 
             return this.repository.save(myToken);
         }catch (NoSuchElementException ex){

@@ -234,7 +234,7 @@ public class AuthController extends BaseController {
         user.setCompanyInfo(companyInfo);
         user =  userService.saveUser(user);
 
-        this.mailsSenderService.sendWelcomePassword("Get Started with AI Audit System: Your Login Credentials", signupRequest.getEmail(), user, generatedPassword );
+        this.mailsSenderService.sendWelcomePassword("Get Started with Compliance Engine Platform: Your Login Credentials", signupRequest.getEmail(), user, generatedPassword );
 
         return new ResponseEntity<>(user, HttpStatus.OK);
     }

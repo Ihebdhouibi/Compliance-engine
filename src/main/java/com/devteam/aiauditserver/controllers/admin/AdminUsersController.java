@@ -67,7 +67,7 @@ public class AdminUsersController extends BaseController {
                 return new ResponseEntity<>("User not find with that email", HttpStatus.NOT_FOUND);
             }
             String generatedPassword = UserService.generateRandomPassword(8);
-            this.mailsSenderService.resendPassword("New password generated: Ai Audit System Platform", user.getEmail(), user, generatedPassword);
+            this.mailsSenderService.resendPassword("New password generated: Compliance Engine Platform", user.getEmail(), user, generatedPassword);
             return new ResponseEntity<>(user, HttpStatus.OK);
 
         } catch (Exception e) {

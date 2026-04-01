@@ -21,7 +21,7 @@ public class MailsSenderService {
                 .append("    <div style='text-align: center;'>")
                 // Logo placeholder can be re-enabled here if needed
                 .append("    </div>")
-                .append("    <h2 style='color: #31317A; text-align: center;'>Welcome to AI Audit System Platform</h2>")
+                .append("    <h2 style='color: #31317A; text-align: center;'>Welcome to Compliance Engine Platform</h2>")
                 .append("    <p>Hello <strong>").append(user.getName()).append("</strong>,</p>")
                 .append("    <p>Your Auditor account has been successfully created by the administrator. You can now access the platform using the credentials below:</p>")
                 .append("    <div style='background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>")
@@ -50,7 +50,7 @@ public class MailsSenderService {
                 .append("    <div style='text-align: center;'>")
                 // Logo placeholder
                 .append("    </div>")
-                .append("    <h2 style='color: #31317A; text-align: center;'>AI Audit System Platform</h2>")
+                .append("    <h2 style='color: #31317A; text-align: center;'>Compliance Engine Platform</h2>")
                 .append("    <p>Hi <strong>").append(user.getName()).append("</strong>,</p>")
                 .append("    <p>A new password has been generated for your account. You can use the following credentials to access the platform:</p>")
                 .append("    <div style='background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>")
@@ -77,7 +77,7 @@ public class MailsSenderService {
                 .append("    </div>")
                 .append("    <h2 style='color: #31317A; text-align: center;'>Reset Your Password</h2>")
                 .append("    <p>Hi <strong>").append(user.getName()).append("</strong>,</p>")
-                .append("    <p>We received a request to reset the password for your account on the <strong>AI Audit System Platform</strong>.</p>")
+                .append("    <p>We received a request to reset the password for your account on the <strong>Compliance Engine Platform</strong>.</p>")
                 .append("    <p>Please use the following One-Time Password (OTP) to proceed with the update:</p>")
                 .append("    <div style='background: #f9f9f9; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center;'>")
                 .append("      <span style='color: #7a3bfe; font-size: 32px; font-weight: bold; letter-spacing: 5px;'>").append(otp).append("</span>")
@@ -101,7 +101,7 @@ public class MailsSenderService {
                 .append("    <div style='text-align: center;'>")
                 // Logo placeholder
                 .append("    </div>")
-                .append("    <h2 style='color: #31317A; text-align: center;'>Welcome to AI Audit System!</h2>")
+                .append("    <h2 style='color: #31317A; text-align: center;'>Welcome to Compliance Engine Platform!</h2>")
                 .append("    <p>Hi <strong>").append(user.getName()).append("</strong>,</p>")
                 .append("    <p>Thank you for signing up. Your account has been successfully created. You can now log in to the platform using the credentials below:</p>")
                 .append("    <div style='background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;'>")
@@ -131,7 +131,7 @@ public class MailsSenderService {
                 .append("    </div>")
                 .append("    <h2 style='color: #D9534F; text-align: center;'>Account Deactivated</h2>") // Using a soft red for notice
                 .append("    <p>Hello <strong>").append(user.getName()).append("</strong>,</p>")
-                .append("    <p>This email is to inform you that your account on the <strong>AI Audit System Platform</strong> has been deactivated by the system administrator.</p>")
+                .append("    <p>This email is to inform you that your account on the <strong>Compliance Engine Platform</strong> has been deactivated by the system administrator.</p>")
                 .append("    <div style='background: #fdf2f2; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 5px solid #D9534F;'>")
                 .append("      <p style='margin: 0; color: #333;'>Access to your dashboard, reports, and auditing tools is currently restricted.</p>")
                 .append("    </div>")
@@ -157,7 +157,7 @@ public class MailsSenderService {
                 .append("    </div>")
                 .append("    <h2 style='color: #28A745; text-align: center;'>Account Reactivated</h2>")
                 .append("    <p>Hello <strong>").append(user.getName()).append("</strong>,</p>")
-                .append("    <p>We are pleased to inform you that your account on the <strong>AI Audit System Platform</strong> has been successfully reactivated.</p>")
+                .append("    <p>We are pleased to inform you that your account on the <strong>Compliance Engine Platform</strong> has been successfully reactivated.</p>")
                 .append("    <div style='background: #f4faf4; padding: 15px; border-radius: 5px; margin: 20px 0; border-left: 5px solid #28A745;'>")
                 .append("      <p style='margin: 0; color: #333;'>Your access to the dashboard, audit reports, and platform tools has been fully restored.</p>")
                 .append("    </div>")
@@ -166,7 +166,7 @@ public class MailsSenderService {
                 .append("    </div>")
                 .append("    <p style='font-size: 14px; color: #555; margin-top: 25px;'>You can now log in using your existing credentials. If you have forgotten your password, please use the \"Forgot Password\" option on the login page.</p>")
                 .append("    <div style='text-align: center; margin-top: 30px;'>")
-                .append("      <p style='font-size: 12px; color: #888;'>Thank you for being part of the AI Audit System community.</p>")
+                .append("      <p style='font-size: 12px; color: #888;'>Thank you for being part of the Compliance Engine Platform community.</p>")
                 .append("    </div>")
                 .append("  </div>")
                 .append("</body></html>");
