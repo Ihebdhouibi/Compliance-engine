@@ -207,14 +207,14 @@ public class AuthController extends BaseController {
     }
 
     @PostMapping(value = {"/signup"})
-    public ResponseEntity<User> signUpAthlete(@RequestBody signupRequest signupRequest) throws JSONException {
+    public ResponseEntity<User> signUpUser(@RequestBody signupRequest signupRequest) throws JSONException {
         if (signupRequest.getEmail().isEmpty() || signupRequest.getPhoneNumber().isEmpty() )
             return new ResponseEntity("email, phone number are required",   HttpStatus.NOT_ACCEPTABLE);
 
-        if (!this.userService.existByEmail(signupRequest.getEmail()))
+        if (this.userService.existByEmail(signupRequest.getEmail()))
             return new ResponseEntity("Email already Exist ", HttpStatus.BAD_REQUEST);
 
-        if (!this.userService.existByPhoneNumber(signupRequest.getPhoneNumber()))
+        if (this.userService.existByPhoneNumber(signupRequest.getPhoneNumber()))
             return new ResponseEntity("phone number already Exist ", HttpStatus.BAD_REQUEST);
 
         User user = new User();

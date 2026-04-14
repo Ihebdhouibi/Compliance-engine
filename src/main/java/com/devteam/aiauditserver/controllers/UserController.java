@@ -45,7 +45,7 @@ public class UserController extends BaseController {
     }
 
     @GetMapping(value = {"/get_user/{userid}"})
-    @PreAuthorize("hasRole('FEDERATION') or hasRole('COACH') or hasRole('JYM') ")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('AUDITOR') or hasRole('USER') ")
     public ResponseEntity<User> get_user_by_id(@PathVariable Long userid) throws IOException {
         if (!this.userService.existById(userid))
             return new ResponseEntity("user not exist", HttpStatus.NOT_FOUND);
@@ -54,7 +54,7 @@ public class UserController extends BaseController {
     }
 
     @PatchMapping(value = {"/update_user_image_profile/{userId}"})
-    @PreAuthorize("hasRole('FEDERATION') or hasRole('COACH') or hasRole('GYM')")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('AUDITOR') or hasRole('USER') ")
     @ApiOperation(value = "update user details for user", notes = "Endpoint to update user profile")
     @ApiResponses(value = {
             @io.swagger.annotations.ApiResponse(code = 200, message = "Successfully updated"),
@@ -74,7 +74,7 @@ public class UserController extends BaseController {
     }
 
     @PatchMapping(value = {"/update_password"})
-    @PreAuthorize("hasRole('FEDERATION') or hasRole('COACH') or hasRole('JYM') ")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('AUDITOR') or hasRole('USER') ")
     public ResponseEntity update_password(@NotNull @RequestParam("password") String password, @NotNull @RequestParam("oldpassword") String oldpassword) throws IOException {
         User user = this.userService.findByUserName(getCurrentUser().getUsername());
         if (user == null)
@@ -90,7 +90,7 @@ public class UserController extends BaseController {
 
 
     @PutMapping(value = {"/logout"})
-    @PreAuthorize("hasRole('FEDERATION') or hasRole('COACH') or hasRole('JYM') ")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('AUDITOR') or hasRole('USER') ")
     public ResponseEntity<?> logoutUser() {
         User currentUser = userService.findByUserName(getCurrentUser().getUsername());
         currentUser.setDevice(null);
@@ -101,8 +101,8 @@ public class UserController extends BaseController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PatchMapping("/auditor-profile/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PatchMapping("/profile/{userId}")
+    @PreAuthorize("hasRole('ADMIN') or hasRole('AUDITOR') ")
     public ResponseEntity<?> updateAuditoProfile(@PathVariable Long userId,@RequestBody UpdateCoachProfile request) {
         if (this.userService.existByEmail(request.getEmail())) {
             return new ResponseEntity<>("email already exist", HttpStatus.NOT_ACCEPTABLE);
@@ -115,7 +115,7 @@ public class UserController extends BaseController {
     }
 
     @PatchMapping("/user-profile/{userId}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<?> updateUserProfile(@PathVariable Long userId,@RequestBody UpdateUserProfile request) {
         if (this.userService.existByEmail(request.getEmail())) {
             return new ResponseEntity<>("email already exist", HttpStatus.NOT_ACCEPTABLE);

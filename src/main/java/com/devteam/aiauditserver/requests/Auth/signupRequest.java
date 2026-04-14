@@ -1,13 +1,6 @@
 package com.devteam.aiauditserver.requests.Auth;
 
 
-import com.devteam.aiauditserver.enums.User.Gender;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import javax.persistence.Column;
-import java.util.Date;
 
 
 public class signupRequest {

@@ -58,7 +58,7 @@ public class AdminUsersController extends BaseController {
     }
 
     @GetMapping(value = {"/password_remainder"})
-    @PreAuthorize("hasRole('FEDERATION') or hasRole('COACH') or hasRole('JYM') ")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> password_remainder(@RequestParam String email) throws IOException {
         String username = getCurrentUser().getUsername();
         try {
@@ -76,7 +76,7 @@ public class AdminUsersController extends BaseController {
     }
 
     @PatchMapping(value = {"/activated/{id}"})
-    @PreAuthorize("hasRole('FEDERATION') or hasRole('COACH') or hasRole('JYM') ")
+    @PreAuthorize("hasRole('ADMIN')")
     @ApiOperation(value = "update user activation to the opposit", notes = "Endpoint to update user's activate attribute")
     @ApiResponses(value = {
             @io.swagger.annotations.ApiResponse(code = 200, message = "Successfully add"),
@@ -89,7 +89,7 @@ public class AdminUsersController extends BaseController {
     }
 
     @GetMapping("/all_users_pg")
-    @PreAuthorize("hasRole('FEDERATION') or hasRole('COACH') or hasRole('JYM') ")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DynamicResponse> getAllUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "6") int size,

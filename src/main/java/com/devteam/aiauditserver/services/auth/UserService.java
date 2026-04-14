@@ -6,6 +6,7 @@ import com.devteam.aiauditserver.Tools.util.BaseController;
 import com.devteam.aiauditserver.Tools.util.UserPrincipal;
 import com.devteam.aiauditserver.enums.User.Gender;
 import com.devteam.aiauditserver.enums.User.RoleEnum;
+import com.devteam.aiauditserver.models.User.CompanyInfo;
 import com.devteam.aiauditserver.models.User.User;
 import com.devteam.aiauditserver.repositories.File.FilesStorageService;
 import com.devteam.aiauditserver.repositories.Auth.UserRepository;
@@ -147,11 +148,11 @@ public class UserService extends BaseController implements UserDetailsService {
         StringBuilder sb = new StringBuilder(length);
 
         for (int i = 0; i < length; i++) {
-            char randomChar = random.nextBoolean()
-                    ? (char) (random.nextInt(26) + 'a')
-                    : (char) (random.nextInt(10) + '0');
-            sb.append(randomChar);
+            // Generate a random digit between 0 and 9
+            int digit = random.nextInt(10);
+            sb.append(digit);
         }
+
         return sb.toString();
     }
 
@@ -368,26 +369,38 @@ public class UserService extends BaseController implements UserDetailsService {
         return user;
     }
 
-    public User UpdateUserProfile(Long userId , UpdateUserProfile req) {
+    public User UpdateUserProfile(Long userId, UpdateUserProfile req) {
 
         User user = this.findById(userId);
-        if(req.getEmail() != null)
+
+        if (req.getEmail() != null)
             user.setEmail(req.getEmail());
-        if(req.getPhoneNumber() != null)
+        if (req.getPhoneNumber() != null)
             user.setPhoneNumber(req.getPhoneNumber());
-        if(req.getFirstName() != null || req.getLastName() != null)
+        if (req.getFirstName() != null || req.getLastName() != null)
             user.setName(req.getFirstName() + " " + req.getLastName());
-        if(req.getFirstName() != null)
+        if (req.getFirstName() != null)
             user.setFirstName(req.getFirstName());
-        if(req.getLastName() != null)
+        if (req.getLastName() != null)
             user.setLastName(req.getLastName());
-       if(req.getCompanyActivity() != null)
-           user.getCompanyInfo().setCompanyActivity(req.getCompanyActivity());
-        if(req.getCompanyAddress() != null)
-            user.getCompanyInfo().setCompanyAddress(req.getCompanyAddress());
-        if(req.getCompanyName() != null)
-            user.getCompanyInfo().setCompanyName(req.getCompanyName());
-        user =  this.save(user);
+        if (req.getCompanyActivity() != null || req.getCompanyAddress() != null || req.getCompanyName() != null) {
+
+            CompanyInfo companyInfo = user.getCompanyInfo();
+            if (companyInfo == null) {
+                companyInfo = new CompanyInfo();
+                companyInfo.setUser(user);
+                user.setCompanyInfo(companyInfo);
+            }
+
+            if (req.getCompanyActivity() != null)
+                companyInfo.setCompanyActivity(req.getCompanyActivity());
+            if (req.getCompanyAddress() != null)
+                companyInfo.setCompanyAddress(req.getCompanyAddress());
+            if (req.getCompanyName() != null)
+                companyInfo.setCompanyName(req.getCompanyName());
+        }
+
+        user = this.save(user);
         return user;
     }
 }
