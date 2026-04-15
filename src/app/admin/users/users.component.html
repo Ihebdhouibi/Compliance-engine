@@ -1,0 +1,352 @@
+<div class="page">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1>Users</h1>
+      <p>{{ totalItems }} company user{{ totalItems !== 1 ? 's' : '' }} registered</p>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div class="toast toast--success" *ngIf="resendSuccess">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         width="15" height="15" style="display:block;flex-shrink:0;">
+      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+      <polyline points="22 4 12 14.01 9 11.01"/>
+    </svg>
+    {{ resendSuccess }}
+  </div>
+
+  <div class="toast toast--error" *ngIf="resendError">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+         width="15" height="15" style="display:block;flex-shrink:0;">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    {{ resendError }}
+  </div>
+
+  <!-- Filters -->
+  <div class="filters">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           width="15" height="15" style="display:block;flex-shrink:0;">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text"
+             placeholder="Search name, email, company…"
+             [(ngModel)]="searchTerm"
+             (keyup.enter)="onSearch()"/>
+    </div>
+
+    <select class="f-select" [(ngModel)]="filterActive" (change)="onFilterChange()">
+      <option [ngValue]="undefined">All Status</option>
+      <option [ngValue]="true">Active</option>
+      <option [ngValue]="false">Inactive</option>
+    </select>
+
+    <select class="f-select" [(ngModel)]="filterGender" (change)="onFilterChange()">
+      <option value="">All Genders</option>
+      <option value="MALE">Male</option>
+      <option value="FEMALE">Female</option>
+    </select>
+
+    <button class="btn-search" (click)="onSearch()">Search</button>
+
+    <button class="btn-clear" (click)="clearFilters()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           width="13" height="13" style="display:block;">
+        <line x1="18" y1="6" x2="6" y2="18"/>
+        <line x1="6"  y1="6" x2="18" y2="18"/>
+      </svg>
+      Clear
+    </button>
+  </div>
+
+  <!-- Table card -->
+  <div class="table-card">
+
+    <div class="state-box" *ngIf="isLoading">
+      <div class="loader"></div>
+      <span>Loading users…</span>
+    </div>
+
+    <div class="state-box" *ngIf="!isLoading && users.length === 0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+           width="36" height="36" style="display:block;opacity:.3;">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+        <circle cx="9" cy="7" r="4"/>
+      </svg>
+      <span>No users found</span>
+    </div>
+
+    <div class="table-scroll" *ngIf="!isLoading && users.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Company</th>
+            <th>Industry</th>
+            <th>Phone</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of users">
+
+            <!-- Avatar + name -->
+            <td>
+              <div class="user-cell">
+                <div class="avatar">
+                  <img *ngIf="avatarUrl(u)" [src]="avatarUrl(u)!" [alt]="u.firstName"/>
+                  <span *ngIf="!avatarUrl(u)">{{ initials(u) }}</span>
+                </div>
+                <div class="user-meta">
+                  <span class="uname">{{ u.firstName }} {{ u.lastName }}</span>
+                  <span class="ucompany" *ngIf="u.companyInfo?.companyName">
+                    {{ u.companyInfo!.companyName }}
+                  </span>
+                </div>
+              </div>
+            </td>
+
+            <td class="dim">{{ u.email }}</td>
+
+            <td class="dim">
+              {{ u.companyInfo?.companyName || '—' }}
+            </td>
+
+            <td class="dim">
+              {{ u.companyInfo?.companyActivity || '—' }}
+            </td>
+
+            <td class="dim">{{ u.phoneNumber || '—' }}</td>
+
+            <td>
+              <span class="pill"
+                    [class.pill--on]="u.active"
+                    [class.pill--off]="!u.active">
+                <i></i>{{ u.active ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+
+            <!-- Actions: view, activate/deactivate, resend password -->
+            <td>
+              <div class="acts">
+
+                <!-- View details -->
+                <button class="act act--view"
+                        title="View details"
+                        (click)="openView(u)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       width="14" height="14" style="display:block;">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+
+                <!-- Toggle activation -->
+                <button class="act"
+                        [class.act--deact]="u.active"
+                        [class.act--act]="!u.active"
+                        [title]="u.active ? 'Deactivate account' : 'Activate account'"
+                        [disabled]="activatingId === u.id"
+                        (click)="toggleActivation(u)">
+                  <span class="mini-spin" *ngIf="activatingId === u.id"></span>
+                  <ng-container *ngIf="activatingId !== u.id">
+                    <svg *ngIf="u.active" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         width="14" height="14" style="display:block;">
+                      <circle cx="12" cy="12" r="10"/>
+                      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                    </svg>
+                    <svg *ngIf="!u.active" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2"
+                         width="14" height="14" style="display:block;">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                      <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                  </ng-container>
+                </button>
+
+                <!-- Resend password -->
+                <button class="act act--key"
+                        title="Send new password"
+                        [disabled]="resendingId === u.id"
+                        (click)="resendPassword(u)">
+                  <span class="mini-spin" *ngIf="resendingId === u.id"></span>
+                  <svg *ngIf="resendingId !== u.id" viewBox="0 0 24 24" fill="none"
+                       stroke="currentColor" stroke-width="2"
+                       width="14" height="14" style="display:block;">
+                    <rect x="3" y="11" width="18" height="11" rx="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+                  </svg>
+                </button>
+
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pager" *ngIf="totalPages > 1">
+    <button class="pager-btn" (click)="goToPage(0)"
+            [disabled]="currentPage === 0" title="First">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           width="13" height="13" style="display:block;">
+        <polyline points="11 17 6 12 11 7"/>
+        <polyline points="18 17 13 12 18 7"/>
+      </svg>
+    </button>
+    <button class="pager-btn" (click)="goToPage(currentPage - 1)"
+            [disabled]="currentPage === 0">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           width="13" height="13" style="display:block;">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <button *ngFor="let p of pages"
+            class="pager-btn pager-btn--n"
+            [class.on]="p === currentPage"
+            (click)="goToPage(p)">
+      {{ p + 1 }}
+    </button>
+    <button class="pager-btn" (click)="goToPage(currentPage + 1)"
+            [disabled]="currentPage >= totalPages - 1">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           width="13" height="13" style="display:block;">
+        <polyline points="9 18 15 12 9 6"/>
+      </svg>
+    </button>
+    <button class="pager-btn" (click)="goToPage(totalPages - 1)"
+            [disabled]="currentPage >= totalPages - 1" title="Last">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           width="13" height="13" style="display:block;">
+        <polyline points="13 17 18 12 13 7"/>
+        <polyline points="6 17 11 12 6 7"/>
+      </svg>
+    </button>
+    <span class="pager-info">
+      {{ currentPage + 1 }} / {{ totalPages }} &nbsp;·&nbsp; {{ totalItems }} total
+    </span>
+  </div>
+
+</div>
+
+<!-- ═══════════════════ MODALS ═══════════════════ -->
+<ng-container *ngIf="showView && selectedUser">
+
+  <div class="modal-backdrop" (click)="closeView()"></div>
+
+  <div class="modal-box modal-box--wide">
+    <div class="mb-head">
+      <div class="mb-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             width="17" height="17" style="display:block;">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        User Profile
+      </div>
+      <button class="x-btn" (click)="closeView()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             width="16" height="16" style="display:block;">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6"  y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="mb-body">
+
+      <!-- Profile hero -->
+      <div class="profile-hero">
+        <div class="avatar avatar--xl">
+          <img *ngIf="avatarUrl(selectedUser)"
+               [src]="avatarUrl(selectedUser)!" [alt]="selectedUser.firstName"/>
+          <span *ngIf="!avatarUrl(selectedUser)">{{ initials(selectedUser) }}</span>
+        </div>
+        <div class="profile-info">
+          <h2>{{ selectedUser.firstName }} {{ selectedUser.lastName }}</h2>
+          <span class="profile-tag">Company User</span>
+          <span class="pill mt4"
+                [class.pill--on]="selectedUser.active"
+                [class.pill--off]="!selectedUser.active">
+            <i></i>{{ selectedUser.active ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Personal info -->
+      <div class="section-label">Personal Information</div>
+      <div class="detail-grid">
+        <div class="detail-item">
+          <span class="dl">Email</span>
+          <span class="dv">{{ selectedUser.email }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="dl">Phone</span>
+          <span class="dv">{{ selectedUser.phoneNumber || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="dl">Gender</span>
+          <span class="dv">{{ selectedUser.gender || '—' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="dl">Account ID</span>
+          <span class="dv mono">#{{ selectedUser.id }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="dl">Status</span>
+          <span class="dv">{{ selectedUser.active ? 'Active' : 'Inactive' }}</span>
+        </div>
+        <div class="detail-item">
+          <span class="dl">Registered</span>
+          <span class="dv">{{ selectedUser.timestamp | date:'mediumDate' }}</span>
+        </div>
+      </div>
+
+      <!-- Company info -->
+      <ng-container *ngIf="selectedUser.companyInfo">
+        <div class="section-label mt16">Company Information</div>
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="dl">Company Name</span>
+            <span class="dv">{{ selectedUser.companyInfo!.companyName || '—' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="dl">Industry</span>
+            <span class="dv">{{ selectedUser.companyInfo!.companyActivity || '—' }}</span>
+          </div>
+          <div class="detail-item detail-item--full">
+            <span class="dl">Address</span>
+            <span class="dv">{{ selectedUser.companyInfo!.companyAddress || '—' }}</span>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="no-company" *ngIf="!selectedUser.companyInfo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             width="24" height="24" style="display:block;margin:0 auto 8px;">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        No company information available.
+      </div>
+
+      <div class="mb-footer">
+        <button type="button" class="btn-cancel" (click)="closeView()">Close</button>
+      </div>
+
+    </div>
+  </div>
+
+</ng-container>

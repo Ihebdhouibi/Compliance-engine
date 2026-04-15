@@ -1,1 +1,129 @@
-/* You can add global styles to this file, and also import other style files */
+@use 'styles/tokens' as t;
+@use 'styles/keyframes';
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+// ── Dynamic design variables (overwritten at runtime by DesignSettingsService)
+:root {
+  --color-sidebar-bg:  #071528;
+  --color-topbar-bg:   #071528;
+  --color-page-bg:     #020912;
+  --color-accent:      #00d4ed;
+  --color-btn-add:     #00d4ed;
+  --color-btn-update:  #00bcd4;
+  --color-btn-delete:  #ff4d6a;
+}
+
+*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
+html { font-size:16px; scroll-behavior:smooth; -webkit-text-size-adjust:100% }
+body {
+  font-family: t.$font-body;
+  background: var(--color-page-bg);
+  color: #fff;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+::-webkit-scrollbar { width:5px }
+::-webkit-scrollbar-track { background: #071528 }
+::-webkit-scrollbar-thumb { background: rgba(0,212,237,.28); border-radius:3px }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,212,237,.45) }
+::selection { background: rgba(0,212,237,.28); color:#fff }
+:focus-visible { outline:2px solid var(--color-accent); outline-offset:2px; border-radius:4px }
+input:-webkit-autofill,input:-webkit-autofill:focus {
+  -webkit-box-shadow:0 0 0 1000px #071528 inset !important;
+  -webkit-text-fill-color:#fff !important;
+  caret-color:#fff;
+}
+a { color:inherit; text-decoration:none }
+img,svg { display:block; max-width:100% }
+button { font-family:inherit; cursor:pointer }
+
+// ════════════════════════════════════════
+// GLOBAL MODAL STYLES
+// Must be global — not component-scoped
+// ════════════════════════════════════════
+
+.modal-backdrop {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(2, 9, 18, .85) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  z-index: 99998 !important;
+  animation: fadeIn .18s ease both;
+}
+
+.modal-box {
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 99999 !important;
+
+  width: calc(100vw - 40px) !important;
+  max-width: 500px;
+  max-height: 88vh;
+
+  display: flex;
+  flex-direction: column;
+
+  background: #040f1e;
+  border: 1px solid rgba(0, 212, 237, .22);
+  border-radius: 18px;
+  box-shadow:
+    0 0 0 1px rgba(0,212,237,.05) inset,
+    0 48px 100px rgba(2,9,18,.98),
+    0 8px 32px rgba(0,0,0,.85);
+
+  animation: fadeUp .22s cubic-bezier(.4,0,.2,1) both;
+
+  &--wide {
+    max-width: 580px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .modal-box {
+    width: calc(100vw - 16px) !important;
+    max-height: 94vh;
+    border-radius: 14px;
+  }
+}
+
+.modal-box--form {
+  max-width: 620px !important;
+  max-height: 90vh !important;
+}
+
+.modal-box--file {
+  max-width: 860px !important;
+  max-height: 92vh !important;
+}
+
+// ════════════════════════════════════════
+// DATE INPUT — force dark color scheme
+// so the browser calendar popup matches
+// ════════════════════════════════════════
+
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"] {
+  color-scheme: dark;
+}
+
+// Calendar picker indicator icon — invert to match dark theme
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.7) sepia(1) saturate(5) hue-rotate(160deg) brightness(0.9);
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity .2s;
+
+  &:hover { opacity: 1; }
+}

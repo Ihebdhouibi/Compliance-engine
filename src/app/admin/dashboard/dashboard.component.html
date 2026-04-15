@@ -1,0 +1,121 @@
+<div class="dash">
+
+  <!-- Header -->
+  <div class="dash__header">
+    <div>
+      <h1>Dashboard</h1>
+      <p>Welcome back, <strong>{{ userName }}</strong>. Here's what's happening today.</p>
+    </div>
+    <div class="dash__header-badge">
+      <span class="hb-dot"></span>
+      <span>Administrator</span>
+    </div>
+  </div>
+
+  <!-- Stats grid -->
+  <div class="stats-grid">
+    <div class="stat-card" *ngFor="let s of stats">
+      <div class="stat-card__glow" [style.background]="s.glow"></div>
+      <div class="stat-card__icon" [style.color]="s.color">
+        <!-- Use direct SVG, NOT innerHTML -->
+        <ng-container [ngSwitch]="s.iconKey">
+          <svg *ngSwitchCase="'users'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <svg *ngSwitchCase="'clipboard'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+          <svg *ngSwitchCase="'clock'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <svg *ngSwitchCase="'check'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="22" height="22"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </ng-container>
+      </div>
+      <div class="stat-card__body">
+        <span class="sc-value">{{ s.value }}</span>
+        <span class="sc-label">{{ s.label }}</span>
+      </div>
+      <div class="stat-card__trend" [class.up]="s.up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="14" height="14">
+          <polyline *ngIf="s.up"  points="18 15 12 9 6 15"/>
+          <polyline *ngIf="!s.up" points="6 9 12 15 18 9"/>
+        </svg>
+        <span>{{ s.change }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two columns -->
+  <div class="dash__cols">
+
+    <!-- Recent audits -->
+    <div class="dash-card">
+      <div class="dash-card__head">
+        <h3>Recent Audit Requests</h3>
+        <a routerLink="../audits" class="view-all">View all →</a>
+      </div>
+      <div class="audit-list">
+        <div class="audit-item" *ngFor="let a of recentAudits">
+          <div class="audit-item__left">
+            <div class="audit-avatar">{{ a.initials }}</div>
+            <div>
+              <p class="ai-company">{{ a.company }}</p>
+              <span class="ai-type">{{ a.type }}</span>
+            </div>
+          </div>
+          <div class="audit-item__right">
+            <span class="status-pill" [class]="'status-pill--' + a.status">
+              {{ a.statusLabel }}
+            </span>
+            <span class="ai-date">{{ a.date }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="dash-card">
+      <div class="dash-card__head">
+        <h3>Quick Actions</h3>
+      </div>
+      <div class="quick-actions">
+        <a routerLink="../auditors" class="qa-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <div><strong>Add Auditor</strong><span>Create a new auditor account</span></div>
+        </a>
+        <a routerLink="../audits" class="qa-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+          <div><strong>Manage Audits</strong><span>Review & assign requests</span></div>
+        </a>
+        <a routerLink="../users" class="qa-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <div><strong>View Users</strong><span>Browse registered companies</span></div>
+        </a>
+        <a routerLink="../invoices" class="qa-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <div><strong>Invoices</strong><span>Track billing & payments</span></div>
+        </a>
+        <a routerLink="../settings" class="qa-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          <div><strong>Settings</strong><span>Platform configuration</span></div>
+        </a>
+        <a routerLink="../profile" class="qa-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <div><strong>My Profile</strong><span>Update your account</span></div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bar chart -->
+  <div class="dash-card">
+    <div class="dash-card__head">
+      <h3>Audit Status Overview</h3>
+      <span class="dch-sub">Last 30 days</span>
+    </div>
+    <div class="bar-chart">
+      <div class="bar-row" *ngFor="let b of barData">
+        <span class="bar-label">{{ b.label }}</span>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width]="b.pct + '%'" [style.background]="b.color"></div>
+        </div>
+        <span class="bar-val">{{ b.value }}</span>
+      </div>
+    </div>
+  </div>
+
+</div>

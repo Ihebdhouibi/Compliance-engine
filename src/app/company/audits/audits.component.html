@@ -1,0 +1,465 @@
+<div class="page">
+
+    <div class="page-header">
+        <div>
+            <h1>My Audit Requests</h1>
+            <p>{{ totalItems }} request{{ totalItems !== 1 ? 's' : '' }} submitted</p>
+        </div>
+        <button class="btn-add" (click)="openNewAudit()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"
+                style="display:block;">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Request Audit
+        </button>
+    </div>
+
+    <div class="alert alert--success" *ngIf="successMsg">{{ successMsg }}</div>
+
+    <!-- Requests table -->
+    <div class="table-card">
+        <div class="state-box" *ngIf="isLoading">
+            <div class="loader"></div><span>Loading…</span>
+        </div>
+        <div class="state-box" *ngIf="!isLoading && requests.length === 0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="36" height="36"
+                style="display:block;opacity:.3;">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <span>No audit requests yet</span>
+            <button class="btn-add sm" (click)="openNewAudit()">Request your first audit</button>
+        </div>
+        <div class="table-scroll" *ngIf="!isLoading && requests.length > 0">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Assigned To</th>
+                        <th>Submitted</th>
+                        <th>Completed</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let r of requests">
+                        <td class="dim mono">#{{ r.id }}</td>
+                        <td><span class="type-badge">{{ r.auditType }}</span></td>
+                        <td>
+                            <span class="st-pill" [class]="statusClass(r.status)">
+                                {{ r.status | titlecase }}
+                            </span>
+                        </td>
+                        <td class="dim">
+                            {{ r.assignedTo ? (r.assignedTo.firstName + ' ' + r.assignedTo.lastName) : '—' }}
+                        </td>
+                        <td class="dim">{{ r.submittedAt | date:'MMM d, y' }}</td>
+                        <td class="dim">{{ r.completedAt ? (r.completedAt | date:'MMM d, y') : '—' }}</td>
+                        <td>
+                            <div class="acts">
+                                <button class="act act--view" title="View details" (click)="openDetail(r)">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        width="14" height="14" style="display:block;">
+                                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+                                        <circle cx="12" cy="12" r="3" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="pager" *ngIf="totalPages > 1">
+        <button class="pager-btn" (click)="goToPage(currentPage-1)" [disabled]="currentPage===0">‹</button>
+        <button *ngFor="let p of pages" class="pager-btn pager-btn--n" [class.on]="p===currentPage"
+            (click)="goToPage(p)">{{ p+1 }}</button>
+        <button class="pager-btn" (click)="goToPage(currentPage+1)" [disabled]="currentPage>=totalPages-1">›</button>
+        <span class="pager-info">{{ currentPage+1 }}/{{ totalPages }} · {{ totalItems }}</span>
+    </div>
+
+</div>
+
+<!-- ═══ MODALS ═══ -->
+<ng-container *ngIf="showDetail || showNewAudit || showFileViewer">
+    <div class="modal-backdrop" (click)="closeDetail(); closeNewAudit(); closeFileViewer()"></div>
+
+    <!-- ── VIEW DETAIL ── -->
+    <div class="modal-box modal-box--wide" *ngIf="showDetail && selectedRequest">
+        <div class="mb-head">
+            <div class="mb-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"
+                    style="display:block;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                Request #{{ selectedRequest.id }}
+            </div>
+            <button class="x-btn" (click)="closeDetail()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"
+                    style="display:block;">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <div class="mb-body">
+
+            <div class="detail-hero">
+                <div class="detail-hero__left">
+                    <span class="st-pill lg" [class]="statusClass(selectedRequest.status)">
+                        {{ selectedRequest.status | titlecase }}
+                    </span>
+                    <span class="type-badge">{{ selectedRequest.auditType }}</span>
+                </div>
+                <div class="detail-hero__dates">
+                    <span class="date-item">
+                        <span class="date-label">Submitted</span>
+                        <span class="date-val">{{ selectedRequest.submittedAt | date:'mediumDate' }}</span>
+                    </span>
+                    <span class="date-item" *ngIf="selectedRequest.assignedTo">
+                        <span class="date-label">Assigned To</span>
+                        <span class="date-val">{{ selectedRequest.assignedTo.firstName }} {{
+                            selectedRequest.assignedTo.lastName }}</span>
+                    </span>
+                    <span class="date-item" *ngIf="selectedRequest.dueDate">
+                        <span class="date-label">Due</span>
+                        <span class="date-val">{{ selectedRequest.dueDate | date:'mediumDate' }}</span>
+                    </span>
+                </div>
+            </div>
+
+            <div class="rejection-box" *ngIf="selectedRequest.rejectionReason">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"
+                    style="display:block;flex-shrink:0;">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                {{ selectedRequest.rejectionReason }}
+            </div>
+
+            <div class="section-label">Your Answers</div>
+            <div class="answers-list">
+                <div class="answer-row" *ngFor="let a of selectedRequest.answers">
+                    <span class="a-label">{{ a.fieldLabel }}</span>
+                    <div *ngIf="a.fileMedia" class="a-file-row">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14"
+                            height="14" style="display:block;flex-shrink:0;color:var(--color-accent,#00d4ed);">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                            <polyline points="14 2 14 8 20 8" />
+                        </svg>
+                        <span class="file-name">{{ a.fileMedia.name }}</span>
+                        <button class="file-action-btn"
+                            (click)="openFileViewer(svc.getFileUrl(a.fileMedia.url), a.fileMedia.name); $event.stopPropagation()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"
+                                height="13" style="display:block;">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                            Open
+                        </button>
+                        <button class="file-action-btn file-action-btn--dl"
+                            (click)="svc.downloadFile(a.fileMedia.url, a.fileMedia.name); $event.stopPropagation()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"
+                                height="13" style="display:block;">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                <polyline points="7 10 12 15 17 10" />
+                                <line x1="12" y1="15" x2="12" y2="3" />
+                            </svg>
+                            Download
+                        </button>
+                    </div>
+                    <span *ngIf="!a.fileMedia" class="a-value">{{ a.answerValue || '—' }}</span>
+                </div>
+            </div>
+
+            <div class="mb-footer">
+                <button class="btn-cancel" (click)="closeDetail()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── NEW AUDIT FORM MODAL ── -->
+    <div class="modal-box modal-box--form" *ngIf="showNewAudit">
+        <div class="mb-head">
+            <div class="mb-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"
+                    style="display:block;">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+                New Audit Request
+            </div>
+            <button class="x-btn" (click)="closeNewAudit()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"
+                    style="display:block;">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+            </button>
+        </div>
+        <div class="mb-body">
+
+            <!-- Success state -->
+            <div class="submit-success" *ngIf="submitSuccess">
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="32" height="32"
+                        style="display:block;">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                    </svg>
+                </div>
+                <h3>Request Submitted!</h3>
+                <p>Your audit request has been received. We'll assign an auditor soon.</p>
+            </div>
+
+            <!-- Audit type selector (no form loaded yet) -->
+            <ng-container *ngIf="!auditForm && !isLoadingForm && !submitSuccess">
+                <p class="form-intro">Select the type of audit you'd like to request:</p>
+                <div class="audit-type-grid">
+                    <button class="audit-type-card" *ngFor="let t of auditTypes" (click)="startNewAudit(t.value)">
+                        <div class="atc-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28"
+                                height="28" style="display:block;">
+                                <path d="M9 11l3 3L22 4" />
+                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                            </svg>
+                        </div>
+                        <span class="atc-label">{{ t.label }}</span>
+                        <span class="atc-type">{{ t.value }}</span>
+                    </button>
+                </div>
+                <div class="form-load-error" *ngIf="formLoadError">{{ formLoadError }}</div>
+            </ng-container>
+
+            <!-- Loading form -->
+            <div class="form-loading" *ngIf="isLoadingForm">
+                <div class="loader"></div>
+                <span>Loading audit form…</span>
+            </div>
+
+            <!-- Multi-step form -->
+            <ng-container *ngIf="auditForm && !submitSuccess">
+
+                <!-- Step progress bar -->
+                <div class="step-progress">
+                    <div class="step-track">
+                        <div class="step-fill" [style.width.%]="((currentStepIdx + 1) / totalSteps) * 100"></div>
+                    </div>
+                    <div class="step-indicators">
+                        <div class="step-dot" *ngFor="let s of auditForm.steps; let i = index"
+                            [class.done]="i < currentStepIdx" [class.active]="i === currentStepIdx">
+                            <svg *ngIf="i < currentStepIdx" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="3" width="10" height="10" style="display:block;">
+                                <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                            <span *ngIf="i >= currentStepIdx">{{ i+1 }}</span>
+                        </div>
+                    </div>
+                    <span class="step-counter">
+                        Step {{ currentStepIdx + 1 }} of {{ totalSteps }} — {{ currentStep?.title }}
+                    </span>
+                </div>
+
+                <!-- Step description -->
+                <p class="step-desc" *ngIf="currentStep?.description">{{ currentStep!.description }}</p>
+
+                <!-- Error -->
+                <div class="m-error" *ngIf="errorMsg">{{ errorMsg }}</div>
+
+                <!-- Fields -->
+                <div class="fields-list" *ngIf="currentStep">
+                    <div class="form-field-wrap" *ngFor="let field of currentStep.fields">
+                        <label class="fl">
+                            {{ field.label }}
+                            <span class="req-star" *ngIf="field.required">*</span>
+                        </label>
+
+                        <!-- TEXT -->
+                        <input *ngIf="field.fieldType === 'TEXT'" type="text" class="fi"
+                            [placeholder]="field.placeholder || ''" [value]="getFieldValue(field.id)"
+                            (input)="setFieldValue(field.id, $any($event.target).value)" />
+
+                        <!-- TEXTAREA -->
+                        <textarea *ngIf="field.fieldType === 'TEXTAREA'" class="fi fi--ta" rows="4"
+                            [placeholder]="field.placeholder || ''" [value]="getFieldValue(field.id)"
+                            (input)="setFieldValue(field.id, $any($event.target).value)"></textarea>
+
+                        <!-- NUMBER -->
+                        <input *ngIf="field.fieldType === 'NUMBER'" type="number" class="fi"
+                            [placeholder]="field.placeholder || ''" [value]="getFieldValue(field.id)"
+                            (input)="setFieldValue(field.id, $any($event.target).value)" />
+
+                        <!-- EMAIL -->
+                        <input *ngIf="field.fieldType === 'EMAIL'" type="email" class="fi"
+                            [placeholder]="field.placeholder || ''" [value]="getFieldValue(field.id)"
+                            (input)="setFieldValue(field.id, $any($event.target).value)" />
+
+                        <!-- DATE -->
+                        <input *ngIf="field.fieldType === 'DATE'" type="date" class="fi"
+                            [value]="getFieldValue(field.id)"
+                            (change)="setFieldValue(field.id, $any($event.target).value)" />
+
+                        <!-- DROPDOWN -->
+                        <select *ngIf="field.fieldType === 'DROPDOWN'" class="fi" [value]="getFieldValue(field.id)"
+                            (change)="setFieldValue(field.id, $any($event.target).value)">
+                            <option value="">Select an option…</option>
+                            <option *ngFor="let opt of field.options" [value]="opt.value">{{ opt.label }}</option>
+                        </select>
+
+                        <!-- RADIO -->
+                        <div *ngIf="field.fieldType === 'RADIO'" class="radio-group">
+                            <ng-container *ngIf="field.options && field.options.length > 0; else noRadioOptions">
+                                <label *ngFor="let opt of field.options" class="radio-label">
+                                    <input type="radio" [name]="'field_' + field.id" [value]="opt.value"
+                                        [checked]="getFieldValue(field.id) === opt.value"
+                                        (change)="setFieldValue(field.id, opt.value)" />
+                                    <span class="radio-mark"></span>
+                                    {{ opt.label }}
+                                </label>
+                            </ng-container>
+                            <ng-template #noRadioOptions>
+                                <span class="no-options-note">No options configured</span>
+                            </ng-template>
+                        </div>
+
+                        <!-- CHECKBOX — renders each option as an independent checkbox -->
+                        <div *ngIf="field.fieldType === 'CHECKBOX'" class="checkbox-group">
+                            <ng-container *ngIf="field.options && field.options.length > 0; else singleCheck">
+                                <label *ngFor="let opt of field.options" class="checkbox-label">
+                                    <input type="checkbox" [checked]="isChecked(field.id, opt.value)"
+                                        (change)="toggleCheckbox(field.id, opt.value)" />
+                                    <span class="check-mark"></span>
+                                    {{ opt.label }}
+                                </label>
+                            </ng-container>
+                            <ng-template #singleCheck>
+                                <label class="checkbox-label single-check">
+                                    <input type="checkbox" [checked]="getFieldValue(field.id) === 'true'"
+                                        (change)="setFieldValue(field.id, $any($event.target).checked ? 'true' : 'false')" />
+                                    <span class="check-mark"></span>
+                                    {{ field.placeholder || 'Yes' }}
+                                </label>
+                            </ng-template>
+                        </div>
+
+                        <!-- MULTI_CHECKBOX -->
+                        <div *ngIf="field.fieldType === 'MULTI_CHECKBOX'" class="checkbox-group">
+                            <label *ngFor="let opt of field.options" class="checkbox-label">
+                                <input type="checkbox" [checked]="isChecked(field.id, opt.value)"
+                                    (change)="toggleCheckbox(field.id, opt.value)" />
+                                <span class="check-mark"></span>
+                                {{ opt.label }}
+                            </label>
+                        </div>
+
+                        <!-- FILE -->
+                        <div *ngIf="field.fieldType === 'FILE'" class="file-upload-wrap">
+                            <label class="file-upload-label" [class.has-file]="!!getFileName(field.id)">
+                                <input type="file" (change)="onFileChange(field.id, $event)" hidden />
+                                <svg *ngIf="!getFileName(field.id)" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" width="20" height="20"
+                                    style="display:block;">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                    <polyline points="17 8 12 3 7 8" />
+                                    <line x1="12" y1="3" x2="12" y2="15" />
+                                </svg>
+                                <span *ngIf="!getFileName(field.id)">
+                                    Click to upload file
+                                </span>
+                                <span *ngIf="getFileName(field.id)" class="file-chosen">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                        width="14" height="14" style="display:block;flex-shrink:0;">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                                        <polyline points="14 2 14 8 20 8" />
+                                    </svg>
+                                    {{ getFileName(field.id) }}
+                                </span>
+                                <span class="uploading-badge" *ngIf="uploadingFieldId === field.id">Uploading…</span>
+                            </label>
+                        </div>
+
+                        <span class="field-validation-err" *ngIf="validationErrors[field.id]">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12"
+                                height="12" style="display:block;flex-shrink:0;">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                            {{ validationErrors[field.id] }}
+                        </span>
+
+                    </div>
+                </div>
+
+                <!-- Step navigation -->
+                <div class="step-nav">
+                    <button type="button" class="btn-cancel" (click)="prevStep()" *ngIf="!isFirstStep">
+                        ← Previous
+                    </button>
+                    <button type="button" class="btn-cancel" (click)="closeNewAudit()" *ngIf="isFirstStep">
+                        Cancel
+                    </button>
+                    <div style="flex:1"></div>
+                    <button type="button" class="btn-primary" *ngIf="!isLastStep" (click)="nextStep()">
+                        Next Step →
+                    </button>
+                    <button type="button" class="btn-primary submit-btn" *ngIf="isLastStep" [disabled]="isSubmitting"
+                        (click)="submitAudit()">
+                        <span class="mini-spin" *ngIf="isSubmitting"></span>
+                        {{ isSubmitting ? 'Submitting…' : 'Submit Audit Request' }}
+                    </button>
+                </div>
+
+            </ng-container>
+
+        </div>
+    </div>
+
+    <!-- ── FILE VIEWER ── -->
+    <div class="modal-box modal-box--file" *ngIf="showFileViewer">
+        <div class="mb-head">
+            <div class="mb-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="17" height="17"
+                    style="display:block;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+                {{ viewingFileName }}
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;">
+                <button class="x-btn" (click)="closeFileViewer()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"
+                        style="display:block;">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="mb-body file-viewer-body">
+
+            <!-- Loading -->
+            <div class="file-loading" *ngIf="isLoadingFile">
+                <div class="loader"></div>
+                <span>Loading file…</span>
+            </div>
+
+            <!-- Image -->
+            <img *ngIf="!isLoadingFile && viewingFileUrl && isImage(viewingFileName || '')" [src]="viewingFileUrl"
+                [alt]="viewingFileName" class="file-preview-img" />
+
+            <!-- PDF / other via blob iframe -->
+            <iframe *ngIf="!isLoadingFile && viewingFileUrl && !isImage(viewingFileName || '')" [src]="viewingFileUrl"
+                class="file-preview-iframe" type="application/pdf">
+            </iframe>
+
+        </div>
+    </div>
+</ng-container>
