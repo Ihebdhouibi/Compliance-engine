@@ -1,0 +1,116 @@
+<div class="dash">
+  <div class="dash__header a1">
+    <div>
+      <h1>My Dashboard</h1>
+      <p>Welcome back, <strong>{{ userName }}</strong>. Track your audit requests and compliance status.</p>
+    </div>
+    <div class="dash__header-badge">
+      <span class="hb-dot"></span>
+      <span>{{ companyName }}</span>
+    </div>
+  </div>
+
+  <!-- Welcome card -->
+  <div class="welcome-card a2">
+    <div class="welcome-card__icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+        <polyline points="9 22 9 12 15 12 15 22"/>
+      </svg>
+    </div>
+    <div class="welcome-card__text">
+      <h2>AI Compliance Center</h2>
+      <p>Request, monitor and manage your AI compliance audits from one place. Stay compliant with evolving regulations.</p>
+    </div>
+    <button class="req-btn" routerLink="../audits">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><path d="M12 5v14M5 12h14"/></svg>
+      Request Audit
+    </button>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid a3">
+    <div class="stat-card" *ngFor="let s of stats">
+      <div class="stat-card__glow" [style.background]="s.glow"></div>
+      <div class="stat-card__icon" [style.color]="s.color"><span [innerHTML]="s.icon"></span></div>
+      <div class="stat-card__body">
+        <span class="sc-value">{{ s.value }}</span>
+        <span class="sc-label">{{ s.label }}</span>
+      </div>
+      <div class="stat-card__trend" [class.up]="s.up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline *ngIf="s.up" points="18 15 12 9 6 15"/>
+          <polyline *ngIf="!s.up" points="6 9 12 15 18 9"/>
+        </svg>
+        <span>{{ s.change }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two columns -->
+  <div class="dash__cols a4">
+
+    <!-- My Audit Requests -->
+    <div class="dash-card">
+      <div class="dash-card__head">
+        <h3>My Audit Requests</h3>
+        <a routerLink="../audits" class="view-all">View all →</a>
+      </div>
+      <div class="audit-list" *ngIf="myAudits.length > 0; else emptyAudits">
+        <div class="audit-item" *ngFor="let a of myAudits">
+          <div class="audit-item__left">
+            <div class="audit-avatar" style="background:rgba(0,212,237,.1);color:#18e8ff;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+            </div>
+            <div>
+              <p class="ai-company">{{ a.type }}</p>
+              <span class="ai-type">{{ a.auditor }}</span>
+            </div>
+          </div>
+          <div class="audit-item__right">
+            <span class="status-pill" [class]="'status-pill--' + a.status">{{ a.statusLabel }}</span>
+            <span class="ai-date">{{ a.date }}</span>
+          </div>
+        </div>
+      </div>
+      <ng-template #emptyAudits>
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+          <h4>No audits yet</h4>
+          <p>Request your first AI compliance audit to get started.</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="dash-card">
+      <div class="dash-card__head"><h3>Quick Actions</h3></div>
+      <div class="quick-actions">
+        <a routerLink="../audits"   class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><div><strong>Request Audit</strong><span>Submit a new audit request</span></div></a>
+        <a routerLink="../audits"   class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg><div><strong>My Audits</strong><span>Track your audit status</span></div></a>
+        <a routerLink="../invoices" class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><div><strong>Invoices</strong><span>View billing documents</span></div></a>
+        <a routerLink="../profile"  class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><div><strong>My Profile</strong><span>Update company details</span></div></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compliance status -->
+  <div class="dash-card a5">
+    <div class="dash-card__head">
+      <h3>Compliance Coverage</h3>
+      <span class="dch-sub">Based on completed audits</span>
+    </div>
+    <div class="compliance-grid">
+      <div class="comp-item" *ngFor="let c of compliance">
+        <div class="comp-item__head">
+          <span class="comp-name">{{ c.name }}</span>
+          <span class="comp-pct" [style.color]="c.color">{{ c.pct }}%</span>
+        </div>
+        <div class="comp-bar">
+          <div class="comp-fill" [style.width]="c.pct + '%'" [style.background]="c.color"></div>
+        </div>
+        <span class="comp-status" [style.color]="c.color">{{ c.status }}</span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,217 @@
+@use 'styles/tokens' as t;
+@use 'styles/keyframes';
+
+$sb-full:  260px;
+$sb-icon:  64px;
+$trans:    .28s cubic-bezier(.4,0,.2,1);
+
+// ── Mobile overlay
+.sb-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(2,9,18,.75);
+  backdrop-filter: blur(4px);
+  z-index: 98;
+  &.visible { @media (max-width:1024px) { display: block; } }
+}
+
+// ── Mobile hamburger
+.sb-hamburger {
+  display: none;
+  position: fixed; top: 14px; left: 14px; z-index: 200;
+  width: 38px; height: 38px;
+  align-items: center; justify-content: center;
+  background: var(--color-sidebar-bg, #071528);
+  border: 1px solid rgba(0,212,237,.22);
+  border-radius: 9px; cursor: pointer;
+  color: rgba(255,255,255,.65); transition: all .2s;
+  &:hover { color: var(--color-accent,#00d4ed); border-color: rgba(0,212,237,.45); }
+  @media (max-width:1024px) { display: flex; }
+}
+
+// ── Sidebar panel
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: $sb-full;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-sidebar-bg, #071528);
+  border-right: 1px solid rgba(255,255,255,.06);
+  overflow: hidden;
+  transition: width $trans;
+
+  // Left accent line
+  &::after {
+    content: ''; position: absolute; top:0; left:0; bottom:0; width:2px; z-index:2;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      color-mix(in srgb, var(--color-accent,#00d4ed) 45%, transparent) 20%,
+      color-mix(in srgb, var(--color-accent,#00d4ed) 45%, transparent) 80%,
+      transparent 100%);
+    pointer-events: none;
+  }
+
+  // Collapsed
+  &--collapsed { width: $sb-icon; }
+
+  // Mobile
+  @media (max-width:1024px) {
+    width: $sb-full !important;
+    transform: translateX(-100%);
+    transition: transform $trans;
+    &--open { transform: translateX(0); }
+  }
+}
+
+// ── Head: logo + brand text + toggle button
+.sidebar__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  height: 64px;           // same as topbar height — eliminates the gap
+  flex-shrink: 0;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  overflow: hidden;
+}
+
+.sidebar__logo-icon {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: color-mix(in srgb, var(--color-accent,#00d4ed) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent,#00d4ed) 28%, transparent);
+  border-radius: 9px;
+}
+
+.sidebar__brand {
+  flex: 1; display: flex; flex-direction: column; line-height:1;
+  overflow: hidden; min-width: 0;
+  transition: opacity $trans, width $trans;
+
+  .brand-name { font-family:t.$font-display; font-size:.9rem; font-weight:800; color:#fff; white-space:nowrap; }
+  .brand-tag  { font-family:t.$font-mono; font-size:.55rem; letter-spacing:.14em; text-transform:uppercase;
+                color:var(--color-accent,#00d4ed); margin-top:3px; white-space:nowrap; }
+
+  &.hide { opacity:0; width:0; pointer-events:none; }
+}
+
+.sidebar__collapse-btn {
+  width: 26px; height: 26px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1);
+  border-radius:6px; cursor:pointer; color:rgba(255,255,255,.38); transition:all .2s;
+  margin-left: auto;
+  &:hover { background:rgba(255,255,255,.12); color:#fff; }
+  @media (max-width:1024px) { display:none; }
+}
+
+// ── Role badge
+.sidebar__badge {
+  display: flex; align-items: center; gap:7px;
+  margin: 10px 12px 4px;
+  padding: 5px 10px;
+  background: color-mix(in srgb, var(--color-accent,#00d4ed) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent,#00d4ed) 12%, transparent);
+  border-radius: 100px; width: fit-content; flex-shrink:0; overflow:hidden;
+  transition: all $trans;
+
+  &.badge--icon {
+    padding: 5px; border-radius:50%;
+    margin: 10px auto 4px;
+    width: 28px; height: 28px;
+    justify-content: center;
+  }
+
+  .badge-pulse {
+    width:6px; height:6px; border-radius:50%; flex-shrink:0;
+    background: var(--color-accent,#00d4ed);
+    animation: node-pulse 2s ease-in-out infinite;
+  }
+
+  .badge-text {
+    font-family:t.$font-mono; font-size:.6rem; letter-spacing:.1em;
+    text-transform:uppercase; color:var(--color-accent,#00d4ed);
+    white-space:nowrap; overflow:hidden;
+    transition: opacity $trans, width $trans, max-width $trans;
+    max-width: 160px;
+    &.hide { opacity:0; max-width:0; }
+  }
+}
+
+// ── Nav
+.sidebar__nav {
+  flex:1; display:flex; flex-direction:column; gap:2px;
+  padding: 6px 8px 12px;
+  overflow-y: auto; overflow-x: hidden;
+}
+
+.nav-section-label {
+  font-family:t.$font-mono; font-size:.57rem; letter-spacing:.13em;
+  text-transform:uppercase; color:rgba(255,255,255,.25);
+  padding: 10px 10px 6px; display:block; white-space:nowrap;
+  overflow:hidden; transition: opacity $trans;
+  &.hide { opacity:0; }
+}
+
+// ── Nav item
+.nav-item {
+  display: flex; align-items: center; gap:11px;
+  padding: 10px 11px; border-radius:9px;
+  text-decoration:none; color:rgba(255,255,255,.5);
+  font-size:.88rem; font-weight:500;
+  transition: all .2s; position:relative; overflow:hidden;
+
+  &__icon {
+    width:18px; height:18px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    svg { display:block; opacity:.5; transition:opacity .2s; }
+  }
+
+  &__label {
+    flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    transition: opacity $trans, max-width $trans;
+    max-width: 200px;
+    &.hide { opacity:0; max-width:0; pointer-events:none; }
+  }
+
+  &__bar {
+    width:0; height:14px; flex-shrink:0; border-radius:2px;
+    background:var(--color-accent,#00d4ed); opacity:0; transition:all .2s;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--color-accent,#00d4ed) 8%, transparent);
+    color: rgba(255,255,255,.85);
+    .nav-item__icon svg { opacity:.85; }
+  }
+
+  &.active {
+    background: color-mix(in srgb, var(--color-accent,#00d4ed) 13%, transparent);
+    color: var(--color-accent,#00d4ed);
+    .nav-item__icon svg { opacity:1; }
+    .nav-item__bar { width:3px; opacity:1; }
+    &::before {
+      content:''; position:absolute; left:0; top:0; bottom:0; width:3px;
+      background:var(--color-accent,#00d4ed); border-radius:0 2px 2px 0;
+    }
+  }
+
+  // ── Collapsed: perfectly centered icon
+  &--icon-only {
+    justify-content: center;
+    padding: 11px 0;
+    gap: 0;
+  }
+}
+
+// ── Footer
+.sidebar__footer {
+  padding: 12px 14px 10px;
+  border-top: 1px solid rgba(255,255,255,.06);
+  font-family:t.$font-mono; font-size:.58rem; letter-spacing:.08em;
+  color:rgba(255,255,255,.2); white-space:nowrap; overflow:hidden; flex-shrink:0;
+  transition: opacity $trans;
+  &.hide { opacity:0; }
+}

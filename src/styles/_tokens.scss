@@ -1,0 +1,55 @@
+// ═══════════════════════════════════
+// AI AUDIT SYSTEM — Design Tokens
+// 50% Navy · 30% Slate · 20% Cyan
+// ═══════════════════════════════════
+
+$navy-950: #020912;
+$navy-900: #040d1a;
+$navy-800: #071528;
+$navy-700: #0a1f3d;
+$navy-600: #0d2850;
+$navy-500: #112f5e;
+$navy-400: #1a3f78;
+
+$slate-600: #26456a;
+$slate-500: #2e557c;
+$slate-400: #3d6b96;
+$slate-300: #5282ab;
+
+$cyan-600: #00a8b8;
+$cyan-500: #00bcd4;
+$cyan-400: #00d4ed;
+$cyan-300: #18e8ff;
+$cyan-200: #6ef4ff;
+$cyan-glow: rgba(0, 212, 237, 0.22);
+
+$success: #00e5a0;
+$warning: #f5b800;
+$error:   #ff4d6a;
+$error-bg: rgba(255, 77, 106, 0.1);
+
+$text-primary:   #ffffff;
+$text-secondary: rgba(255,255,255,0.65);
+$text-muted:     rgba(255,255,255,0.38);
+
+$glass-bg:     rgba(7, 21, 40, 0.72);
+$glass-border: rgba(0, 212, 237, 0.13);
+$input-bg:     rgba(4, 13, 26, 0.75);
+
+$font-display: 'Plus Jakarta Sans', sans-serif;
+$font-body:    'Inter', sans-serif;
+$font-mono:    'JetBrains Mono', monospace;
+
+$r-sm:  6px;
+$r-md:  12px;
+$r-lg:  18px;
+$r-xl:  24px;
+$r-2xl: 32px;
+
+$shadow-card: 0 32px 80px rgba(2,9,18,0.9), 0 4px 32px rgba(0,212,237,0.06);
+$shadow-input: 0 0 0 3px rgba(0,212,237,0.22), inset 0 1px 4px rgba(0,0,0,0.4);
+$shadow-btn:   0 8px 32px rgba(0,212,237,0.38);
+
+$t-fast: 0.15s ease;
+$t-base: 0.25s ease;
+$t-slow: 0.4s cubic-bezier(0.4,0,0.2,1);

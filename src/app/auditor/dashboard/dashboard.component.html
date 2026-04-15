@@ -1,0 +1,84 @@
+<div class="dash">
+  <div class="dash__header a1">
+    <div>
+      <h1>My Dashboard</h1>
+      <p>Welcome back, <strong>{{ userName }}</strong>. You have <strong>{{ activeAudits }}</strong> active audit{{ activeAudits !== 1 ? 's' : '' }}.</p>
+    </div>
+    <div class="dash__header-badge">
+      <span class="hb-dot"></span>
+      <span>Auditor</span>
+    </div>
+  </div>
+
+  <!-- Welcome card -->
+  <div class="welcome-card a2">
+    <div class="welcome-card__icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="welcome-card__text">
+      <h2>Your Audit Portfolio</h2>
+      <p>Manage your assigned audits, track progress and submit reports from this portal.</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid a3">
+    <div class="stat-card" *ngFor="let s of stats">
+      <div class="stat-card__glow" [style.background]="s.glow"></div>
+      <div class="stat-card__icon" [style.color]="s.color"><span [innerHTML]="s.icon"></span></div>
+      <div class="stat-card__body">
+        <span class="sc-value">{{ s.value }}</span>
+        <span class="sc-label">{{ s.label }}</span>
+      </div>
+      <div class="stat-card__trend" [class.up]="s.up">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline *ngIf="s.up" points="18 15 12 9 6 15"/>
+          <polyline *ngIf="!s.up" points="6 9 12 15 18 9"/>
+        </svg>
+        <span>{{ s.change }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assigned audits -->
+  <div class="dash-card a4">
+    <div class="dash-card__head">
+      <h3>My Assigned Audits</h3>
+      <a routerLink="../audits" class="view-all">View all →</a>
+    </div>
+    <div class="audit-list" *ngIf="assignedAudits.length > 0; else emptyAudits">
+      <div class="audit-item" *ngFor="let a of assignedAudits">
+        <div class="audit-item__left">
+          <div class="audit-avatar">{{ a.initials }}</div>
+          <div>
+            <p class="ai-company">{{ a.company }}</p>
+            <span class="ai-type">{{ a.type }}</span>
+          </div>
+        </div>
+        <div class="audit-item__right">
+          <span class="status-pill" [class]="'status-pill--' + a.status">{{ a.statusLabel }}</span>
+          <span class="ai-date">{{ a.deadline }}</span>
+        </div>
+      </div>
+    </div>
+    <ng-template #emptyAudits>
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+        <h4>No audits assigned yet</h4>
+        <p>You'll be notified when the admin assigns you an audit.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Quick links -->
+  <div class="dash-card a5">
+    <div class="dash-card__head"><h3>Quick Links</h3></div>
+    <div class="quick-actions">
+      <a routerLink="../audits"  class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg><div><strong>My Audits</strong><span>View all assigned audits</span></div></a>
+      <a routerLink="../profile" class="qa-btn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><div><strong>My Profile</strong><span>Update your account</span></div></a>
+    </div>
+  </div>
+</div>

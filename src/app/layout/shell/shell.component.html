@@ -1,0 +1,11 @@
+<div class="shell">
+  <app-sidebar #sb></app-sidebar>
+
+  <div class="shell__main"
+       [class.main--collapsed]="sb.collapsed()">
+    <app-topbar></app-topbar>
+    <main class="shell__content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+</div>

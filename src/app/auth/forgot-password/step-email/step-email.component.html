@@ -1,0 +1,144 @@
+<div class="auth-bg">
+  <div class="auth-bg__grid"></div>
+  <div class="auth-bg__scanline"></div>
+
+  <svg class="auth-bg__canvas" viewBox="0 0 1440 900"
+       preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <radialGradient id="feg" cx="50%" cy="50%" r="50%">
+        <stop offset="0%"   stop-color="#00d4ed" stop-opacity=".9"/>
+        <stop offset="100%" stop-color="#00d4ed" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <g stroke="rgba(0,212,237,.14)" stroke-width=".8" fill="none">
+      <line x1="200"  y1="200"  x2="500"  y2="350"  class="neural-edge"/>
+      <line x1="500"  y1="350"  x2="800"  y2="220"  class="neural-edge" style="animation-delay:.6s"/>
+      <line x1="800"  y1="220"  x2="1100" y2="400"  class="neural-edge" style="animation-delay:.3s"/>
+      <line x1="200"  y1="200"  x2="350"  y2="600"  class="neural-edge" style="animation-delay:.9s"/>
+      <line x1="350"  y1="600"  x2="700"  y2="650"  class="neural-edge" style="animation-delay:.4s"/>
+      <line x1="700"  y1="650"  x2="1050" y2="520"  class="neural-edge" style="animation-delay:1.1s"/>
+    </g>
+    <g fill="url(#feg)">
+      <circle class="neural-node" cx="200"  cy="200"  r="5"/>
+      <circle class="neural-node" cx="500"  cy="350"  r="4" style="animation-delay:.6s"/>
+      <circle class="neural-node" cx="800"  cy="220"  r="6" style="animation-delay:.3s"/>
+      <circle class="neural-node" cx="1100" cy="400"  r="4" style="animation-delay:.9s"/>
+      <circle class="neural-node" cx="350"  cy="600"  r="3" style="animation-delay:.4s"/>
+      <circle class="neural-node" cx="700"  cy="650"  r="5" style="animation-delay:1.1s"/>
+      <circle class="neural-node" cx="1050" cy="520"  r="4" style="animation-delay:.7s"/>
+    </g>
+  </svg>
+
+  <div class="auth-bg__content">
+    <div class="auth-card">
+      <span class="auth-card__corner auth-card__corner--tl"></span>
+      <span class="auth-card__corner auth-card__corner--tr"></span>
+      <span class="auth-card__corner auth-card__corner--bl"></span>
+      <span class="auth-card__corner auth-card__corner--br"></span>
+
+      <!-- Brand -->
+      <div class="auth-brand a1">
+        <div class="auth-brand__icon" *ngIf="!logoUrl">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#00d4ed" stroke-width="1.5"
+               width="20" height="20" style="display:block;">
+            <path d="M12 2L4 6V12C4 16.418 7.582 20 12 22C16.418 20 20 16.418 20 12V6L12 2Z"
+                  stroke-linejoin="round"/>
+            <path d="M9 12L11 14L15 10" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="auth-brand__icon" *ngIf="logoUrl">
+          <img [src]="logoUrl" [alt]="platformTitle"
+               style="width:20px;height:20px;object-fit:contain;border-radius:4px;display:block;"/>
+        </div>
+        <div class="auth-brand__text">
+          <span class="name">{{ platformTitle }}</span>
+          <span class="sub">Compliance Platform</span>
+        </div>
+      </div>
+
+      <!-- Stepper — centered -->
+      <div class="auth-steps a2">
+        <div class="step active">
+          <div class="dot"></div>
+          <span class="step-label">Email</span>
+        </div>
+        <div class="step">
+          <div class="dot"></div>
+          <span class="step-label">Verify</span>
+        </div>
+        <div class="step">
+          <div class="dot"></div>
+          <span class="step-label">Reset</span>
+        </div>
+      </div>
+
+      <!-- Icon badge -->
+      <div class="fp-icon a3">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             width="24" height="24" style="display:block;">
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+          <path d="m2 7 10 7 10-7"/>
+        </svg>
+      </div>
+
+      <!-- Heading -->
+      <div class="auth-heading a4">
+        <h2>Reset Password</h2>
+        <p>Enter your account email and we'll send you a 4-digit verification code.</p>
+      </div>
+
+      <!-- Error -->
+      <div class="auth-alert auth-alert--error a4" *ngIf="errorMessage">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             style="width:16px;height:16px;flex-shrink:0;display:block;">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8"  x2="12"   y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <!-- Form -->
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+
+        <div class="auth-field a5">
+          <label class="auth-field__label">Email Address</label>
+          <div class="auth-field__wrap">
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 style="width:18px;height:18px;display:block;">
+              <rect x="2" y="4" width="20" height="16" rx="2"/>
+              <path d="m2 7 10 7 10-7"/>
+            </svg>
+            <input
+              type="email"
+              formControlName="email"
+              placeholder="your-email@company.com"
+              autocomplete="email"
+            />
+          </div>
+          <div class="auth-field__error"
+               *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+            <span *ngIf="form.get('email')?.errors?.['required']">Email is required</span>
+            <span *ngIf="form.get('email')?.errors?.['email']">Enter a valid email</span>
+          </div>
+        </div>
+
+        <button type="submit" class="auth-submit a6" [disabled]="isLoading">
+          <span class="btn-spinner" *ngIf="isLoading"></span>
+          <span>{{ isLoading ? 'Sending Code…' : 'Send Verification Code' }}</span>
+          <svg *ngIf="!isLoading" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2.5"
+               style="width:16px;height:16px;flex-shrink:0;display:block;">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </button>
+
+        <div class="auth-link a7">
+          <p><a routerLink="/auth/login">← Back to Sign In</a></p>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

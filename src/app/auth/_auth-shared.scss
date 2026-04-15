@@ -1,0 +1,214 @@
+@use '../../styles/tokens' as t;
+@use '../../styles/mixins' as m;
+@use '../../styles/keyframes';
+
+// ── Animated dark page wrapper
+.auth-bg {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: t.$navy-950;
+  padding: 24px 16px;
+  font-family: t.$font-body;
+
+  &::before {
+    content: '';
+    position: fixed;
+    top: -30%; left: -20%;
+    width: 80vw; height: 80vw;
+    background: radial-gradient(ellipse, rgba(t.$cyan-600,.09) 0%, rgba(t.$navy-500,.05) 40%, transparent 70%);
+    animation: float 9s ease-in-out infinite;
+    pointer-events: none; z-index: 0;
+  }
+  &::after {
+    content: '';
+    position: fixed;
+    bottom: -30%; right: -20%;
+    width: 70vw; height: 70vw;
+    background: radial-gradient(ellipse, rgba(t.$slate-400,.07) 0%, rgba(t.$navy-600,.04) 40%, transparent 70%);
+    animation: float 11s ease-in-out infinite reverse;
+    pointer-events: none; z-index: 0;
+  }
+}
+
+.auth-bg__grid {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  @include m.grid-bg;
+}
+
+.auth-bg__scanline {
+  position: fixed; top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(t.$cyan-400,.5) 25%, rgba(t.$cyan-300,.85) 50%, rgba(t.$cyan-400,.5) 75%, transparent 100%);
+  animation: scanline 7s linear infinite;
+  z-index: 1; pointer-events: none;
+}
+
+.auth-bg__canvas {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+  .neural-edge { stroke-dasharray: 6 5; animation: dash-flow 3s linear infinite; }
+  .neural-node { animation: node-pulse 3s ease-in-out infinite; }
+}
+
+.auth-bg__particles {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  .particle {
+    position: absolute; border-radius: 50%;
+    background: t.$cyan-400;
+    animation: particle-rise linear infinite;
+  }
+}
+
+.auth-bg__content {
+  position: relative; z-index: 10; width: 100%; max-width: 480px;
+  animation: fadeUp 0.5s cubic-bezier(.4,0,.2,1) both;
+}
+
+// ── Glass card
+.auth-card {
+  @include m.glass(24px);
+  border-radius: t.$r-2xl;
+  padding: 44px 40px;
+  box-shadow: t.$shadow-card;
+  position: relative;
+  overflow: visible;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 10%; right: 10%; height: 1.5px;
+    background: linear-gradient(90deg, transparent, t.$cyan-400, transparent);
+  }
+  @media (max-width: 520px) { padding: 36px 22px; border-radius: t.$r-xl; }
+}
+
+.auth-card__corner {
+  position: absolute;
+  width: 16px; height: 16px;
+  border-color: rgba(t.$cyan-400,.55);
+  border-style: solid;
+  &--tl { top:12px; left:12px;  border-width:1.5px 0 0 1.5px; }
+  &--tr { top:12px; right:12px; border-width:1.5px 1.5px 0 0; }
+  &--bl { bottom:12px; left:12px;  border-width:0 0 1.5px 1.5px; }
+  &--br { bottom:12px; right:12px; border-width:0 1.5px 1.5px 0; }
+}
+
+// ── Brand row
+.auth-brand {
+  display: flex; align-items: center; gap: 11px; margin-bottom: 28px;
+  &__icon {
+    width: 38px; height: 38px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg,rgba(t.$cyan-400,.18),rgba(t.$cyan-600,.08));
+    border: 1px solid rgba(t.$cyan-400,.38);
+    border-radius: 10px; flex-shrink: 0;
+    svg { width: 20px; height: 20px; }
+  }
+  &__text {
+    display: flex; flex-direction: column; line-height: 1;
+    .name { font-family:t.$font-display; font-size:.96rem; font-weight:800; color:t.$text-primary; }
+    .sub  { font-family:t.$font-mono; font-size:.59rem; letter-spacing:.15em; text-transform:uppercase; color:t.$cyan-300; margin-top:3px; }
+  }
+}
+
+// ── Heading
+.auth-heading {
+  margin-bottom: 24px;
+  h2 { font-family:t.$font-display; font-size:1.62rem; font-weight:800; color:t.$text-primary; line-height:1.2; margin-bottom:6px; }
+  p  { font-size:.87rem; color:t.$text-secondary; line-height:1.55; }
+}
+
+// ── Field
+.auth-field {
+  margin-bottom: 16px;
+  &__label { @include m.field-label; }
+  &__wrap {
+    position: relative;
+    .field-icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      width: 18px; height: 18px;
+      color: rgba(t.$text-primary,.33); pointer-events: none;
+      transition: color t.$t-base;
+    }
+    input:focus + .field-icon, input:focus ~ .field-icon { color: t.$cyan-400; }
+    input { @include m.input-field; }
+    .eye-btn {
+      position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; padding: 4px; cursor: pointer;
+      color: rgba(t.$text-primary,.33); transition: color t.$t-fast; line-height:0;
+      &:hover { color: t.$cyan-400; }
+      svg { width:17px; height:17px; }
+    }
+  }
+  &__error { @include m.error-text; }
+}
+
+// ── Alert
+.auth-alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 13px 15px; border-radius: t.$r-md; margin-bottom: 16px;
+  animation: fadeUp .3s ease both;
+  &--error {
+    background: t.$error-bg; border: 1px solid rgba(t.$error,.28);
+    svg { color:t.$error } p { color:t.$error }
+  }
+  &--success {
+    background: rgba(t.$success,.09); border: 1px solid rgba(t.$success,.28);
+    svg { color:t.$success } p { color:t.$success }
+  }
+  svg { width:16px; height:16px; flex-shrink:0; margin-top:1px; }
+  p   { font-size:.82rem; line-height:1.45; margin:0; }
+}
+
+// ── Submit button
+.auth-submit {
+  @include m.btn-primary;
+  margin-top: 8px;
+  .btn-spinner { @include m.spinner(17px); }
+}
+
+// ── Divider
+.auth-divider {
+  display: flex; align-items: center; gap: 12px; margin: 8px 0;
+  &::before,&::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,rgba(t.$cyan-400,.18),transparent); }
+  span { font-family:t.$font-mono; font-size:.65rem; letter-spacing:.1em; text-transform:uppercase; color:t.$text-muted; white-space:nowrap; }
+}
+
+// ── Bottom link
+.auth-link {
+  text-align: center; margin-top: 14px;
+  font-size: .86rem; color: t.$text-secondary;
+  a { color:t.$cyan-300; font-weight:600; transition:color t.$t-fast; &:hover { color:t.$cyan-200; text-decoration:underline; } }
+}
+
+// ── Step dots (forgot pw flow)
+.auth-steps {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 24px;
+  .step {
+    display: flex; align-items: center; gap: 6px;
+    .dot { width:7px; height:7px; border-radius:50%; background:rgba(t.$cyan-400,.18); border:1px solid rgba(t.$cyan-400,.28); transition:all t.$t-base; }
+    .step-label { font-family:t.$font-mono; font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; color:t.$text-muted; transition:color t.$t-base; }
+    &.active .dot { background:t.$cyan-400; box-shadow:0 0 8px rgba(t.$cyan-400,.5); }
+    &.active .step-label { color:t.$cyan-300; }
+    &.done .dot { background:rgba(t.$cyan-400,.4); border-color:rgba(t.$cyan-400,.55); }
+    &.done .step-label { color:rgba(t.$cyan-300,.5); }
+    &:not(:last-child)::after { content:''; display:block; width:18px; height:1px; background:rgba(t.$cyan-400,.18); margin-left:4px; }
+  }
+}
+
+// ── FP icon badge
+.fp-icon {
+  width:52px; height:52px;
+  display:flex; align-items:center; justify-content:center;
+  background:rgba(t.$cyan-400,.09);
+  border:1px solid rgba(t.$cyan-400,.28);
+  border-radius:14px; margin-bottom:18px;
+  svg { width:24px; height:24px; color:t.$cyan-300; }
+}
+
+// ── Staggered entrance helpers
+@for $i from 1 through 12 {
+  .a#{$i} { animation: fadeUp .45s ease #{$i * 0.055}s both; }
+}

@@ -1,0 +1,118 @@
+@use 'tokens' as t;
+
+@mixin glass($blur: 22px) {
+  background: t.$glass-bg;
+  backdrop-filter: blur($blur) saturate(1.4);
+  -webkit-backdrop-filter: blur($blur) saturate(1.4);
+  border: 1px solid t.$glass-border;
+}
+
+@mixin input-field {
+  width: 100%;
+  padding: 13px 16px 13px 46px;
+  background: t.$input-bg;
+  border: 1px solid rgba(t.$cyan-400, 0.16);
+  border-radius: t.$r-md;
+  color: t.$text-primary;
+  font-family: t.$font-body;
+  font-size: 0.94rem;
+  outline: none;
+  transition: border-color t.$t-base, box-shadow t.$t-base, background t.$t-base;
+  &::placeholder { color: t.$text-muted; }
+  &:hover { border-color: rgba(t.$cyan-400, 0.32); }
+  &:focus {
+    border-color: t.$cyan-400;
+    box-shadow: t.$shadow-input;
+    background: rgba(t.$navy-700, 0.85);
+  }
+  &.ng-invalid.ng-touched {
+    border-color: t.$error;
+    box-shadow: 0 0 0 3px t.$error-bg;
+  }
+}
+
+@mixin btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px 28px;
+  background: linear-gradient(135deg, t.$cyan-400, t.$cyan-600);
+  color: t.$navy-900;
+  font-family: t.$font-display;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: t.$r-md;
+  cursor: pointer;
+  transition: transform t.$t-base, box-shadow t.$t-base;
+  position: relative;
+  overflow: hidden;
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 60%);
+    opacity: 0;
+    transition: opacity t.$t-fast;
+  }
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: t.$shadow-btn;
+    &::after { opacity: 1; }
+  }
+  &:active:not(:disabled) { transform: translateY(0); }
+  &:disabled { opacity: 0.48; cursor: not-allowed; }
+}
+
+@mixin field-label {
+  display: block;
+  font-family: t.$font-mono;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: t.$cyan-300;
+  margin-bottom: 7px;
+}
+
+@mixin error-text {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.77rem;
+  color: t.$error;
+  margin-top: 5px;
+}
+
+@mixin grid-bg {
+  background-image:
+    linear-gradient(rgba(0,212,237,0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,237,0.032) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+@mixin spinner($size: 18px) {
+  width: $size;
+  height: $size;
+  border: 2px solid rgba(t.$navy-900, 0.28);
+  border-top-color: t.$navy-900;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@mixin stat-card {
+  @include glass(16px);
+  border-radius: t.$r-lg;
+  padding: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: transform t.$t-base, box-shadow t.$t-base;
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,212,237,0.1);
+  }
+}
