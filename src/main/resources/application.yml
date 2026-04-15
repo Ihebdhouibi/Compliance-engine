@@ -1,0 +1,68 @@
+spring:
+  application:
+    name: AiAuditServer
+  datasource:
+    url: jdbc:postgresql://127.0.0.1:5432/audit?createDatabaseIfNotExist=true
+    username: postgres
+    password: admin
+    driver-class-name: org.postgresql.Driver
+  devtools:
+    restart:
+      enabled: true
+  main:
+    allow-bean-definition-overriding: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ch.marwen5000@gmail.com
+    password: hjrpkddllyfukxxy
+    protocol: smtp
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+    # Use this to trust Gmail's servers specifically
+      mail.smtp.ssl.trust: smtp.gmail.com
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10000MB
+      max-request-size: 10000MB
+  jpa:
+    properties:
+      hibernate:
+        default_schema: public
+        format_sql: true
+        hbm2ddl:
+          auto: update
+        ddl-auto: update
+        jdbc:
+          lob:
+            non_contextual_creation: true
+      database-platform: org.hibernate.dialect.PostgreSQLDialect
+      show-sql: true
+  flyway:
+    enabled: false
+server:
+  port: ${PORT:8080}
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+auth:
+  jwtExpirationMs: 86400000
+  jwtRefreshExpirationMs: 86400000
+  secret: 81f24d5b03d17fdbf9e9fa39ca5901cd2c11ce035b8da3add495bdf96ff4a6ce3431187183b139d20a08211e20cf645a551b43942ad196b6a6a93e8ec7a158f6
+  header: Authorization
+logging:
+  level:
+    hibernate:
+      SQL: DEBUG
+      type:
+        descriptor:
+          sql: DEBUG
+    root: INFO
+
