@@ -26,7 +26,7 @@ public class CompanyInfo {
 
     @JsonIgnore
     @OneToOne(cascade = CascadeType.REMOVE)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "company_info_user_id")
     private User user;
 
     @Column(name = "timestamp")
