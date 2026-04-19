@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { authGuard } from './guards/auth.guard';
 import { guestGuard } from './guards/guest.guard';
 import { roleGuard } from './guards/role.guard';
+import { AuditWorkspaceComponent } from './admin/audit-workspace/audit-workspace.component';
 
 export const routes: Routes = [
   {
@@ -89,6 +90,12 @@ export const routes: Routes = [
           import('./admin/profile/profile.component')
             .then(m => m.ProfileComponent)
       },
+
+      {
+  path: 'audits/workspace/:id',
+  component: AuditWorkspaceComponent
+},
+      
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },
@@ -118,6 +125,10 @@ export const routes: Routes = [
           import('./auditor/profile/profile.component')
             .then(m => m.ProfileComponent)
       },
+      {
+  path: 'audits/workspace/:id',
+  component: AuditWorkspaceComponent
+},
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

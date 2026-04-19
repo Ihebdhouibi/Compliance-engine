@@ -68,8 +68,47 @@ export class SettingsComponent {
     { key: 'deleteButtonColor', label: 'Delete Button',       hint: 'Background of all Delete / Remove buttons' },
   ];
 
+  readonly darkModeColors: Record<ColorKey, string> = {
+  sideNavbarColor:   '#0f1f35',   // deep navy — sidebar text stays readable
+  topNavbarColor:    '#0f1f35',   // matches sidebar
+  backgroundColor:   '#0d1b2e',   // slightly lighter than default, still dark
+  accentColor:       '#6366f1',   // indigo — modern, attractive
+  addButtonColor:    '#6366f1',   // indigo
+  updateButtonColor: '#0ea5e9',   // sky blue
+  deleteButtonColor: '#ef4444',   // red
+};
+
+readonly lightModeColors: Record<ColorKey, string> = {
+  // 1. THE NAVIGATORS: A unified, very dark "Slate"
+  // This is slightly lighter than black but dark enough for all white text/icons.
+  sideNavbarColor:   '#1e293b',   // Slate-800
+  topNavbarColor:    '#1e293b',   // Matches Sidebar perfectly
+
+  // 2. THE CANVAS: A bright "Zinc" grey
+  // This is bright like light mode, but has enough "grey" in it so that 
+  // your hardcoded grey cards don't look too dark or "dirty" by comparison.
+  backgroundColor:   '#f4f4f5',   // Zinc-100 (Clean, bright, professional)
+
+  // 3. THE ACCENTS: Saturated, professional colors
+  // These provide the "pop" that makes it look attractive.
+  accentColor:       '#4f46e5',   // Indigo-600
+  addButtonColor:    '#10b981',   // Emerald Green (Better for "Add" in light mode)
+  updateButtonColor: '#3b82f6',   // Bright Blue
+  deleteButtonColor: '#ef4444',   // Standard Red
+};
+
+/* readonly lightModeColors: Record<ColorKey, string> = {
+  sideNavbarColor:   '#1e3a8a',   // deep indigo-blue — white text fully readable
+  topNavbarColor:    '#1e40af',   // slightly lighter indigo top bar
+  backgroundColor:   '#0f172a',   // dark slate — cards (#040f1e) visible against it
+  accentColor:       '#818cf8',   // soft indigo glow
+  addButtonColor:    '#6366f1',   // indigo
+  updateButtonColor: '#38bdf8',   // sky blue
+  deleteButtonColor: '#f87171',   // soft red
+}; */
   constructor() {
     this.form = { ...this.ds.settings() };
+
   }
 
   get currentSettings(): DesignSettings {
@@ -156,48 +195,57 @@ export class SettingsComponent {
     (this.form as Record<string, string>)[key] = this.defaultColors[key];
   }
 
-  resetAllColors(): void {
-    (Object.keys(this.defaultColors) as ColorKey[]).forEach(k => {
-      (this.form as Record<string, string>)[k] = this.defaultColors[k];
-    });
-  }
+applyDarkMode(): void {
+  (Object.keys(this.darkModeColors) as ColorKey[]).forEach(k => {
+    (this.form as Record<string, string>)[k] = this.darkModeColors[k];
+  });
+}
+
+applyLightMode(): void {
+  (Object.keys(this.lightModeColors) as ColorKey[]).forEach(k => {
+    (this.form as Record<string, string>)[k] = this.lightModeColors[k];
+  });
+}
 
   private showSuccess(msg: string): void {
     this.saveMsg = msg;
     setTimeout(() => this.saveMsg = '', 4000);
   }
 
+ 
+
   save(): void {
-    this.isSaving  = true;
-    this.saveMsg   = '';
-    this.saveError = '';
+  this.isSaving  = true;
+  this.saveMsg   = '';
+  this.saveError = '';
 
-    const fd = new FormData();
-    const data: Record<string, string> = {};
+  const fd = new FormData();
+  const data: Record<string, string> = {};
 
-    if (this.form.projectTitle)      data['projectTitle']      = this.form.projectTitle;
-    if (this.form.sideNavbarColor)   data['sideNavbarColor']   = this.form.sideNavbarColor;
-    if (this.form.topNavbarColor)    data['topNavbarColor']    = this.form.topNavbarColor;
-    if (this.form.backgroundColor)   data['backgroundColor']   = this.form.backgroundColor;
-    if (this.form.accentColor)       data['accentColor']       = this.form.accentColor;
-    if (this.form.addButtonColor)    data['addButtonColor']    = this.form.addButtonColor;
-    if (this.form.updateButtonColor) data['updateButtonColor'] = this.form.updateButtonColor;
-    if (this.form.deleteButtonColor) data['deleteButtonColor'] = this.form.deleteButtonColor;
+  if (this.form.projectTitle)      data['projectTitle']      = this.form.projectTitle;
+  if (this.form.sideNavbarColor)   data['sideNavbarColor']   = this.form.sideNavbarColor;
+  if (this.form.topNavbarColor)    data['topNavbarColor']    = this.form.topNavbarColor;
+  if (this.form.backgroundColor)   data['backgroundColor']   = this.form.backgroundColor;
+  if (this.form.accentColor)       data['accentColor']       = this.form.accentColor;
+  if (this.form.addButtonColor)    data['addButtonColor']    = this.form.addButtonColor;
+  if (this.form.updateButtonColor) data['updateButtonColor'] = this.form.updateButtonColor;
+  if (this.form.deleteButtonColor) data['deleteButtonColor'] = this.form.deleteButtonColor;
 
-    fd.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  fd.append('data', new Blob([JSON.stringify(data)], { type: 'application/json' }));
+  if (this.favIconFile) fd.append('favIcon', this.favIconFile);
+  if (this.logoFile)    fd.append('logo',    this.logoFile);
 
-    if (this.favIconFile) fd.append('favIcon', this.favIconFile);
-    if (this.logoFile)    fd.append('logo',    this.logoFile);
-
-    this.ds.update(fd).subscribe({
-      next: () => {
-        this.isSaving = false;
-        this.showSuccess('Settings saved successfully.');
-      },
-      error: () => {
-        this.isSaving  = false;
-        this.saveError = 'Failed to save settings. Please try again.';
-      }
-    });
-  }
+  this.ds.update(fd).subscribe({
+    next: () => {
+      this.isSaving = false;
+      localStorage.setItem('colorMode',
+        document.body.classList.contains('light-mode') ? 'light' : 'dark');
+      this.showSuccess('Settings saved successfully.');
+    },
+    error: () => {
+      this.isSaving  = false;
+      this.saveError = 'Failed to save settings. Please try again.';
+    }
+  });
+}
 }

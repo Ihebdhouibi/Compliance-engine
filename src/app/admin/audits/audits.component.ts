@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { AuditRequestService } from '../../services/audit-request.service';
 import { AdminUsersService } from '../../services/admin-users.service';
 import { UserStoreService } from '../../shared/user-store.service';
@@ -37,7 +38,6 @@ export class AuditsComponent implements OnInit {
   myPage        = 0;
   isLoadingMine = false;
 
-  // Auditors list — populated from backend (only ROLE_AUDITOR)
   auditors: User[] = [];
 
   selectedRequest:  AuditRequest | null = null;
@@ -60,9 +60,7 @@ export class AuditsComponent implements OnInit {
   viewingFileName:  string | null = null;
   isLoadingFile     = false;
 
-  // "Take it" loading
   isTakingId: number | null = null;
-
   successMsg = '';
 
   readonly statuses: AuditStatus[] =
@@ -77,7 +75,8 @@ export class AuditsComponent implements OnInit {
     private renderer:  Renderer2,
     private sanitizer: DomSanitizer,
     private http:      HttpClient,
-    private tokenSvc:  TokenService
+    private tokenSvc:  TokenService,
+    private router:    Router
   ) {}
 
   ngOnInit(): void {
@@ -89,13 +88,21 @@ export class AuditsComponent implements OnInit {
     this.loadAuditors();
   }
 
-  // ── Current admin id
   get currentAdminId(): number | null {
     return this.userStore.currentUser()?.id ?? null;
   }
 
-  // ── Data loading
+  // ── Navigation
+  openWorkspace(req: AuditRequest): void {
+    this.router.navigate(['/admin/audits/workspace', req.id]);
+  }
 
+  // Admin always navigates to admin workspace to view results
+  openResults(req: AuditRequest): void {
+    this.router.navigate(['/admin/audits/workspace', req.id]);
+  }
+
+  // ── Data loading
   loadRequests(): void {
     this.isLoading = true;
     this.svc.adminGetAllRequests(
@@ -128,7 +135,6 @@ export class AuditsComponent implements OnInit {
     });
   }
 
-  // Load only ROLE_AUDITOR users for the assign dropdown
   loadAuditors(): void {
     this.usersSvc.getAuditors({ page: 0, size: 100 }).subscribe({
       next: res => { this.auditors = res.result; }
@@ -136,14 +142,12 @@ export class AuditsComponent implements OnInit {
   }
 
   // ── Tabs
-
   setTab(t: TabMode): void {
     this.tab = t;
     if (t === 'mine' && this.myAudits.length === 0) this.loadMyAudits();
   }
 
   // ── Search & filter
-
   onSearch(): void { this.currentPage = 0; this.loadRequests(); }
   onFilter(): void { this.currentPage = 0; this.loadRequests(); }
 
@@ -155,7 +159,6 @@ export class AuditsComponent implements OnInit {
   }
 
   // ── Pagination
-
   goToPage(p: number): void {
     if (p < 0 || p >= this.totalPages) return;
     this.currentPage = p;
@@ -177,7 +180,6 @@ export class AuditsComponent implements OnInit {
   }
 
   // ── Detail modal
-
   openDetail(req: AuditRequest): void {
     this.selectedRequest = req;
     this.showDetail      = true;
@@ -190,12 +192,10 @@ export class AuditsComponent implements OnInit {
     this.renderer.removeStyle(document.body, 'overflow');
   }
 
-  // ── Assign modal (to auditors)
-
+  // ── Assign modal
   openAssign(req: AuditRequest): void {
     this.assigningRequest = req;
     this.assignForm.reset();
-    // Pre-select current assignee if exists and is an auditor
     if (req.assignedTo) {
       this.assignForm.patchValue({ assignedToUserId: req.assignedTo.id });
     }
@@ -234,21 +234,17 @@ export class AuditsComponent implements OnInit {
     });
   }
 
-  // ── "Take it" — admin assigns audit to themselves
-
+  // ── Take audit
   takeAudit(req: AuditRequest): void {
     const adminId = this.currentAdminId;
     if (!adminId) return;
     this.isTakingId = req.id;
-    const payload: AssignAuditPayload = {
-      assignedToUserId: adminId
-    };
+    const payload: AssignAuditPayload = { assignedToUserId: adminId };
     this.svc.adminAssignRequest(req.id, payload).subscribe({
       next: updated => {
         this.updateInList(updated);
         this.isTakingId = null;
-        this.flash('Audit assigned to you. Check "My Assigned Audits".');
-        // Refresh my audits tab data silently
+        this.flash('Audit assigned to you.');
         this.svc.adminGetMyAudits(0, 10).subscribe({
           next: res => {
             this.myAudits     = res.result;
@@ -263,7 +259,6 @@ export class AuditsComponent implements OnInit {
   }
 
   // ── Reject modal
-
   openReject(req: AuditRequest): void {
     this.rejectingRequest = req;
     this.rejectReason     = '';
@@ -291,8 +286,7 @@ export class AuditsComponent implements OnInit {
     });
   }
 
-  // ── Actions
-
+  // ── Actions (kept for direct table actions outside workspace)
   startAudit(req: AuditRequest): void {
     this.svc.adminStartAudit(req.id).subscribe({
       next: updated => { this.updateInList(updated); this.flash('Audit started.'); }
@@ -306,7 +300,6 @@ export class AuditsComponent implements OnInit {
   }
 
   // ── File viewer
-
   openFileViewer(rawUrl: string, name: string): void {
     this.viewingRawUrl   = rawUrl;
     this.viewingFileName = name;
@@ -320,7 +313,7 @@ export class AuditsComponent implements OnInit {
 
     this.http.get(rawUrl, { headers, responseType: 'blob' }).subscribe({
       next: blob => {
-        const objectUrl    = URL.createObjectURL(blob);
+        const objectUrl     = URL.createObjectURL(blob);
         this.viewingFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
         this.isLoadingFile  = false;
         this.cdr.detectChanges();
@@ -342,7 +335,6 @@ export class AuditsComponent implements OnInit {
   }
 
   // ── Helpers
-
   private updateInList(updated: AuditRequest): void {
     const idx = this.requests.findIndex(r => r.id === updated.id);
     if (idx !== -1) this.requests[idx] = { ...updated };
@@ -379,8 +371,8 @@ export class AuditsComponent implements OnInit {
     return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
   }
 
-  // Check if audit is assigned to current admin
   isAssignedToMe(req: AuditRequest): boolean {
     return req.assignedTo?.id === this.currentAdminId;
   }
 }
+

@@ -1,0 +1,206 @@
+@use 'styles/tokens' as t;
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.bot-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;        // ← fills :host completely
+  overflow: hidden;
+  background: rgba(4,15,30,.95);
+}
+
+.bot-messages {
+  flex: 1;
+  min-height: 0;       // ← critical: allows scroll inside flex
+  overflow-y: auto;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(99,102,241,.3); border-radius: 2px;
+  }
+}
+
+.bot-input {
+  flex-shrink: 0;      // ← NEVER shrinks, always at bottom
+  display: flex;
+  align-items: flex-end;
+  gap: 7px;
+  padding: 10px;
+  border-top: 1px solid rgba(99,102,241,.15);
+  background: rgba(4,15,30,.95);
+}
+
+.bot-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;           // fills the full bot column
+  overflow: hidden;       // prevent panel itself from growing
+  background: rgba(4,15,30,.95);
+}
+
+.bot-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(99,102,241,.2);
+  flex-shrink: 0;         // ← never shrinks
+
+  &__title {
+    display: flex; align-items: center; gap: 7px;
+    font-size: .81rem; font-weight: 700; color: #818cf8;
+    font-family: t.$font-display;
+    svg { color: #818cf8; }
+  }
+}
+
+.bot-close {
+  width: 25px; height: 25px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  border-radius: 6px; cursor: pointer; color: rgba(255,255,255,.4);
+  transition: all .15s;
+  &:hover { background: rgba(255,255,255,.12); color: #fff; }
+}
+
+// ★ KEY FIX: flex:1 + min-height:0 makes this scroll, not push input out
+.bot-messages {
+  flex: 1;
+  min-height: 0;          // ← essential for flex overflow to work
+  overflow-y: auto;
+  padding: 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(99,102,241,.3); border-radius: 2px;
+  }
+}
+
+.bot-empty {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  flex: 1; text-align: center;
+  padding: 20px 14px;
+  color: rgba(255,255,255,.28); font-size: .8rem; line-height: 1.6;
+
+  &__sub {
+    font-size: .74rem; margin-top: 6px; color: rgba(255,255,255,.18);
+  }
+}
+
+// Messages — width:100% so user bubbles don't collapse
+.bot-msg {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+
+  &--user {
+    align-items: flex-end;
+
+    .bot-msg__bubble {
+      max-width: 84%;
+      background: color-mix(in srgb, var(--color-accent,#00d4ed) 15%, transparent);
+      border: 1px solid color-mix(in srgb, var(--color-accent,#00d4ed) 28%, transparent);
+      color: rgba(255,255,255,.9);
+      border-radius: 14px 14px 4px 14px;
+    }
+  }
+
+  &--bot {
+    align-items: flex-start;
+
+    .bot-msg__bubble {
+      max-width: 92%;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.8);
+      border-radius: 4px 14px 14px 14px;
+    }
+  }
+
+  &__avatar {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(99,102,241,.2); border: 1px solid rgba(99,102,241,.3);
+    display: flex; align-items: center; justify-content: center;
+    color: #818cf8; margin-bottom: 2px; flex-shrink: 0;
+  }
+
+  &__bubble {
+    padding: 8px 12px; font-size: .8rem; line-height: 1.6;
+
+    pre {
+      margin: 0; font-family: t.$font-body;
+      white-space: pre-wrap; word-break: break-word;
+    }
+  }
+
+  &__time {
+    font-size: .63rem; color: rgba(255,255,255,.2);
+    font-family: t.$font-mono; padding: 0 3px;
+  }
+}
+
+.bot-thinking {
+  display: flex; align-items: center; gap: 5px;
+  padding: 8px 12px; align-self: flex-start;
+  flex-shrink: 0;
+
+  span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(99,102,241,.6);
+    animation: botPulse 1.2s ease infinite;
+    &:nth-child(2) { animation-delay: .2s; }
+    &:nth-child(3) { animation-delay: .4s; }
+  }
+}
+
+@keyframes botPulse {
+  0%, 80%, 100% { transform: scale(.7); opacity: .4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+// ★ KEY FIX: flex-shrink:0 keeps input always visible at bottom
+.bot-input {
+  display: flex; align-items: flex-end; gap: 7px;
+  padding: 10px 10px;
+  border-top: 1px solid rgba(99,102,241,.15);
+  flex-shrink: 0;         // ← never pushed off screen
+  background: rgba(4,15,30,.95);
+
+  textarea {
+    flex: 1;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 9px; padding: 8px 11px;
+    color: rgba(255,255,255,.85); font-family: t.$font-body;
+    font-size: .81rem; resize: none; outline: none; line-height: 1.5;
+    transition: border-color .15s; max-height: 80px; overflow-y: auto;
+
+    &::placeholder { color: rgba(255,255,255,.2); }
+    &:focus { border-color: rgba(99,102,241,.4); }
+  }
+}
+
+.bot-send {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(99,102,241,.18); border: 1px solid rgba(99,102,241,.32);
+  border-radius: 8px; color: #818cf8; cursor: pointer; transition: all .15s;
+
+  &:hover:not(:disabled) {
+    background: rgba(99,102,241,.32); border-color: #6366f1;
+  }
+  &:disabled { opacity: .3; cursor: not-allowed; }
+}

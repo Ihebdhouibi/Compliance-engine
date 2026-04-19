@@ -34,6 +34,7 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   activatingId:  number | null = null;
   resendingId:   number | null = null;
+  deletingId:    number | null = null;
   resendSuccess  = '';
   resendError    = '';
 
@@ -152,4 +153,27 @@ export class UsersComponent implements OnInit, OnDestroy {
     const l = user.lastName?.charAt(0)?.toUpperCase()  ?? '';
     return f + l || user.email?.charAt(0)?.toUpperCase() || '?';
   }
+
+
+  deleteUser(user: User): void {
+  this.deletingId = user.id;
+  this.svc.deleteUser(user.id).subscribe({
+    next: () => {
+      this.users = this.users.filter(u => u.id !== user.id);
+      this.totalItems--;
+      this.deletingId = null;
+      this.resendSuccess = `User ${user.firstName} ${user.lastName} deleted successfully.`;
+      setTimeout(() => { this.resendSuccess = ''; }, 4000);
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.deletingId = null;
+      this.resendError = 'Error deleting user.';
+      setTimeout(() => { this.resendError = ''; }, 4000);
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+  
 }

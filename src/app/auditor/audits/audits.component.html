@@ -25,13 +25,8 @@
       <table>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Company</th>
-            <th>Type</th>
-            <th>Status</th>
-            <th>Assigned</th>
-            <th>Due</th>
-            <th>Actions</th>
+            <th>#</th><th>Company</th><th>Type</th>
+            <th>Status</th><th>Assigned</th><th>Due</th><th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -45,41 +40,58 @@
             </td>
             <td><span class="type-badge">{{ r.auditType }}</span></td>
             <td>
-              <span class="st-pill" [class]="statusClass(r.status)">
-                {{ r.status }}
-              </span>
+              <span class="st-pill" [class]="statusClass(r.status)">{{ r.status }}</span>
             </td>
             <td class="dim">{{ r.assignedAt | date:'MMM d, y' }}</td>
-            <td class="dim">
-              {{ r.dueDate ? (r.dueDate | date:'MMM d, y') : '—' }}
-            </td>
+            <td class="dim">{{ r.dueDate ? (r.dueDate | date:'MMM d, y') : '—' }}</td>
             <td>
               <div class="acts">
-                <button class="act act--view" title="View details"
-                        (click)="openDetail(r)">
+
+                <!-- View -->
+                <button class="act act--view" title="View details" (click)="openDetail(r)">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                        stroke-width="2" width="14" height="14" style="display:block;">
                     <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
                     <circle cx="12" cy="12" r="3"/>
                   </svg>
                 </button>
-                <button class="act act--start" title="Start audit"
+
+                <!-- Process Audit → opens workspace (ASSIGNED) -->
+                <button class="act act--start" title="Process Audit"
                         *ngIf="r.status === 'ASSIGNED'"
-                        (click)="startAudit(r)">
+                        (click)="openWorkspace(r)">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                        stroke-width="2" width="14" height="14" style="display:block;">
                     <polygon points="5 3 19 12 5 21 5 3"/>
                   </svg>
                 </button>
-                <button class="act act--complete" title="Mark complete"
+
+                <!-- Continue Workspace (IN_PROGRESS) -->
+                <button class="act act--start" title="Continue Audit"
                         *ngIf="r.status === 'IN_PROGRESS'"
-                        (click)="completeAudit(r)">
+                        (click)="openWorkspace(r)">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                        stroke-width="2" width="14" height="14" style="display:block;">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
                   </svg>
                 </button>
+
+                <!-- View Results (COMPLETED) -->
+                <button class="act act--view-result" title="View Audit Results"
+                        *ngIf="r.status === 'COMPLETED'"
+                        (click)="openResults(r)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                       stroke-width="2" width="14" height="14" style="display:block;">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                </button>
+
               </div>
             </td>
           </tr>
@@ -95,9 +107,7 @@
             [class.on]="p===currentPage" (click)="goToPage(p)">{{ p+1 }}</button>
     <button class="pager-btn" (click)="goToPage(currentPage+1)"
             [disabled]="currentPage>=totalPages-1">›</button>
-    <span class="pager-info">
-      {{ currentPage+1 }}/{{ totalPages }} · {{ totalItems }}
-    </span>
+    <span class="pager-info">{{ currentPage+1 }}/{{ totalPages }} · {{ totalItems }}</span>
   </div>
 
 </div>
@@ -109,7 +119,7 @@
        (click)="closeDetail(); closeReassign(); closeFileViewer()">
   </div>
 
-  <!-- ── DETAIL MODAL ── -->
+  <!-- DETAIL MODAL -->
   <div class="modal-box modal-box--wide" *ngIf="showDetail && selectedAudit">
     <div class="mb-head">
       <div class="mb-title">
@@ -130,7 +140,6 @@
     </div>
     <div class="mb-body">
 
-      <!-- Hero -->
       <div class="detail-hero">
         <div class="detail-hero__left">
           <span class="st-pill lg" [class]="statusClass(selectedAudit.status)">
@@ -141,28 +150,20 @@
         <div class="detail-hero__dates">
           <span class="date-item" *ngIf="selectedAudit.dueDate">
             <span class="date-label">Due</span>
-            <span class="date-val">
-              {{ selectedAudit.dueDate | date:'mediumDate' }}
-            </span>
+            <span class="date-val">{{ selectedAudit.dueDate | date:'mediumDate' }}</span>
           </span>
           <span class="date-item" *ngIf="selectedAudit.assignedAt">
             <span class="date-label">Assigned</span>
-            <span class="date-val">
-              {{ selectedAudit.assignedAt | date:'mediumDate' }}
-            </span>
+            <span class="date-val">{{ selectedAudit.assignedAt | date:'mediumDate' }}</span>
           </span>
         </div>
       </div>
 
-      <!-- Company info -->
       <div class="section-label">Company</div>
       <div class="info-grid">
         <div class="info-item">
           <span class="il">Name</span>
-          <span class="iv">
-            {{ selectedAudit.submittedBy.firstName }}
-            {{ selectedAudit.submittedBy.lastName }}
-          </span>
+          <span class="iv">{{ selectedAudit.submittedBy.firstName }} {{ selectedAudit.submittedBy.lastName }}</span>
         </div>
         <div class="info-item">
           <span class="il">Email</span>
@@ -170,9 +171,7 @@
         </div>
         <div class="info-item">
           <span class="il">Company</span>
-          <span class="iv">
-            {{ selectedAudit.submittedBy.companyInfo?.companyName || '—' }}
-          </span>
+          <span class="iv">{{ selectedAudit.submittedBy.companyInfo?.companyName || '—' }}</span>
         </div>
         <div class="info-item">
           <span class="il">Submitted</span>
@@ -180,13 +179,10 @@
         </div>
       </div>
 
-      <!-- Answers -->
       <div class="section-label mt16">Submitted Answers</div>
       <div class="answers-list">
         <div class="answer-row" *ngFor="let a of selectedAudit.answers">
           <span class="a-label">{{ a.fieldLabel }}</span>
-
-          <!-- File answer -->
           <div *ngIf="a.fileMedia" class="a-file-row">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                  width="14" height="14"
@@ -196,59 +192,58 @@
             </svg>
             <span class="file-name">{{ a.fileMedia.name }}</span>
             <button class="file-action-btn"
-                    (click)="openFileViewer(
-                      svc.getFileUrl(a.fileMedia.url),
-                      a.fileMedia.name);
-                      $event.stopPropagation()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   width="13" height="13" style="display:block;">
-                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-              Open
-            </button>
+                    (click)="openFileViewer(svc.getFileUrl(a.fileMedia.url), a.fileMedia.name);
+                             $event.stopPropagation()">Open</button>
             <button class="file-action-btn file-action-btn--dl"
                     (click)="svc.downloadFile(a.fileMedia.url, a.fileMedia.name);
-                             $event.stopPropagation()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   width="13" height="13" style="display:block;">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
-              Download
-            </button>
+                             $event.stopPropagation()">Download</button>
           </div>
-
-          <!-- Text answer -->
-          <span *ngIf="!a.fileMedia" class="a-value">
-            {{ a.answerValue || '—' }}
-          </span>
+          <span *ngIf="!a.fileMedia" class="a-value">{{ a.answerValue || '—' }}</span>
         </div>
       </div>
 
       <div class="mb-footer">
         <button class="btn-cancel" (click)="closeDetail()">Close</button>
-        <button class="btn-primary"
-                *ngIf="selectedAudit.status === 'ASSIGNED'"
-                (click)="startAudit(selectedAudit); closeDetail()">
-          Start Audit
-        </button>
-        <button class="btn-primary"
-                *ngIf="selectedAudit.status === 'IN_PROGRESS'"
-                (click)="completeAudit(selectedAudit); closeDetail()">
-          Mark Complete
-        </button>
+
+        <!-- Reassign -->
         <button class="btn-update"
-                *ngIf="selectedAudit.status !== 'COMPLETED'"
+                *ngIf="selectedAudit.status !== 'COMPLETED' &&
+                       selectedAudit.status !== 'REJECTED'"
                 (click)="openReassign(selectedAudit)">
           Reassign
         </button>
+
+        <!-- Process / Continue Workspace -->
+        <button class="btn-workspace"
+                *ngIf="selectedAudit.status === 'ASSIGNED' ||
+                       selectedAudit.status === 'IN_PROGRESS'"
+                (click)="openWorkspace(selectedAudit); closeDetail()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" width="14" height="14" style="display:block;">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          {{ selectedAudit.status === 'ASSIGNED' ? 'Process Audit' : 'Continue Audit' }}
+        </button>
+
+        <!-- View Results -->
+        <button class="btn-workspace"
+                *ngIf="selectedAudit.status === 'COMPLETED'"
+                (click)="openResults(selectedAudit); closeDetail()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" width="14" height="14" style="display:block;">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+          </svg>
+          View Audit Results
+        </button>
+
       </div>
     </div>
   </div>
 
-  <!-- ── REASSIGN MODAL ── -->
+  <!-- REASSIGN MODAL -->
   <div class="modal-box" *ngIf="showReassign">
     <div class="mb-head">
       <div class="mb-title">
@@ -282,18 +277,14 @@
           </select>
           <span class="ferr"
                 *ngIf="reassignForm.get('assignedToUserId')?.invalid &&
-                       reassignForm.get('assignedToUserId')?.touched">
-            Required
-          </span>
+                       reassignForm.get('assignedToUserId')?.touched">Required</span>
         </div>
         <div class="f-field">
           <label>Due Date <span class="opt">optional</span></label>
           <input type="date" formControlName="dueDate"/>
         </div>
         <div class="mb-footer">
-          <button type="button" class="btn-cancel" (click)="closeReassign()">
-            Cancel
-          </button>
+          <button type="button" class="btn-cancel" (click)="closeReassign()">Cancel</button>
           <button type="submit" class="btn-update" [disabled]="isReassigning">
             <span class="mini-spin del-spin" *ngIf="isReassigning"></span>
             {{ isReassigning ? 'Reassigning…' : 'Confirm Reassign' }}
@@ -303,7 +294,7 @@
     </div>
   </div>
 
-  <!-- ── FILE VIEWER MODAL ── -->
+  <!-- FILE VIEWER MODAL -->
   <div class="modal-box modal-box--file" *ngIf="showFileViewer">
     <div class="mb-head">
       <div class="mb-title">
@@ -326,17 +317,12 @@
     </div>
     <div class="mb-body file-viewer-body">
       <div class="file-loading" *ngIf="isLoadingFile">
-        <div class="loader"></div>
-        <span>Loading file…</span>
+        <div class="loader"></div><span>Loading file…</span>
       </div>
       <img *ngIf="!isLoadingFile && viewingFileUrl && isImage(viewingFileName || '')"
-           [src]="viewingFileUrl"
-           [alt]="viewingFileName"
-           class="file-preview-img"/>
+           [src]="viewingFileUrl" [alt]="viewingFileName" class="file-preview-img"/>
       <iframe *ngIf="!isLoadingFile && viewingFileUrl && !isImage(viewingFileName || '')"
-              [src]="viewingFileUrl"
-              class="file-preview-iframe">
-      </iframe>
+              [src]="viewingFileUrl" class="file-preview-iframe"></iframe>
     </div>
   </div>
 

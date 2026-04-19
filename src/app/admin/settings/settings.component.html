@@ -11,24 +11,20 @@
 
     <!-- Sticky side nav -->
     <nav class="settings-nav">
-      <button class="settings-nav__item"
-              [class.active]="activeSection === 'design'"
-              (click)="setSection('design')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             width="16" height="16">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/>
+      <button class="settings-nav__item" [class.active]="activeSection === 'design'" (click)="setSection('design')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <circle cx="12" cy="12" r="3" />
+          <path
+            d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83" />
         </svg>
         <span>Dashboard Design</span>
       </button>
 
-      <button class="settings-nav__item"
-              [class.active]="activeSection === 'notifications'"
-              (click)="setSection('notifications')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-             width="16" height="16">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      <button class="settings-nav__item" [class.active]="activeSection === 'notifications'"
+        (click)="setSection('notifications')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
         <span>Notifications</span>
       </button>
@@ -41,20 +37,20 @@
       <ng-container *ngIf="activeSection === 'design'">
 
         <div class="alert alert--success" *ngIf="saveMsg">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               width="16" height="16" style="flex-shrink:0;display:block;">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-            <polyline points="22 4 12 14.01 9 11.01"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"
+            style="flex-shrink:0;display:block;">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
           </svg>
           <span>{{ saveMsg }}</span>
         </div>
 
         <div class="alert alert--error" *ngIf="saveError">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-               width="16" height="16" style="flex-shrink:0;display:block;">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"
+            style="flex-shrink:0;display:block;">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
           <span>{{ saveError }}</span>
         </div>
@@ -70,20 +66,17 @@
               <label class="field-label">
                 Platform Title
                 <span class="field-tooltip">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                       width="13" height="13">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="16" x2="12" y2="12"/>
-                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="16" x2="12" y2="12" />
+                    <line x1="12" y1="8" x2="12.01" y2="8" />
                   </svg>
                   <span class="tooltip-text">
                     This title appears in the browser tab and at the top of the sidebar.
                   </span>
                 </span>
               </label>
-              <input class="field-input" type="text"
-                     [(ngModel)]="form.projectTitle"
-                     placeholder="AuditAI"/>
+              <input class="field-input" type="text" [(ngModel)]="form.projectTitle" placeholder="AuditAI" />
             </div>
           </div>
         </div>
@@ -101,18 +94,17 @@
               <div class="media-upload">
                 <div class="media-upload__preview">
                   <!-- Preview of newly selected file -->
-                  <img *ngIf="logoPreview" [src]="logoPreview" alt="Logo preview"/>
+                  <img *ngIf="logoPreview" [src]="logoPreview" alt="Logo preview" />
                   <!-- Current saved logo from server -->
-                  <img *ngIf="!logoPreview && currentSettings.logo?.url"
-                       [src]="serverBase + currentSettings.logo!.url" alt="Current logo"/>
+                  <img *ngIf="!logoPreview && currentSettings.logo?.url" [src]="serverBase + currentSettings.logo!.url"
+                    alt="Current logo" />
                   <!-- Placeholder when nothing set -->
-                  <div class="media-upload__placeholder"
-                       *ngIf="!logoPreview && !currentSettings.logo?.url">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                         width="28" height="28" style="display:block;">
-                      <rect x="3" y="3" width="18" height="18" rx="3"/>
-                      <circle cx="8.5" cy="8.5" r="1.5"/>
-                      <polyline points="21 15 16 10 5 21"/>
+                  <div class="media-upload__placeholder" *ngIf="!logoPreview && !currentSettings.logo?.url">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28"
+                      style="display:block;">
+                      <rect x="3" y="3" width="18" height="18" rx="3" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
                     </svg>
                   </div>
                 </div>
@@ -121,11 +113,11 @@
                   <div class="media-upload__title-row">
                     <span class="media-upload__label">Logo</span>
                     <span class="field-tooltip">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                           width="13" height="13">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="16" x2="12" y2="12"/>
-                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"
+                        height="13">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
                       </svg>
                       <span class="tooltip-text tooltip-text--right">
                         Your brand logo shown in the sidebar next to the platform name.
@@ -143,42 +135,36 @@
 
                     <!-- Upload new -->
                     <label class="media-upload__btn">
-                      <input type="file" accept="image/*"
-                             (change)="onLogoChange($event)" hidden/>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                           width="14" height="14" style="display:block;">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" y1="3" x2="12" y2="15"/>
+                      <input type="file" accept="image/*" (change)="onLogoChange($event)" hidden />
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"
+                        style="display:block;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
                       </svg>
                       {{ logoFile ? 'Change' : 'Upload Logo' }}
                     </label>
 
                     <!-- Clear local selection (file chosen but not saved yet) -->
-                    <button *ngIf="logoFile"
-                            class="media-upload__clear-btn"
-                            (click)="clearLogoSelection()"
-                            title="Cancel selection">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                           width="13" height="13" style="display:block;">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    <button *ngIf="logoFile" class="media-upload__clear-btn" (click)="clearLogoSelection()"
+                      title="Cancel selection">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"
+                        style="display:block;">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
                       </svg>
                       Cancel
                     </button>
 
                     <!-- Remove saved logo from server -->
-                    <button *ngIf="!logoFile && currentSettings.logo?.url"
-                            class="media-upload__remove-btn"
-                            (click)="removeLogo()"
-                            [disabled]="isRemovingLogo"
-                            title="Remove logo from platform">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                           width="13" height="13" style="display:block;">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                        <path d="M10 11v6M14 11v6"/>
-                        <path d="M9 6V4h6v2"/>
+                    <button *ngIf="!logoFile && currentSettings.logo?.url" class="media-upload__remove-btn"
+                      (click)="removeLogo()" [disabled]="isRemovingLogo" title="Remove logo from platform">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"
+                        style="display:block;">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6M14 11v6" />
+                        <path d="M9 6V4h6v2" />
                       </svg>
                       {{ isRemovingLogo ? 'Removing…' : 'Remove' }}
                     </button>
@@ -194,14 +180,13 @@
               <!-- ── FAVICON ── -->
               <div class="media-upload">
                 <div class="media-upload__preview media-upload__preview--sm">
-                  <img *ngIf="favIconPreview" [src]="favIconPreview" alt="Favicon preview"/>
+                  <img *ngIf="favIconPreview" [src]="favIconPreview" alt="Favicon preview" />
                   <img *ngIf="!favIconPreview && currentSettings.favIcon?.url"
-                       [src]="serverBase + currentSettings.favIcon!.url" alt="Current favicon"/>
-                  <div class="media-upload__placeholder"
-                       *ngIf="!favIconPreview && !currentSettings.favIcon?.url">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                         width="22" height="22" style="display:block;">
-                      <path d="M12 2L4 6V12C4 16.418 7.582 20 12 22C16.418 20 20 16.418 20 12V6L12 2Z"/>
+                    [src]="serverBase + currentSettings.favIcon!.url" alt="Current favicon" />
+                  <div class="media-upload__placeholder" *ngIf="!favIconPreview && !currentSettings.favIcon?.url">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="22" height="22"
+                      style="display:block;">
+                      <path d="M12 2L4 6V12C4 16.418 7.582 20 12 22C16.418 20 20 16.418 20 12V6L12 2Z" />
                     </svg>
                   </div>
                 </div>
@@ -210,11 +195,11 @@
                   <div class="media-upload__title-row">
                     <span class="media-upload__label">Favicon</span>
                     <span class="field-tooltip">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                           width="13" height="13">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="16" x2="12" y2="12"/>
-                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"
+                        height="13">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
                       </svg>
                       <span class="tooltip-text tooltip-text--right">
                         The small icon shown in the browser tab next to the page title.
@@ -230,40 +215,34 @@
                   <div class="media-upload__actions">
 
                     <label class="media-upload__btn">
-                      <input type="file" accept="image/*,.ico"
-                             (change)="onFavIconChange($event)" hidden/>
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                           width="14" height="14" style="display:block;">
-                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                        <polyline points="17 8 12 3 7 8"/>
-                        <line x1="12" y1="3" x2="12" y2="15"/>
+                      <input type="file" accept="image/*,.ico" (change)="onFavIconChange($event)" hidden />
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"
+                        style="display:block;">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
                       </svg>
                       {{ favIconFile ? 'Change' : 'Upload Favicon' }}
                     </label>
 
-                    <button *ngIf="favIconFile"
-                            class="media-upload__clear-btn"
-                            (click)="clearFavIconSelection()"
-                            title="Cancel selection">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                           width="13" height="13" style="display:block;">
-                        <line x1="18" y1="6" x2="6" y2="18"/>
-                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    <button *ngIf="favIconFile" class="media-upload__clear-btn" (click)="clearFavIconSelection()"
+                      title="Cancel selection">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"
+                        style="display:block;">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
                       </svg>
                       Cancel
                     </button>
 
-                    <button *ngIf="!favIconFile && currentSettings.favIcon?.url"
-                            class="media-upload__remove-btn"
-                            (click)="removeFavIcon()"
-                            [disabled]="isRemovingFavIcon"
-                            title="Remove favicon from platform">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                           width="13" height="13" style="display:block;">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                        <path d="M10 11v6M14 11v6"/>
-                        <path d="M9 6V4h6v2"/>
+                    <button *ngIf="!favIconFile && currentSettings.favIcon?.url" class="media-upload__remove-btn"
+                      (click)="removeFavIcon()" [disabled]="isRemovingFavIcon" title="Remove favicon from platform">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"
+                        style="display:block;">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6M14 11v6" />
+                        <path d="M9 6V4h6v2" />
                       </svg>
                       {{ isRemovingFavIcon ? 'Removing…' : 'Remove' }}
                     </button>
@@ -293,11 +272,11 @@
                   <div class="color-row__label-wrap">
                     <span class="color-row__label">{{ field.label }}</span>
                     <span class="field-tooltip">
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                           width="13" height="13">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="16" x2="12" y2="12"/>
-                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13"
+                        height="13">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="16" x2="12" y2="12" />
+                        <line x1="12" y1="8" x2="12.01" y2="8" />
                       </svg>
                       <span class="tooltip-text">{{ field.hint }}</span>
                     </span>
@@ -306,45 +285,46 @@
                 </div>
                 <div class="color-row__controls">
                   <div class="color-swatch" [style.background]="getColor(field.key)"></div>
-                  <input class="color-picker" type="color"
-                         [value]="getColor(field.key)"
-                         (input)="setColor(field.key, $any($event.target).value)"/>
-                  <input class="color-hex" type="text"
-                         [value]="getColor(field.key)"
-                         (input)="setColor(field.key, $any($event.target).value)"
-                         maxlength="7" placeholder="#000000"/>
-                  <button class="color-reset-btn" title="Reset to default"
-                          (click)="resetColor(field.key)">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                         width="14" height="14">
-                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                      <path d="M3 3v5h5"/>
+                  <input class="color-picker" type="color" [value]="getColor(field.key)"
+                    (input)="setColor(field.key, $any($event.target).value)" />
+                  <input class="color-hex" type="text" [value]="getColor(field.key)"
+                    (input)="setColor(field.key, $any($event.target).value)" maxlength="7" placeholder="#000000" />
+                  <button class="color-reset-btn" title="Reset to default" (click)="resetColor(field.key)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                      <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                      <path d="M3 3v5h5" />
                     </svg>
                   </button>
                 </div>
               </div>
             </div>
 
-            <button class="reset-all-btn" (click)="resetAllColors()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                   width="14" height="14">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                <path d="M3 3v5h5"/>
+            <button class="reset-all-btn" (click)="applyDarkMode()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
               </svg>
-              Reset all to defaults
+              Default Colors
             </button>
+
+           <!--  <button class="reset-all-btn reset-all-btn--light" (click)="applyLightMode()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                <circle cx="12" cy="12" r="5" />
+                <path
+                  d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+              </svg>
+              Default Light Mode
+            </button> -->
           </div>
         </div>
 
         <!-- Save -->
         <div class="settings-footer">
           <button class="save-btn" (click)="save()" [disabled]="isSaving">
-            <svg *ngIf="!isSaving" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2" width="16" height="16"
-                 style="display:block;">
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-              <polyline points="17 21 17 13 7 13 7 21"/>
-              <polyline points="7 3 7 8 15 8"/>
+            <svg *ngIf="!isSaving" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16"
+              height="16" style="display:block;">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
             </svg>
             <span class="btn-spinner" *ngIf="isSaving"></span>
             <span>{{ isSaving ? 'Saving…' : 'Save Changes' }}</span>
@@ -362,10 +342,10 @@
           </div>
           <div class="settings-block__body">
             <div class="coming-soon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                   width="40" height="40" style="display:block;margin:0 auto 14px;">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="40" height="40"
+                style="display:block;margin:0 auto 14px;">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
               </svg>
               <h4>Coming Soon</h4>
               <p>Notification preferences will be available in the next release.</p>

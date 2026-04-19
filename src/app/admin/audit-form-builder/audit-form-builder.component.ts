@@ -2,12 +2,16 @@ import {
   Component, OnInit, ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormsModule, ReactiveFormsModule,
+  FormBuilder, FormGroup, Validators
+} from '@angular/forms';
 import { AuditFormService } from '../../services/audit-form.service';
 import {
   AuditFormTemplate, AuditFormStep, AuditFormField,
-  AuditType, FieldType, AddFieldOptionPayload
+  AuditType, FieldType, AddFieldOptionPayload, AuditProcessStep
 } from '../../models/audit.model';
+import { AuditProcessStepService } from '../../services/audit-process-step.service';
 
 export const FIELD_TYPES: { value: FieldType; label: string; icon: string }[] = [
   { value: 'TEXT',           label: 'Text Input',   icon: 'T'  },
@@ -39,35 +43,55 @@ export class AuditFormBuilderComponent implements OnInit {
   selectedTemplate: AuditFormTemplate | null = null;
   selectedStep:     AuditFormStep | null = null;
 
+  // ── Edit template
+  showEditTemplate   = false;
+  editTemplateForm!: FormGroup;
+  editingTemplate:   AuditFormTemplate | null = null;
+
+  // ── Audit Process Steps
+  processSteps:           AuditProcessStep[] = [];
+  isLoadingProcessSteps   = false;
+  newProcessStepName      = '';
+  isAddingProcessStep     = false;
+  editingProcessStepId:   number | null = null;
+  editingProcessStepName  = '';
+  dragProcessStepIdx:     number | null = null;
+  dragOverProcessStepIdx: number | null = null;
+
+  // ── UI state
   isLoadingTemplates = false;
   isSaving           = false;
   successMsg         = '';
   errorMsg           = '';
 
+  // ── Create template
   showCreateTemplate  = false;
   createTemplateForm!: FormGroup;
 
+  // ── Form steps
   showAddStep  = false;
   addStepForm!: FormGroup;
 
-  showAddField   = false;
+  // ── Fields
+  showAddField  = false;
   addFieldForm!: FormGroup;
   fieldOptions:  AddFieldOptionPayload[] = [];
   newOptLabel    = '';
   newOptValue    = '';
 
-  // ── Edit field state
+  // ── Edit field
   editingFieldId:   number | null = null;
   editFieldForm!:   FormGroup;
   editFieldOptions: AddFieldOptionPayload[] = [];
   editOptLabel      = '';
   editOptValue      = '';
 
-  // ── Drag state for steps
+  // ── Drag — form steps
   dragStepIdx:     number | null = null;
   dragOverStepIdx: number | null = null;
+  private _stepDragJustEnded = false;
 
-  // ── Drag state for fields
+  // ── Drag — fields
   dragFieldIdx:     number | null = null;
   dragOverFieldIdx: number | null = null;
 
@@ -78,15 +102,26 @@ export class AuditFormBuilderComponent implements OnInit {
     ['DROPDOWN', 'RADIO', 'CHECKBOX', 'MULTI_CHECKBOX'].includes(t);
 
   constructor(
-    private svc: AuditFormService,
-    private fb:  FormBuilder,
-    private cdr: ChangeDetectorRef
+    private svc:            AuditFormService,
+    private fb:             FormBuilder,
+    private cdr:            ChangeDetectorRef,
+    private processStepSvc: AuditProcessStepService
   ) {}
 
   ngOnInit(): void {
     this.buildForms();
     this.loadTemplates();
   }
+
+  // ★ Returns the template ID relevant to current context:
+  // editingTemplate when edit panel is open, selectedTemplate otherwise
+  get activeTemplateId(): number | null {
+    return this.editingTemplate?.id ?? this.selectedTemplate?.id ?? null;
+  }
+
+  // ════════════════════════════════════════
+  // FORMS
+  // ════════════════════════════════════════
 
   private buildForms(): void {
     this.createTemplateForm = this.fb.group({
@@ -110,22 +145,28 @@ export class AuditFormBuilderComponent implements OnInit {
       fieldType:   ['TEXT', Validators.required],
       required:    [false]
     });
+    this.editTemplateForm = this.fb.group({
+      title:       ['', Validators.required],
+      description: ['']
+    });
   }
+
+  // ════════════════════════════════════════
+  // TEMPLATES
+  // ════════════════════════════════════════
 
   loadTemplates(): void {
     this.isLoadingTemplates = true;
     this.svc.getAllTemplates().subscribe({
       next: t => {
-        this.templates = t;
+        this.templates          = t;
         this.isLoadingTemplates = false;
-
-        // Re-sync selected template and step after reload
         if (this.selectedTemplate) {
           const fresh = t.find(x => x.id === this.selectedTemplate!.id);
           if (fresh) {
             this.selectedTemplate = fresh;
             if (this.selectedStep) {
-              const freshStep = fresh.steps.find(s => s.id === this.selectedStep!.id);
+              const freshStep = fresh.steps?.find(s => s.id === this.selectedStep!.id);
               this.selectedStep = freshStep ?? null;
             }
           }
@@ -137,11 +178,20 @@ export class AuditFormBuilderComponent implements OnInit {
   }
 
   selectTemplate(t: AuditFormTemplate): void {
-    this.selectedTemplate = t;
-    this.selectedStep     = null;
-    this.showAddStep      = false;
-    this.showAddField     = false;
-    this.editingFieldId   = null;
+    if (this._stepDragJustEnded) {
+      this._stepDragJustEnded = false;
+      return;
+    }
+    this.selectedTemplate       = t;
+    this.selectedStep           = null;
+    this.showAddStep            = false;
+    this.showAddField           = false;
+    this.editingFieldId         = null;
+    this.processSteps           = [];
+    this.editingProcessStepId   = null;
+    this.editingProcessStepName = '';
+    this.newProcessStepName     = '';
+    this.loadProcessSteps();
   }
 
   selectStep(s: AuditFormStep): void {
@@ -150,9 +200,104 @@ export class AuditFormBuilderComponent implements OnInit {
     this.editingFieldId = null;
   }
 
-  // ════════════════════════════════════════
-  // CREATE TEMPLATE
-  // ════════════════════════════════════════
+  // ★ FIX: loads process steps for the editing template when panel opens
+  openEditTemplate(t: AuditFormTemplate, e: Event): void {
+    e.stopPropagation();
+    this.editingTemplate = t;
+    this.editTemplateForm.patchValue({
+      title:       t.title,
+      description: t.description ?? ''
+    });
+    this.showEditTemplate       = true;
+    this.processSteps           = [];
+    this.editingProcessStepId   = null;
+    this.editingProcessStepName = '';
+    this.newProcessStepName     = '';
+    this.isLoadingProcessSteps  = true;
+    this.processStepSvc.getSteps(t.id).subscribe({
+      next: steps => {
+        this.processSteps          = steps.filter(s => s.id > 0 && !s.isDefault);
+        this.isLoadingProcessSteps = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.processSteps          = [];
+        this.isLoadingProcessSteps = false;
+      }
+    });
+  }
+
+  closeEditTemplate(): void {
+    this.showEditTemplate = false;
+    this.editingTemplate  = null;
+    // If we have a selectedTemplate, reload its process steps
+    if (this.selectedTemplate) {
+      this.loadProcessSteps();
+    } else {
+      this.processSteps = [];
+    }
+  }
+
+  submitEditTemplate(): void {
+    if (this.editTemplateForm.invalid || !this.editingTemplate) {
+      this.editTemplateForm.markAllAsTouched(); return;
+    }
+    this.isSaving = true;
+    this.svc.updateTemplate(this.editingTemplate.id, this.editTemplateForm.value)
+      .subscribe({
+        next: updated => {
+          const idx = this.templates.findIndex(t => t.id === updated.id);
+          if (idx !== -1) {
+            this.templates[idx] = {
+              ...this.templates[idx],
+              title:       updated.title,
+              description: updated.description,
+              active:      updated.active
+            };
+          }
+          if (this.selectedTemplate?.id === updated.id) {
+            this.selectedTemplate = {
+              ...this.selectedTemplate,
+              title:       updated.title,
+              description: updated.description,
+              active:      updated.active
+            };
+          }
+          this.isSaving = false;
+          this.closeEditTemplate();
+          this.flash('Template updated.');
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.isSaving = false;
+          this.errorMsg = 'Failed to update template.';
+        }
+      });
+  }
+
+  toggleTemplate(t: AuditFormTemplate, e: Event): void {
+    e.stopPropagation();
+    this.svc.toggleTemplate(t.id).subscribe({
+      next: updated => {
+        const idx = this.templates.findIndex(x => x.id === updated.id);
+        if (idx !== -1) {
+          this.templates[idx] = {
+            ...this.templates[idx],
+            active: updated.active
+          };
+        }
+        if (this.selectedTemplate?.id === updated.id) {
+          this.selectedTemplate = {
+            ...this.selectedTemplate,
+            active: updated.active
+          };
+        }
+        this.flash(updated.active ? 'Template activated.' : 'Template deactivated.');
+        this.cdr.detectChanges();
+      },
+      error: () => { this.errorMsg = 'Failed to toggle template status.'; }
+    });
+  }
 
   submitCreateTemplate(): void {
     if (this.createTemplateForm.invalid) {
@@ -177,7 +322,7 @@ export class AuditFormBuilderComponent implements OnInit {
   }
 
   // ════════════════════════════════════════
-  // ADD STEP
+  // FORM STEPS
   // ════════════════════════════════════════
 
   submitAddStep(): void {
@@ -193,10 +338,12 @@ export class AuditFormBuilderComponent implements OnInit {
       next: step => {
         this.selectedTemplate!.steps = this.selectedTemplate!.steps ?? [];
         this.selectedTemplate!.steps.push(step);
+        const idx = this.templates.findIndex(t => t.id === this.selectedTemplate!.id);
+        if (idx !== -1) this.templates[idx] = { ...this.selectedTemplate! };
         this.showAddStep = false;
         this.addStepForm.reset();
-        this.isSaving = false;
-        this.flash('Step added.');
+        this.isSaving   = false;
+        this.flash('Form step added.');
         this.cdr.detectChanges();
       },
       error: () => { this.isSaving = false; this.errorMsg = 'Failed to add step.'; }
@@ -219,7 +366,7 @@ export class AuditFormBuilderComponent implements OnInit {
   }
 
   // ════════════════════════════════════════
-  // ADD FIELD
+  // FIELDS
   // ════════════════════════════════════════
 
   addOption(): void {
@@ -242,8 +389,7 @@ export class AuditFormBuilderComponent implements OnInit {
     }
     const ft = this.addFieldForm.value.fieldType as FieldType;
     if (this.hasOptions(ft) && this.fieldOptions.length === 0) {
-      this.errorMsg = 'Please add at least one option for this field type.';
-      return;
+      this.errorMsg = 'Please add at least one option for this field type.'; return;
     }
     this.isSaving = true;
     const payload = {
@@ -260,7 +406,7 @@ export class AuditFormBuilderComponent implements OnInit {
           label: '', placeholder: '', fieldType: 'TEXT', required: false
         });
         this.fieldOptions = [];
-        this.isSaving = false;
+        this.isSaving     = false;
         this.flash('Field added.');
         this.cdr.detectChanges();
       },
@@ -276,10 +422,6 @@ export class AuditFormBuilderComponent implements OnInit {
     this.fieldOptions = [];
     this.errorMsg     = '';
   }
-
-  // ════════════════════════════════════════
-  // EDIT FIELD
-  // ════════════════════════════════════════
 
   startEditField(field: AuditFormField, e: Event): void {
     e.stopPropagation();
@@ -327,15 +469,12 @@ export class AuditFormBuilderComponent implements OnInit {
     }
     const ft = this.editFieldForm.value.fieldType as FieldType;
     if (this.hasOptions(ft) && this.editFieldOptions.length === 0) {
-      this.errorMsg = 'Please add at least one option.';
-      return;
+      this.errorMsg = 'Please add at least one option.'; return;
     }
-
     this.isSaving  = true;
     const fieldId  = this.editingFieldId;
     const fieldIdx = this.selectedStep.fields.findIndex(f => f.id === fieldId);
 
-    // Delete old → re-create at same position (no PATCH endpoint for fields)
     this.svc.removeField(fieldId).subscribe({
       next: () => {
         const payload = {
@@ -365,10 +504,6 @@ export class AuditFormBuilderComponent implements OnInit {
     });
   }
 
-  // ════════════════════════════════════════
-  // REMOVE FIELD
-  // ════════════════════════════════════════
-
   removeField(field: AuditFormField, e: Event): void {
     e.stopPropagation();
     if (!confirm(`Remove field "${field.label}"?`)) return;
@@ -385,10 +520,13 @@ export class AuditFormBuilderComponent implements OnInit {
   }
 
   // ════════════════════════════════════════
-  // DRAG & DROP — STEPS (persisted)
+  // DRAG & DROP — FORM STEPS
   // ════════════════════════════════════════
 
-  onStepDragStart(idx: number): void { this.dragStepIdx = idx; }
+  onStepDragStart(idx: number): void {
+    this.dragStepIdx        = idx;
+    this._stepDragJustEnded = false;
+  }
 
   onStepDragOver(e: DragEvent, idx: number): void {
     e.preventDefault();
@@ -409,7 +547,6 @@ export class AuditFormBuilderComponent implements OnInit {
     this.dragOverStepIdx         = null;
     this.cdr.detectChanges();
 
-    // Persist new order to backend
     const payload = steps.map(s => ({ id: s.id, stepOrder: s.stepOrder }));
     this.svc.reorderSteps(this.selectedTemplate.id, payload).subscribe({
       next: () => this.flash('Step order saved.'),
@@ -418,12 +555,14 @@ export class AuditFormBuilderComponent implements OnInit {
   }
 
   onStepDragEnd(): void {
-    this.dragStepIdx     = null;
-    this.dragOverStepIdx = null;
+    this.dragStepIdx        = null;
+    this.dragOverStepIdx    = null;
+    this._stepDragJustEnded = true;
+    setTimeout(() => { this._stepDragJustEnded = false; }, 100);
   }
 
   // ════════════════════════════════════════
-  // DRAG & DROP — FIELDS (persisted)
+  // DRAG & DROP — FIELDS
   // ════════════════════════════════════════
 
   onFieldDragStart(idx: number): void { this.dragFieldIdx = idx; }
@@ -447,7 +586,6 @@ export class AuditFormBuilderComponent implements OnInit {
     this.dragOverFieldIdx     = null;
     this.cdr.detectChanges();
 
-    // Persist new order to backend
     const payload = fields.map(f => ({ id: f.id, fieldOrder: f.fieldOrder }));
     this.svc.reorderFields(this.selectedStep.id, payload).subscribe({
       next: () => this.flash('Field order saved.'),
@@ -461,13 +599,145 @@ export class AuditFormBuilderComponent implements OnInit {
   }
 
   // ════════════════════════════════════════
+  // AUDIT PROCESS STEPS
+  // endpoint: /api/v1/audit-templates/{templateId}/process-steps
+  // ════════════════════════════════════════
+
+  loadProcessSteps(): void {
+    if (!this.selectedTemplate?.id) return;
+    this.isLoadingProcessSteps = true;
+    this.processStepSvc.getSteps(this.selectedTemplate.id).subscribe({
+      next: steps => {
+        this.processSteps          = steps.filter(s => s.id > 0 && !s.isDefault);
+        this.isLoadingProcessSteps = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.processSteps          = [];
+        this.isLoadingProcessSteps = false;
+      }
+    });
+  }
+
+  // ★ FIX: uses activeTemplateId so it works from both edit panel and main view
+  addProcessStep(): void {
+    const templateId = this.activeTemplateId;
+    if (!templateId || !this.newProcessStepName.trim()) return;
+    this.isAddingProcessStep = true;
+    const order = this.processSteps.length + 1;
+    this.processStepSvc.addStep(templateId, this.newProcessStepName.trim(), order)
+      .subscribe({
+        next: step => {
+          this.processSteps.push(step);
+          this.newProcessStepName  = '';
+          this.isAddingProcessStep = false;
+          this.flash('Audit process step added.');
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.isAddingProcessStep = false;
+          this.errorMsg = 'Failed to add audit process step.';
+        }
+      });
+  }
+
+  startEditProcessStep(step: AuditProcessStep): void {
+    this.editingProcessStepId   = step.id;
+    this.editingProcessStepName = step.name;
+  }
+
+  // ★ FIX: uses activeTemplateId
+  saveEditProcessStep(step: AuditProcessStep): void {
+    const templateId = this.activeTemplateId;
+    if (!templateId || !this.editingProcessStepName.trim()) return;
+    this.processStepSvc.updateStep(
+      templateId,
+      step.id,
+      this.editingProcessStepName.trim(),
+      step.stepOrder
+    ).subscribe({
+      next: updated => {
+        const idx = this.processSteps.findIndex(s => s.id === step.id);
+        if (idx !== -1) this.processSteps[idx] = updated;
+        this.editingProcessStepId = null;
+        this.flash('Audit process step updated.');
+        this.cdr.detectChanges();
+      },
+      error: () => { this.errorMsg = 'Failed to update audit process step.'; }
+    });
+  }
+
+  cancelEditProcessStep(): void {
+    this.editingProcessStepId   = null;
+    this.editingProcessStepName = '';
+  }
+
+  // ★ FIX: uses activeTemplateId
+  deleteProcessStep(step: AuditProcessStep): void {
+    const templateId = this.activeTemplateId;
+    if (!templateId) return;
+    if (!confirm(
+      `Remove audit step "${step.name}"?\n\n` +
+      `Existing audit results keep their data (step name is preserved as a snapshot).`
+    )) return;
+    this.processStepSvc.deleteStep(templateId, step.id).subscribe({
+      next: () => {
+        this.processSteps = this.processSteps.filter(s => s.id !== step.id);
+        this.processSteps.forEach((s, i) => { s.stepOrder = i + 1; });
+        this.flash('Audit process step removed.');
+        this.cdr.detectChanges();
+      },
+      error: () => { this.errorMsg = 'Failed to remove audit process step.'; }
+    });
+  }
+
+  onProcessStepDragStart(idx: number): void {
+    this.dragProcessStepIdx = idx;
+  }
+
+  onProcessStepDragOver(e: DragEvent, idx: number): void {
+    e.preventDefault();
+    this.dragOverProcessStepIdx = idx;
+  }
+
+  // ★ FIX: uses activeTemplateId
+  onProcessStepDrop(e: DragEvent, toIdx: number): void {
+    e.preventDefault();
+    const templateId = this.activeTemplateId;
+    if (this.dragProcessStepIdx === null || !templateId) return;
+
+    const steps = [...this.processSteps];
+    const [moved] = steps.splice(this.dragProcessStepIdx, 1);
+    steps.splice(toIdx, 0, moved);
+    steps.forEach((s, i) => s.stepOrder = i + 1);
+
+    this.processSteps           = steps;
+    this.dragProcessStepIdx     = null;
+    this.dragOverProcessStepIdx = null;
+    this.cdr.detectChanges();
+
+    steps.forEach(s => {
+      this.processStepSvc.updateStep(templateId, s.id, s.name, s.stepOrder).subscribe();
+    });
+    this.flash('Process step order saved.');
+  }
+
+  onProcessStepDragEnd(): void {
+    this.dragProcessStepIdx     = null;
+    this.dragOverProcessStepIdx = null;
+  }
+
+  // ════════════════════════════════════════
   // HELPERS
   // ════════════════════════════════════════
 
   private flash(msg: string): void {
     this.successMsg = msg;
     this.errorMsg   = '';
-    setTimeout(() => this.successMsg = '', 3500);
+    setTimeout(() => {
+      this.successMsg = '';
+      this.cdr.detectChanges();
+    }, 3500);
   }
 
   fieldTypeLabel(ft: FieldType): string {

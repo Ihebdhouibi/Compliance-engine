@@ -169,6 +169,16 @@ table { width: 100%; border-collapse: collapse;
                 border: 1px solid color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 22%, transparent);
                 &:hover { background: color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 22%, transparent); } }
   &:disabled { opacity: .32; cursor: not-allowed; }
+
+  &--view-result {
+  background: color-mix(in srgb, #00e5a0 10%, transparent);
+  color: #00e5a0;
+  border: 1px solid color-mix(in srgb, #00e5a0 22%, transparent);
+  &:hover {
+    background: color-mix(in srgb, #00e5a0 22%, transparent);
+    border-color: color-mix(in srgb, #00e5a0 45%, transparent);
+  }
+}
 }
 
 // ── Pagination
@@ -417,5 +427,20 @@ input[type="date"] {
     filter: invert(0.7) sepia(1) saturate(5) hue-rotate(160deg) brightness(0.9);
     cursor: pointer;
     opacity: 0.8;
+  }
+}
+
+
+.btn-workspace {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 18px;
+  background: color-mix(in srgb, var(--color-accent, #00d4ed) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent, #00d4ed) 28%, transparent);
+  border-radius: 9px; cursor: pointer;
+  font-family: t.$font-body; font-size: .85rem; font-weight: 600;
+  color: var(--color-accent, #00d4ed); transition: all .15s;
+  svg { color: var(--color-accent, #00d4ed); }
+  &:hover {
+    background: color-mix(in srgb, var(--color-accent, #00d4ed) 22%, transparent);
   }
 }

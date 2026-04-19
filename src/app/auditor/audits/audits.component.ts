@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { AuditRequestService } from '../../services/audit-request.service';
 import { AdminUsersService } from '../../services/admin-users.service';
 import { AuditRequest, AuditStatus, AssignAuditPayload } from '../../models/audit.model';
@@ -49,7 +50,8 @@ export class AuditsComponent implements OnInit {
     private renderer:  Renderer2,
     private sanitizer: DomSanitizer,
     private http:      HttpClient,
-    private tokenSvc:  TokenService
+    private tokenSvc:  TokenService,
+    private router:    Router
   ) {}
 
   ngOnInit(): void {
@@ -59,6 +61,16 @@ export class AuditsComponent implements OnInit {
     });
     this.loadAudits();
     this.loadAuditors();
+  }
+
+  // Auditor always navigates to auditor workspace
+  openWorkspace(audit: AuditRequest): void {
+    this.router.navigate(['/auditor/audits/workspace', audit.id]);
+  }
+
+  // Auditor always navigates to auditor workspace to view results
+  openResults(audit: AuditRequest): void {
+    this.router.navigate(['/auditor/audits/workspace', audit.id]);
   }
 
   loadAudits(): void {
@@ -103,6 +115,7 @@ export class AuditsComponent implements OnInit {
     this.renderer.removeStyle(document.body, 'overflow');
   }
 
+  // Kept for direct start from table (not workspace)
   startAudit(audit: AuditRequest): void {
     this.svc.auditorStartAudit(audit.id).subscribe({
       next: u => { this.updateInList(u); this.flash('Audit started.'); }
@@ -166,7 +179,7 @@ export class AuditsComponent implements OnInit {
 
     this.http.get(rawUrl, { headers, responseType: 'blob' }).subscribe({
       next: blob => {
-        const objectUrl    = URL.createObjectURL(blob);
+        const objectUrl     = URL.createObjectURL(blob);
         this.viewingFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
         this.isLoadingFile  = false;
         this.cdr.detectChanges();

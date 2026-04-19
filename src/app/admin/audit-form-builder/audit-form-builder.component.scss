@@ -444,3 +444,598 @@
     box-shadow: 0 6px 18px color-mix(in srgb, var(--color-btn-update,#00bcd4) 35%, transparent); }
   &:disabled { opacity: .48; cursor: not-allowed; }
 }
+
+// ── Process Steps Section
+.process-steps-section {
+  margin-top: 28px;
+  background: rgba(7,21,40,.5);
+  border: 1px solid rgba(0,212,237,.1);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.process-steps-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0,212,237,.08);
+  background: rgba(7,21,40,.4);
+
+  &__left {
+    display: flex; align-items: flex-start; gap: 12px;
+    svg { color: var(--color-accent); margin-top: 3px; flex-shrink: 0; }
+  }
+
+  h3 {
+    font-family: t.$font-display; font-size: .92rem;
+    font-weight: 700; color: #fff; margin: 0 0 3px;
+  }
+  p {
+    font-size: .78rem; color: rgba(255,255,255,.38); margin: 0;
+  }
+}
+
+.process-steps-body {
+  padding: 16px 20px;
+}
+
+.process-steps-empty {
+  text-align: center; padding: 20px 0;
+  font-size: .81rem; color: rgba(255,255,255,.28);
+}
+
+.process-step-list {
+  display: flex; flex-direction: column; gap: 7px; margin-bottom: 14px;
+}
+
+.process-step-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 13px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 9px;
+
+  &__order {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .68rem; font-weight: 700;
+    color: var(--color-accent); font-family: t.$font-mono;
+  }
+  &__name {
+    flex: 1; font-size: .86rem; color: rgba(255,255,255,.8);
+  }
+  &__input {
+    flex: 1; background: rgba(255,255,255,.05);
+    border: 1px solid rgba(0,212,237,.25);
+    border-radius: 7px; padding: 5px 10px;
+    color: #fff; font-family: t.$font-body; font-size: .85rem;
+    outline: none;
+    &:focus { border-color: var(--color-accent); }
+  }
+  &__actions {
+    display: flex; gap: 6px; flex-shrink: 0;
+  }
+}
+
+.process-step-add {
+  display: flex; gap: 10px; align-items: center;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255,255,255,.05);
+
+  &__input {
+    flex: 1; background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 9px; padding: 9px 13px;
+    color: rgba(255,255,255,.8);
+    font-family: t.$font-body; font-size: .85rem; outline: none;
+    transition: border-color .15s;
+    &::placeholder { color: rgba(255,255,255,.22); }
+    &:focus { border-color: rgba(0,212,237,.35); }
+  }
+}
+
+// ── Template action buttons
+.ti-actions {
+  display: flex; gap: 6px; margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.ti-act {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 6px;
+  font-family: t.$font-body; font-size: .72rem; font-weight: 600;
+  cursor: pointer; transition: all .15s; border: 1px solid;
+
+  &--edit {
+    background: color-mix(in srgb, var(--color-btn-update,#00bcd4) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-update,#00bcd4) 22%, transparent);
+    color: var(--color-btn-update,#00bcd4);
+    &:hover {
+      background: color-mix(in srgb, var(--color-btn-update,#00bcd4) 22%, transparent);
+    }
+  }
+  &--deact {
+    background: color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 8%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 18%, transparent);
+    color: var(--color-btn-delete,#ff4d6a);
+    &:hover {
+      background: color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 18%, transparent);
+    }
+  }
+  &--act {
+    background: color-mix(in srgb, var(--color-btn-add,#00d4ed) 8%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-add,#00d4ed) 18%, transparent);
+    color: var(--color-btn-add,#00d4ed);
+    &:hover {
+      background: color-mix(in srgb, var(--color-btn-add,#00d4ed) 18%, transparent);
+    }
+  }
+}
+
+// ── Template action buttons
+.ti-desc {
+  font-size: .74rem; color: rgba(255,255,255,.35);
+  line-height: 1.4; margin: 2px 0;
+  display: -webkit-box; -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical; overflow: hidden;
+}
+
+.ti-actions {
+  display: flex; gap: 6px; margin-top: 8px; padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.ti-act {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 9px; border-radius: 6px;
+  font-family: t.$font-body; font-size: .71rem; font-weight: 600;
+  cursor: pointer; transition: all .15s; border: 1px solid;
+
+  &--edit {
+    background: color-mix(in srgb, var(--color-btn-update,#00bcd4) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-update,#00bcd4) 22%, transparent);
+    color: var(--color-btn-update,#00bcd4);
+    &:hover { background: color-mix(in srgb, var(--color-btn-update,#00bcd4) 20%, transparent); }
+  }
+  &--deact {
+    background: color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 8%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 18%, transparent);
+    color: var(--color-btn-delete,#ff4d6a);
+    &:hover { background: color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 18%, transparent); }
+  }
+  &--act {
+    background: color-mix(in srgb, var(--color-btn-add,#00d4ed) 8%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-add,#00d4ed) 18%, transparent);
+    color: var(--color-btn-add,#00d4ed);
+    &:hover { background: color-mix(in srgb, var(--color-btn-add,#00d4ed) 18%, transparent); }
+  }
+}
+
+// ── Process steps section
+.process-steps-section {
+  margin-top: 28px;
+  background: rgba(7,21,40,.5);
+  border: 1px solid rgba(0,212,237,.1);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.process-steps-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0,212,237,.08);
+  background: rgba(0,212,237,.03);
+
+  &__left {
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+
+  h3 {
+    font-family: t.$font-display; font-size: .92rem;
+    font-weight: 700; color: #fff; margin: 0 0 4px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  p { font-size: .78rem; color: rgba(255,255,255,.38); margin: 0; line-height: 1.5; }
+}
+
+.ps-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 18px; padding: 0 5px;
+  background: rgba(0,212,237,.15); border: 1px solid rgba(0,212,237,.25);
+  border-radius: 10px; font-size: .66rem; font-weight: 700;
+  color: var(--color-accent); font-family: t.$font-mono;
+}
+
+.process-steps-body {
+  padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.process-steps-empty {
+  text-align: center; padding: 20px 0;
+  font-size: .82rem; color: rgba(255,255,255,.3); line-height: 1.6;
+}
+
+.process-step-list {
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.process-step-row {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 9px; transition: all .15s;
+
+  &:hover { background: rgba(255,255,255,.055); }
+
+  &.ps-drag-over {
+    border-color: var(--color-accent);
+    background: rgba(0,212,237,.06);
+  }
+
+  &__order {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 25%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .67rem; font-weight: 700;
+    color: var(--color-accent); font-family: t.$font-mono;
+  }
+  &__name {
+    flex: 1; font-size: .86rem; color: rgba(255,255,255,.8);
+  }
+  &__input {
+    flex: 1; background: rgba(255,255,255,.06);
+    border: 1px solid rgba(0,212,237,.3);
+    border-radius: 7px; padding: 5px 10px;
+    color: #fff; font-family: t.$font-body; font-size: .85rem;
+    outline: none; transition: border-color .15s;
+    &:focus { border-color: var(--color-accent); }
+  }
+  &__actions {
+    display: flex; gap: 6px; flex-shrink: 0; align-items: center;
+  }
+}
+
+.ps-drag-handle {
+  cursor: grab; color: rgba(255,255,255,.22); flex-shrink: 0;
+  display: flex; align-items: center;
+  &:hover { color: rgba(255,255,255,.5); }
+  &:active { cursor: grabbing; }
+}
+
+.process-step-add {
+  display: flex; gap: 10px; align-items: center;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255,255,255,.05);
+  margin-top: 4px;
+
+  &__input {
+    flex: 1; background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 9px; padding: 9px 13px;
+    color: rgba(255,255,255,.8); font-family: t.$font-body;
+    font-size: .85rem; outline: none; transition: border-color .15s;
+    &::placeholder { color: rgba(255,255,255,.2); }
+    &:focus { border-color: rgba(0,212,237,.35); }
+  }
+}
+
+// ── Inactive template dim
+.ti--inactive {
+  opacity: .6;
+}
+
+// ── Template description preview
+.ti-desc {
+  font-size: .73rem; color: rgba(255,255,255,.32);
+  line-height: 1.4; margin: 2px 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+// ── Template action buttons
+.ti-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 9px;
+  padding-top: 9px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.ti-act {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 9px; border-radius: 6px;
+  font-family: t.$font-body; font-size: .71rem; font-weight: 600;
+  cursor: pointer; transition: all .15s; border: 1px solid;
+
+  &--edit {
+    background: color-mix(in srgb, var(--color-btn-update,#00bcd4) 10%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-update,#00bcd4) 22%, transparent);
+    color: var(--color-btn-update,#00bcd4);
+    &:hover { background: color-mix(in srgb, var(--color-btn-update,#00bcd4) 20%, transparent); }
+  }
+  &--deact {
+    background: color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 8%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 16%, transparent);
+    color: var(--color-btn-delete,#ff4d6a);
+    &:hover { background: color-mix(in srgb, var(--color-btn-delete,#ff4d6a) 16%, transparent); }
+  }
+  &--act {
+    background: color-mix(in srgb, var(--color-btn-add,#00d4ed) 8%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-add,#00d4ed) 16%, transparent);
+    color: var(--color-btn-add,#00d4ed);
+    &:hover { background: color-mix(in srgb, var(--color-btn-add,#00d4ed) 16%, transparent); }
+  }
+}
+
+// ═══════════════════════════════════
+// AUDIT PROCESS STEPS SECTION
+// ═══════════════════════════════════
+
+.process-steps-section {
+  margin-top: 30px;
+  background: rgba(7,21,40,.5);
+  border: 1px solid rgba(0,212,237,.1);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.process-steps-header {
+  display: flex; align-items: flex-start;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(0,212,237,.08);
+  background: rgba(0,212,237,.025);
+
+  &__left {
+    display: flex; align-items: flex-start; gap: 13px;
+  }
+
+  h3 {
+    font-family: t.$font-display; font-size: .93rem;
+    font-weight: 700; color: #fff; margin: 0 0 5px;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  p {
+    font-size: .78rem; color: rgba(255,255,255,.38);
+    margin: 0; line-height: 1.6;
+    strong { color: rgba(255,255,255,.6); font-weight: 600; }
+  }
+}
+
+.ps-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 20px; height: 18px; padding: 0 5px;
+  background: rgba(0,212,237,.15); border: 1px solid rgba(0,212,237,.25);
+  border-radius: 10px; font-size: .65rem; font-weight: 700;
+  color: var(--color-accent); font-family: t.$font-mono;
+}
+
+.process-steps-body {
+  padding: 16px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.process-steps-empty {
+  text-align: center;
+  padding: 22px 0 8px;
+  font-size: .81rem; color: rgba(255,255,255,.28); line-height: 1.7;
+
+  p { margin: 0; }
+  p + p { opacity: .7; font-size: .76rem; }
+}
+
+.process-step-list {
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.process-step-row {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 12px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 9px;
+  transition: background .15s, border-color .15s;
+  cursor: default;
+
+  &:hover { background: rgba(255,255,255,.055); }
+
+  &.ps-drag-over {
+    border-color: var(--color-accent);
+    background: rgba(0,212,237,.06);
+  }
+
+  &__order {
+    width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 24%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .67rem; font-weight: 700;
+    color: var(--color-accent); font-family: t.$font-mono;
+  }
+
+  &__name {
+    flex: 1; font-size: .86rem; color: rgba(255,255,255,.8);
+  }
+
+  &__input {
+    flex: 1;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(0,212,237,.3);
+    border-radius: 7px; padding: 5px 10px;
+    color: #fff; font-family: t.$font-body; font-size: .85rem;
+    outline: none; transition: border-color .15s;
+    &:focus { border-color: var(--color-accent); }
+  }
+
+  &__actions {
+    display: flex; gap: 6px; flex-shrink: 0; align-items: center;
+  }
+}
+
+.ps-drag-handle {
+  cursor: grab; color: rgba(255,255,255,.2); flex-shrink: 0;
+  display: flex; align-items: center; padding: 2px;
+  &:hover { color: rgba(255,255,255,.5); }
+  &:active { cursor: grabbing; }
+}
+
+.process-step-add {
+  display: flex; gap: 10px; align-items: center;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,.05);
+
+  &__input {
+    flex: 1;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 9px; padding: 9px 13px;
+    color: rgba(255,255,255,.82);
+    font-family: t.$font-body; font-size: .85rem;
+    outline: none; transition: border-color .15s;
+    &::placeholder { color: rgba(255,255,255,.2); }
+    &:focus { border-color: rgba(0,212,237,.38); }
+  }
+}
+
+// ── Wide edit panel layout
+.create-panel--wide {
+  max-width: 100%;
+}
+
+.edit-panel-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.edit-panel-left {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(0,212,237,.1);
+}
+
+.edit-panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 14px;
+  margin-top: auto;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.edit-panel-right {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(2,9,18,.25);
+}
+
+.edit-ps-head {
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: .84rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 5px;
+  }
+}
+
+.edit-ps-desc {
+  font-size: .76rem;
+  color: rgba(255,255,255,.35);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.edit-ps-empty {
+  font-size: .79rem;
+  color: rgba(255,255,255,.28);
+  padding: 10px 0;
+  text-align: center;
+}
+
+.edit-ps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.edit-ps-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.06);
+  border-radius: 8px;
+  transition: background .15s;
+
+  &:hover { background: rgba(255,255,255,.055); }
+
+  &.ps-drag-over {
+    border-color: var(--color-accent);
+    background: rgba(0,212,237,.06);
+  }
+
+  &__order {
+    width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+    background: color-mix(in srgb, var(--color-accent) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-accent) 24%, transparent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .62rem; font-weight: 700;
+    color: var(--color-accent); font-family: t.$font-mono;
+  }
+
+  &__name {
+    flex: 1;
+    font-size: .83rem;
+    color: rgba(255,255,255,.8);
+  }
+
+  &__input {
+    flex: 1;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(0,212,237,.3);
+    border-radius: 6px; padding: 4px 9px;
+    color: #fff; font-family: t.$font-body; font-size: .83rem; outline: none;
+    &:focus { border-color: var(--color-accent); }
+  }
+
+  &__actions {
+    display: flex; gap: 5px; flex-shrink: 0; align-items: center;
+  }
+}
+
+.edit-ps-add {
+  display: flex; gap: 8px; align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,.06);
+
+  input {
+    flex: 1;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.09);
+    border-radius: 8px; padding: 8px 12px;
+    color: rgba(255,255,255,.82);
+    font-family: t.$font-body; font-size: .83rem; outline: none;
+    transition: border-color .15s;
+    &::placeholder { color: rgba(255,255,255,.22); }
+    &:focus { border-color: rgba(0,212,237,.35); }
+  }
+}

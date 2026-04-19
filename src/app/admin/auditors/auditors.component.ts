@@ -48,7 +48,9 @@ export class AuditorsComponent implements OnInit, OnDestroy {
 
   activatingId:  number | null = null;
   resendingId:   number | null = null;
+  deletingId:    number | null = null;
   resendSuccess  = '';
+  resendError    = '';
 
   addForm!:  FormGroup;
   editForm!: FormGroup;
@@ -265,4 +267,26 @@ export class AuditorsComponent implements OnInit, OnDestroy {
 
   get fc() { return this.addForm.controls; }
   get ef() { return this.editForm.controls; }
+
+
+
+  deleteUser(user: User): void {
+  this.deletingId = user.id;
+  this.svc.deleteUser(user.id).subscribe({
+    next: () => {
+       this.auditors = this.auditors.filter(a => a.id !== user.id);
+      this.totalItems--;
+      this.deletingId = null;
+      this.resendSuccess = `User ${user.firstName} ${user.lastName} deleted successfully.`;
+      setTimeout(() => { this.resendSuccess = ''; }, 4000);
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.deletingId = null;
+      this.resendError = 'Error deleting user.';
+      setTimeout(() => { this.resendError = ''; }, 4000);
+      this.cdr.detectChanges();
+    }
+  });
+}
 }
