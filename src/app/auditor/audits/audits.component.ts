@@ -10,6 +10,8 @@ import { AuditRequest, AuditStatus, AssignAuditPayload } from '../../models/audi
 import { User } from '../../models/user.model';
 import { TokenService } from '../../shared/token.service';
 
+import { AuditStepResultService, AuditStepResult } from '../../services/audit-step-result.service';
+
 @Component({
   selector: 'app-auditor-audits',
   standalone: true,
@@ -18,6 +20,11 @@ import { TokenService } from '../../shared/token.service';
   styleUrl: './audits.component.scss'
 })
 export class AuditsComponent implements OnInit {
+
+  showResults      = false;
+resultsRequest:  AuditRequest | null = null;
+stepResults:     AuditStepResult[]   = [];
+isLoadingResults = false;
 
   audits:      AuditRequest[] = [];
   totalItems   = 0;
@@ -51,7 +58,9 @@ export class AuditsComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private http:      HttpClient,
     private tokenSvc:  TokenService,
-    private router:    Router
+    private router:    Router,
+    private resSvc: AuditStepResultService
+
   ) {}
 
   ngOnInit(): void {
@@ -70,8 +79,31 @@ export class AuditsComponent implements OnInit {
 
   // Auditor always navigates to auditor workspace to view results
   openResults(audit: AuditRequest): void {
-    this.router.navigate(['/auditor/audits/workspace', audit.id]);
-  }
+  this.resultsRequest   = audit;
+  this.stepResults      = [];
+  this.isLoadingResults = true;
+  this.showResults      = true;
+  this.renderer.setStyle(document.body, 'overflow', 'hidden');
+
+  this.resSvc.getResults(audit.id).subscribe({
+    next: results => {
+      this.stepResults      = results.filter(r => r.status === 'SAVED' || r.description?.trim());
+      this.isLoadingResults = false;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.isLoadingResults = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+closeResults(): void {
+  this.showResults    = false;
+  this.resultsRequest = null;
+  this.stepResults    = [];
+  this.renderer.removeStyle(document.body, 'overflow');
+}
 
   loadAudits(): void {
     this.isLoading = true;

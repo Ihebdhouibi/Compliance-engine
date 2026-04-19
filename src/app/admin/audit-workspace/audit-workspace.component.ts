@@ -169,85 +169,8 @@ private loadStepsByAuditType(auditType: string): void {
     );
   }
 
-  saveDraft(): void  { this.persist('DRAFT'); }
-  saveResult(): void { this.persist('SAVED'); }
-
-  private persist(status: 'DRAFT' | 'SAVED'): void {
-    if (!this.request || !this.currentStep) return;
-    this.isSaving = true;
-
-    const desc     = this.currentDraft;
-    const existing = this.currentResult;
-    const step     = this.currentStep;
-
-    const payload = {
-      processStepId: step.id > 0 ? step.id : -1,
-      stepName:      step.name,
-      description:   desc,
-      status
-    };
-
-    const obs = existing
-      ? this.resSvc.update(this.request.id, existing.id, payload)
-      : this.resSvc.saveOrUpdate(this.request.id, payload);
-
-    obs.subscribe({
-      next: result => {
-        const idx = this.results.findIndex(r => r.id === result.id);
-        if (idx !== -1) this.results[idx] = result;
-        else this.results.push(result);
-        this.isSaving = false;
-        this.flash(status === 'DRAFT' ? 'Draft saved.' : 'Step saved.', false);
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.isSaving = false;
-        this.flash('Failed to save.', true);
-      }
-    });
-  }
-
-  submitAudit(): void {
-    if (!this.request) return;
-    this.isCompleting = true;
-
-    const saveObs = this.currentDraft.trim()
-      ? new Promise<void>((resolve) => {
-          const step     = this.currentStep!;
-          const existing = this.currentResult;
-          const payload  = {
-            processStepId: step.id > 0 ? step.id : -1,
-            stepName:      step.name,
-            description:   this.currentDraft,
-            status:        'SAVED' as const
-          };
-          const obs = existing
-            ? this.resSvc.update(this.request!.id, existing.id, payload)
-            : this.resSvc.saveOrUpdate(this.request!.id, payload);
-          obs.subscribe({ next: () => resolve(), error: () => resolve() });
-        })
-      : Promise.resolve();
-
-    saveObs.then(() => {
-      const complete$ = this.isAuditorMode
-        ? this.reqSvc.auditorCompleteAudit(this.request!.id)
-        : this.reqSvc.adminCompleteRequest(this.request!.id);
-
-      complete$.subscribe({
-        next: updated => {
-          this.request      = updated;
-          this.isCompleting = false;
-          this.flash('Audit completed successfully!', false);
-          setTimeout(() => this.goBack(), 1500);
-          this.cdr.detectChanges();
-        },
-        error: () => {
-          this.isCompleting = false;
-          this.flash('Failed to complete audit.', true);
-        }
-      });
-    });
-  }
+ saveDraft(): void { this.persist('DRAFT'); }
+ // saveResult(): void { this.persist('SAVED'); }
 
   deleteCurrentResult(): void {
     const existing = this.currentResult;
@@ -344,4 +267,138 @@ private loadStepsByAuditType(auditType: string): void {
       setTimeout(() => { this.saveMsg = ''; this.cdr.detectChanges(); }, 3500);
     }
   }
+
+
+  async goToStep(idx: number): Promise<void> {
+  if (!this.request || this.request?.status === 'COMPLETED') {
+    this.activeStep = idx;
+    return;
+  }
+  // Auto-save current step as DRAFT if there's content
+  if (this.currentDraft.trim() && this.currentStep) {
+    await this.persistAsync('DRAFT');
+  }
+  this.activeStep = idx;
+  this.cdr.detectChanges();
+}
+
+private persistAsync(status: 'DRAFT' | 'SAVED'): Promise<void> {
+  return new Promise((resolve) => {
+    if (!this.request || !this.currentStep) { resolve(); return; }
+    const desc     = this.currentDraft;
+    const existing = this.currentResult;
+    const step     = this.currentStep;
+
+    if (!desc.trim()) { resolve(); return; }
+
+    const payload = {
+      processStepId: step.id > 0 ? step.id : -1,
+      stepName:      step.name,
+      description:   desc,
+      status
+    };
+
+    const obs = existing
+      ? this.resSvc.update(this.request.id, existing.id, payload)
+      : this.resSvc.saveOrUpdate(this.request.id, payload);
+
+    obs.subscribe({
+      next: result => {
+        const idx = this.results.findIndex(r => r.id === result.id);
+        if (idx !== -1) this.results[idx] = result;
+        else this.results.push(result);
+        this.cdr.detectChanges();
+        resolve();
+      },
+      error: () => resolve()
+    });
+  });
+}
+
+private persist(status: 'DRAFT' | 'SAVED'): void {
+  if (!this.request || !this.currentStep) return;
+  this.isSaving = true;
+  const desc     = this.currentDraft;
+  const existing = this.currentResult;
+  const step     = this.currentStep;
+
+  const payload = {
+    processStepId: step.id > 0 ? step.id : -1,
+    stepName:      step.name,
+    description:   desc,
+    status
+  };
+
+  const obs = existing
+    ? this.resSvc.update(this.request.id, existing.id, payload)
+    : this.resSvc.saveOrUpdate(this.request.id, payload);
+
+  obs.subscribe({
+    next: result => {
+      const idx = this.results.findIndex(r => r.id === result.id);
+      if (idx !== -1) this.results[idx] = result;
+      else this.results.push(result);
+      this.isSaving = false;
+      this.flash(status === 'DRAFT' ? 'Draft saved.' : 'Step saved.', false);
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.isSaving = false;
+      this.flash('Failed to save.', true);
+    }
+  });
+}
+
+// ★ Submit: save ALL steps with content, then complete
+submitAudit(): void {
+  if (!this.request) return;
+  this.isCompleting = true;
+
+  // Save all steps that have content as SAVED
+  const savePromises = this.steps
+    .filter(s => {
+      const draft = this.drafts[s.id]?.trim();
+      return draft && draft.length > 0;
+    })
+    .map(s => new Promise<void>((resolve) => {
+      const existing = this.results.find(r =>
+        (r.processStep?.id ?? -1) === s.id
+      );
+      const payload = {
+        processStepId: s.id > 0 ? s.id : -1,
+        stepName:      s.name,
+        description:   this.drafts[s.id],
+        status:        'SAVED' as const
+      };
+      const obs = existing
+        ? this.resSvc.update(this.request!.id, existing.id, payload)
+        : this.resSvc.saveOrUpdate(this.request!.id, payload);
+      obs.subscribe({ next: result => {
+        const idx = this.results.findIndex(r => r.id === result.id);
+        if (idx !== -1) this.results[idx] = result;
+        else this.results.push(result);
+        resolve();
+      }, error: () => resolve() });
+    }));
+
+  Promise.all(savePromises).then(() => {
+    const complete$ = this.isAuditorMode
+      ? this.reqSvc.auditorCompleteAudit(this.request!.id)
+      : this.reqSvc.adminCompleteRequest(this.request!.id);
+
+    complete$.subscribe({
+      next: updated => {
+        this.request      = updated;
+        this.isCompleting = false;
+        this.flash('Audit completed successfully!', false);
+        setTimeout(() => this.goBack(), 1500);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isCompleting = false;
+        this.flash('Failed to complete audit.', true);
+      }
+    });
+  });
+}
 }

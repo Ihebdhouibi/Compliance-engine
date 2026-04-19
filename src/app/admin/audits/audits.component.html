@@ -170,8 +170,8 @@
 
                   <!-- View Results — COMPLETED -->
                   <button class="act act--view-result" title="View Audit Results"
-                          *ngIf="r.status === 'COMPLETED'"
-                          (click)="openResults(r)">
+        *ngIf="r.status === 'COMPLETED'"
+        (click)="openResults(r)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
                          stroke-width="2" width="14" height="14" style="display:block;">
                       <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
@@ -588,4 +588,116 @@
     </div>
   </div>
 
+</ng-container>
+<!-- ══ AUDIT RESULTS MODAL — copy-paste into admin, auditor, company ══ -->
+<ng-container *ngIf="showResults && resultsRequest">
+  <div class="modal-backdrop" (click)="closeResults()"></div>
+
+  <div class="modal-box modal-box--wide modal-box--results">
+    <!-- Head -->
+    <div class="mb-head">
+      <div class="mb-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             width="17" height="17" style="display:block;">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        Audit Results — #{{ resultsRequest.id }}
+      </div>
+      <button class="x-btn" (click)="closeResults()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             width="16" height="16" style="display:block;">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="mb-body">
+
+      <!-- Summary grid -->
+      <div class="results-summary">
+        <div class="rs-item">
+          <span class="rs-lbl">Company</span>
+          <span class="rs-val">
+            {{ resultsRequest.submittedBy.companyInfo?.companyName ||
+               (resultsRequest.submittedBy.firstName + ' ' + resultsRequest.submittedBy.lastName) }}
+          </span>
+        </div>
+        <div class="rs-item">
+          <span class="rs-lbl">Audit Type</span>
+          <span class="rs-val">{{ resultsRequest.auditType }}</span>
+        </div>
+        <div class="rs-item" *ngIf="resultsRequest.completedAt">
+          <span class="rs-lbl">Completed On</span>
+          <span class="rs-val">{{ resultsRequest.completedAt | date:'MMM d, y' }}</span>
+        </div>
+        <div class="rs-item">
+          <span class="rs-lbl">Audited By</span>
+          <span class="rs-val" *ngIf="resultsRequest.assignedTo">
+            {{ resultsRequest.assignedTo.firstName }}
+            {{ resultsRequest.assignedTo.lastName }}
+          </span>
+          <span class="rs-val" *ngIf="!resultsRequest.assignedTo">—</span>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="state-box" *ngIf="isLoadingResults" style="padding:32px 0;">
+        <div class="loader"></div>
+        <span>Loading results…</span>
+      </div>
+
+      <!-- Empty -->
+      <div class="results-empty"
+           *ngIf="!isLoadingResults && stepResults.length === 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+             width="40" height="40"
+             style="display:block;opacity:.2;margin:0 auto 12px;">
+          <path d="M9 11l3 3L22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        <p>No audit decisions were recorded for this request.</p>
+      </div>
+
+      <!-- Timeline step results -->
+      <div class="step-results-list"
+           *ngIf="!isLoadingResults && stepResults.length > 0">
+
+        <div class="step-result-card"
+             [class.src--saved]="r.status === 'SAVED'"
+             *ngFor="let r of stepResults; let i = index">
+
+          <!-- Timeline dot -->
+          <div class="src-timeline-dot">{{ i + 1 }}</div>
+
+          <!-- Card content -->
+          <div class="src-content">
+            <div class="src-header">
+              <span class="src-step-name">{{ r.stepName }}</span>
+              <div class="src-meta">
+                <span class="src-status src-status--saved"
+                      *ngIf="r.status === 'SAVED'">✓ Saved</span>
+                <span class="src-status src-status--draft"
+                      *ngIf="r.status === 'DRAFT'">◎ Draft</span>
+                <span class="src-filled" *ngIf="r.filledBy">
+                  by {{ r.filledBy.firstName }} {{ r.filledBy.lastName }}
+                </span>
+                <span class="src-date">{{ r.updatedAt | date:'MMM d, y' }}</span>
+              </div>
+            </div>
+            <div class="src-body">
+              <p class="src-description">{{ r.description || '—' }}</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="mb-footer">
+        <button class="btn-cancel" (click)="closeResults()">Close</button>
+      </div>
+
+    </div>
+  </div>
 </ng-container>

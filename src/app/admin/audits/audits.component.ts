@@ -10,6 +10,7 @@ import { UserStoreService } from '../../shared/user-store.service';
 import { AuditRequest, AuditStatus, AssignAuditPayload } from '../../models/audit.model';
 import { User } from '../../models/user.model';
 import { TokenService } from '../../shared/token.service';
+import { AuditStepResultService, AuditStepResult } from '../../services/audit-step-result.service';
 
 type TabMode = 'all' | 'mine';
 
@@ -23,6 +24,11 @@ type TabMode = 'all' | 'mine';
 export class AuditsComponent implements OnInit {
 
   tab: TabMode = 'all';
+
+  showResults      = false;
+resultsRequest:  AuditRequest | null = null;
+stepResults:     AuditStepResult[]   = [];
+isLoadingResults = false;
 
   requests:    AuditRequest[] = [];
   totalItems   = 0;
@@ -76,7 +82,8 @@ export class AuditsComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private http:      HttpClient,
     private tokenSvc:  TokenService,
-    private router:    Router
+    private router:    Router,
+   private resSvc: AuditStepResultService
   ) {}
 
   ngOnInit(): void {
@@ -98,9 +105,32 @@ export class AuditsComponent implements OnInit {
   }
 
   // Admin always navigates to admin workspace to view results
-  openResults(req: AuditRequest): void {
-    this.router.navigate(['/admin/audits/workspace', req.id]);
-  }
+ openResults(req: AuditRequest): void {
+  this.resultsRequest  = req;
+  this.stepResults     = [];
+  this.isLoadingResults = true;
+  this.showResults     = true;
+  this.renderer.setStyle(document.body, 'overflow', 'hidden');
+
+  this.resSvc.getResults(req.id).subscribe({
+    next: results => {
+      this.stepResults      = results.filter(r => r.status === 'SAVED' || r.description?.trim());
+      this.isLoadingResults = false;
+      this.cdr.detectChanges();
+    },
+    error: () => {
+      this.isLoadingResults = false;
+      this.cdr.detectChanges();
+    }
+  });
+}
+
+closeResults(): void {
+  this.showResults     = false;
+  this.resultsRequest  = null;
+  this.stepResults     = [];
+  this.renderer.removeStyle(document.body, 'overflow');
+}
 
   // ── Data loading
   loadRequests(): void {
@@ -374,5 +404,7 @@ export class AuditsComponent implements OnInit {
   isAssignedToMe(req: AuditRequest): boolean {
     return req.assignedTo?.id === this.currentAdminId;
   }
+
+  
 }
 
