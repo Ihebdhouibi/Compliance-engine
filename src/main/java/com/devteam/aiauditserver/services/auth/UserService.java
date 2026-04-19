@@ -403,5 +403,21 @@ public class UserService extends BaseController implements UserDetailsService {
         user = this.save(user);
         return user;
     }
+
+   /* public void deleteUser(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id: " + id));
+        userRepository.delete(user);
+    }*/
+
+
+     public void deleteUser(Long id) {
+         User user = userRepository.findById(id)
+                 .orElseThrow(() -> new RuntimeException("User not found"));
+         user.setDeleted(true);
+         user.setActive(false);
+         userRepository.save(user);
+     }
+
 }
 
