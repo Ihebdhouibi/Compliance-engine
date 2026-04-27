@@ -1,0 +1,250 @@
+<!-- ══ TOP BAR ══ -->
+<div class="ws-topbar">
+  <button class="ws-back" (click)="goBack()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+         stroke-width="2" width="13" height="13" style="display:block;">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Back
+  </button>
+
+  <div class="ws-title" *ngIf="request">
+    <span class="ws-title__id">#{{ request.id }}</span>
+    <span class="ws-title__company">
+      {{ request.submittedBy.companyInfo?.companyName ||
+         (request.submittedBy.firstName + ' ' + request.submittedBy.lastName) }}
+    </span>
+    <span class="ws-title__type">{{ request.auditType }}</span>
+    <span class="st-pill"
+          [ngClass]="'st--' + request.status.toLowerCase().replace('_', '-')">
+      {{ request.status }}
+    </span>
+  </div>
+
+  <div class="ws-actions">
+    <span class="ws-msg ws-msg--ok"  *ngIf="saveMsg">{{ saveMsg }}</span>
+    <span class="ws-msg ws-msg--err" *ngIf="saveError">{{ saveError }}</span>
+
+    <ng-container *ngIf="request?.status !== 'COMPLETED'">
+      <!-- ★ Only Save Draft and Submit Audit remain -->
+      <button class="ws-btn ws-btn--draft"
+              (click)="saveDraft()"
+              [disabled]="isSaving || !currentDraft.trim()">
+        <span class="mini-spin" *ngIf="isSaving"></span>
+        Save Draft
+      </button>
+      <button class="ws-btn ws-btn--complete"
+              (click)="submitAudit()"
+              [disabled]="isCompleting">
+        <span class="mini-spin" *ngIf="isCompleting"></span>
+        {{ isCompleting ? 'Submitting…' : 'Submit Audit' }}
+      </button>
+    </ng-container>
+
+    <div class="ws-completed-badge" *ngIf="request?.status === 'COMPLETED'">
+      ✓ Audit Completed
+    </div>
+
+    <button class="ws-btn ws-btn--bot"
+            [class.ws-btn--bot-on]="botOpen"
+            (click)="toggleBot()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" width="13" height="13" style="display:block;">
+        <rect x="3" y="11" width="18" height="10" rx="2"/>
+        <path d="M9 11V7a3 3 0 0 1 6 0v4"/>
+        <circle cx="12" cy="16" r="1" fill="currentColor"/>
+      </svg>
+      {{ botOpen ? 'Hide AI' : 'AI' }}
+    </button>
+  </div>
+</div>
+
+<!-- ══ COMPACT STEPPER ══ -->
+<div class="ws-stepper" *ngIf="steps.length > 0">
+  <ng-container *ngFor="let s of steps; let i = index; let last = last">
+    <div class="step-node"
+         [class.step-node--done]="stepStatus(s) === 'done'"
+         [class.step-node--draft]="stepStatus(s) === 'draft'"
+         [class.step-node--active]="i === activeStep"
+         [title]="s.name"
+         (click)="goToStep(i)">
+      <div class="step-dot">
+        <svg *ngIf="stepStatus(s) === 'done'" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="3" width="10" height="10">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <svg *ngIf="stepStatus(s) === 'draft'" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" width="8" height="8">
+          <circle cx="12" cy="12" r="4" fill="currentColor"/>
+        </svg>
+        <span *ngIf="stepStatus(s) === 'active' || stepStatus(s) === 'pending'">
+          {{ i + 1 }}
+        </span>
+      </div>
+      <span class="step-label-inline">{{ s.name }}</span>
+    </div>
+    <div *ngIf="!last" class="step-connector"
+         [class.step-connector--done]="stepStatus(s) === 'done'">
+    </div>
+  </ng-container>
+</div>
+
+<!-- ══ THREE COLUMN BODY ══ (same as before) ══ -->
+<div class="ws-body">
+
+  <aside class="ws-col ws-col--data">
+    <div class="col-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" width="13" height="13" style="display:block;">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+      </svg>
+      Request Data
+    </div>
+    <div class="panel-scroll" *ngIf="request">
+      <div class="data-meta">
+        <div class="data-meta__row">
+          <span class="data-meta__lbl">Submitted</span>
+          <span class="data-meta__val">{{ request.submittedAt | date:'MMM d, y' }}</span>
+        </div>
+        <div class="data-meta__row">
+          <span class="data-meta__lbl">Company</span>
+          <span class="data-meta__val">
+            {{ request.submittedBy.companyInfo?.companyName || '—' }}
+          </span>
+        </div>
+        <div class="data-meta__row">
+          <span class="data-meta__lbl">Email</span>
+          <span class="data-meta__val">{{ request.submittedBy.email }}</span>
+        </div>
+        <div class="data-meta__row" *ngIf="request.dueDate">
+          <span class="data-meta__lbl">Due</span>
+          <span class="data-meta__val">{{ request.dueDate | date:'MMM d, y' }}</span>
+        </div>
+        <div class="data-meta__row" *ngIf="request.assignedTo">
+          <span class="data-meta__lbl">Auditor</span>
+          <span class="data-meta__val">
+            {{ request.assignedTo.firstName }} {{ request.assignedTo.lastName }}
+          </span>
+        </div>
+      </div>
+
+      <div class="data-section-lbl">Submitted Answers</div>
+
+      <div class="data-item" *ngFor="let a of request.answers">
+        <span class="data-label">{{ a.fieldLabel }}</span>
+        <div *ngIf="a.fileMedia" class="data-file">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" width="12" height="12"
+               style="flex-shrink:0;color:var(--color-accent)">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <span class="data-file__name" [title]="a.fileMedia.name">
+            {{ a.fileMedia.name }}
+          </span>
+          <button class="data-file__btn"
+                  (click)="openFileViewer(getFileUrl(a.fileMedia.url), a.fileMedia.name)">
+            Open
+          </button>
+        </div>
+        <span *ngIf="!a.fileMedia" class="data-value">{{ a.answerValue || '—' }}</span>
+      </div>
+    </div>
+  </aside>
+
+  <section class="ws-col ws-col--editor">
+    <div class="col-head" *ngIf="currentStep">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2" width="13" height="13" style="display:block;">
+        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+      </svg>
+      Decision —
+      <strong style="color:rgba(255,255,255,.75);margin-left:4px;">
+        {{ currentStep.name }}
+      </strong>
+      <span class="col-badge col-badge--saved"
+            *ngIf="currentResult?.status === 'SAVED'">Saved</span>
+      <span class="col-badge col-badge--draft"
+            *ngIf="currentResult?.status === 'DRAFT'">Draft</span>
+      <span class="col-badge col-badge--empty"
+            *ngIf="!currentResult">Not started</span>
+    </div>
+
+    <textarea class="ws-textarea"
+              [value]="currentDraft"
+              (input)="setDraft($any($event.target).value)"
+              [disabled]="request?.status === 'COMPLETED'"
+              placeholder="Write your audit findings, observations and decision for this step…
+
+- Compliance assessment
+- Risk analysis
+- Evidence reviewed
+- Recommendations
+- Final conclusion">
+    </textarea>
+
+    <div class="editor-footer">
+      <div class="ef-left">
+        <span class="ef-status ef-status--saved"
+              *ngIf="currentResult?.status === 'SAVED'">✓ Saved</span>
+        <span class="ef-status ef-status--draft"
+              *ngIf="currentResult?.status === 'DRAFT'">◎ Draft</span>
+        <button class="ef-del"
+                *ngIf="currentResult && request?.status !== 'COMPLETED'"
+                (click)="deleteCurrentResult()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" width="11" height="11" style="display:block;">
+            <polyline points="3 6 5 6 21 6"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
+          </svg>
+          Delete
+        </button>
+      </div>
+      <!-- ★ Navigation: goToStep instead of activeStep = n -->
+      <div class="ef-nav">
+        <button class="ef-btn"
+                (click)="goToStep(activeStep - 1)"
+                [disabled]="activeStep === 0">← Prev</button>
+        <button class="ef-btn ef-btn--next"
+                (click)="goToStep(activeStep + 1)"
+                [disabled]="activeStep >= steps.length - 1">Next →</button>
+      </div>
+    </div>
+  </section>
+
+  <aside class="ws-col ws-col--bot" *ngIf="botOpen">
+    <app-audit-bot
+      [requestData]="request"
+      (closed)="botOpen = false">
+    </app-audit-bot>
+  </aside>
+
+</div>
+
+<!-- File viewer overlay -->
+<ng-container *ngIf="showFileViewer">
+  <div class="ws-file-backdrop" (click)="closeFileViewer()"></div>
+  <div class="ws-file-modal">
+    <div class="ws-file-head">
+      <span class="ws-file-name">{{ viewingFileName }}</span>
+      <button class="ws-file-close" (click)="closeFileViewer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" width="14" height="14" style="display:block;">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="ws-file-body">
+      <div class="file-loading" *ngIf="isLoadingFile">
+        <div class="loader"></div><span>Loading…</span>
+      </div>
+      <img *ngIf="!isLoadingFile && viewingFileUrl && isImage(viewingFileName || '')"
+           [src]="viewingFileUrl" [alt]="viewingFileName" class="file-preview-img"/>
+      <iframe *ngIf="!isLoadingFile && viewingFileUrl && !isImage(viewingFileName || '')"
+              [src]="viewingFileUrl" class="file-preview-iframe"></iframe>
+    </div>
+  </div>
+</ng-container>

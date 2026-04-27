@@ -127,3 +127,108 @@ input[type="time"]::-webkit-calendar-picker-indicator {
 
   &:hover { opacity: 1; }
 }
+
+// ════════════════════════════════════════
+// LIGHT MODE — card & table overrides only
+// Fixes hardcoded dark backgrounds in components
+// ════════════════════════════════════════
+body.light-mode {
+
+  color: #1e293b;
+
+  // ── Hardcoded card/panel backgrounds ──
+  // Targets the dark #040f1e / #071528 cards used across all components
+  [class*="card"],
+  [class*="-card"],
+  [class*="table-card"],
+  [class*="block__body"],
+  [class*="settings-block"],
+  [class*="detail"],
+  [class*="panel"] {
+    background: #ffffff !important;
+    border-color: #dbeafe !important;
+    color: #1e293b !important;
+  }
+
+  // ── Tables ──
+  table {
+    background: #ffffff !important;
+  }
+  thead tr {
+    background: #eff6ff !important;
+  }
+  thead th {
+    color: #3b82f6 !important;
+    border-bottom-color: #bfdbfe !important;
+  }
+  tbody tr {
+    border-bottom-color: #eff6ff !important;
+    &:hover { background: #f0f9ff !important; }
+  }
+  tbody td {
+    color: #1e293b !important;
+  }
+
+  // ── Inputs ──
+  input:not([type="color"]),
+  select,
+  textarea {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+    border-color: #bfdbfe !important;
+    &::placeholder { color: #94a3b8 !important; }
+  }
+
+  // ── Muted/dim text ──
+  .dim { color: #64748b !important; }
+
+  // ── Modal boxes ──
+  .modal-box {
+    background: #ffffff !important;
+    border-color: #bfdbfe !important;
+    color: #1e293b !important;
+  }
+  .modal-backdrop {
+    background: rgba(15, 23, 42, .5) !important;
+  }
+
+  // ── Scrollbar ──
+  ::-webkit-scrollbar-track { background: #eff6ff !important; }
+  ::-webkit-scrollbar-thumb { background: rgba(37,99,235,.3) !important; }
+
+  // ── Autofill ──
+  input:-webkit-autofill,
+  input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #f8fafc inset !important;
+    -webkit-text-fill-color: #1e293b !important;
+    caret-color: #1e293b;
+  }
+}
+
+.settings-page {
+  &.light-mode {
+    // Force top navbar items to be white if they aren't inheriting correctly
+    .top-navbar-user-info, .sign-out-btn {
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    // Ensure the settings title on the light background is dark
+    .settings-page__header h1 {
+      color: #0f172a; 
+    }
+  }
+}
+
+// Workspace route — no padding, fills full height
+app-audit-workspace {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+// When workspace is active, remove shell content padding
+.shell__content:has(app-audit-workspace) {
+  padding: 0 !important;
+  overflow: hidden !important;
+}

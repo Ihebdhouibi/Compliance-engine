@@ -455,3 +455,29 @@
     cursor: not-allowed;
   }
 }
+
+.reset-all-btn--light {
+  margin-left: 10px;
+  border-color: #6366f1;
+  color: #6366f1;
+
+  &:hover {
+    background: #6366f1;
+    color: #fff;
+  }
+}
+
+.settings-page {
+  &.light-mode {
+    // Force top navbar items to be white if they aren't inheriting correctly
+    .top-navbar-user-info, .sign-out-btn {
+      color: #ffffff !important;
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    // Ensure the settings title on the light background is dark
+    .settings-page__header h1 {
+      color: #0f172a; 
+    }
+  }
+}

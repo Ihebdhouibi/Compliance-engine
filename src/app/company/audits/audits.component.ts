@@ -6,6 +6,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuditRequestService } from '../../services/audit-request.service';
+import { AuditStepResultService, AuditStepResult } from '../../services/audit-step-result.service';
 import {
   AuditRequest, AuditStatus, AuditFormTemplate,
   AuditFormField, AuditFormStep,
@@ -35,6 +36,12 @@ export class AuditsComponent implements OnInit {
   selectedRequest:  AuditRequest | null = null;
   showDetail        = false;
 
+  // ── Audit Results Modal
+  showResults      = false;
+  resultsRequest:  AuditRequest | null = null;
+  stepResults:     AuditStepResult[]   = [];
+  isLoadingResults = false;
+
   // File viewer
   viewingFileUrl:   SafeResourceUrl | null = null;
   viewingRawUrl:    string | null = null;
@@ -55,7 +62,6 @@ export class AuditsComponent implements OnInit {
   submitSuccess     = false;
   uploadingFieldId: number | null = null;
 
-  // Validation errors per step
   validationErrors: { [fieldId: number]: string } = {};
 
   successMsg = '';
@@ -67,6 +73,7 @@ export class AuditsComponent implements OnInit {
 
   constructor(
     public  svc:       AuditRequestService,
+    private resSvc:    AuditStepResultService,
     private cdr:       ChangeDetectorRef,
     private renderer:  Renderer2,
     private sanitizer: DomSanitizer,
@@ -112,6 +119,36 @@ export class AuditsComponent implements OnInit {
     this.renderer.removeStyle(document.body, 'overflow');
   }
 
+  // ── View audit results (for completed audits)
+  openResults(req: AuditRequest): void {
+    this.resultsRequest   = req;
+    this.stepResults      = [];
+    this.isLoadingResults = true;
+    this.showResults      = true;
+    this.renderer.setStyle(document.body, 'overflow', 'hidden');
+
+    this.resSvc.getResults(req.id).subscribe({
+      next: results => {
+        this.stepResults      = results.filter(
+          r => r.status === 'SAVED' || (r.description && r.description.trim().length > 0)
+        );
+        this.isLoadingResults = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoadingResults = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeResults(): void {
+    this.showResults     = false;
+    this.resultsRequest  = null;
+    this.stepResults     = [];
+    this.renderer.removeStyle(document.body, 'overflow');
+  }
+
   // ── New audit
   startNewAudit(type: AuditType): void {
     this.isLoadingForm = true;
@@ -135,10 +172,10 @@ export class AuditsComponent implements OnInit {
   }
 
   openNewAudit(): void {
-    this.showNewAudit   = true;
-    this.auditForm      = null;
-    this.formLoadError  = '';
-    this.submitSuccess  = false;
+    this.showNewAudit     = true;
+    this.auditForm        = null;
+    this.formLoadError    = '';
+    this.submitSuccess    = false;
     this.validationErrors = {};
     this.renderer.setStyle(document.body, 'overflow', 'hidden');
   }
@@ -159,7 +196,6 @@ export class AuditsComponent implements OnInit {
   }
   get totalSteps(): number { return this.auditForm?.steps?.length ?? 0; }
 
-  // ── Validate current step required fields
   validateCurrentStep(): boolean {
     this.validationErrors = {};
     if (!this.currentStep) return true;
@@ -202,14 +238,12 @@ export class AuditsComponent implements OnInit {
     this.validationErrors = {};
   }
 
-  // ── Form state
   getFieldValue(fieldId: number): string {
     return (this.formState[fieldId] as string) ?? '';
   }
 
   setFieldValue(fieldId: number, value: string): void {
     this.formState[fieldId] = value;
-    // Clear validation error on change
     delete this.validationErrors[fieldId];
   }
 
@@ -244,10 +278,8 @@ export class AuditsComponent implements OnInit {
     return this.fileMap[fieldId]?.name ?? '';
   }
 
-  // ── Submit
   async submitAudit(): Promise<void> {
     if (!this.auditForm) return;
-    // Validate last step before submitting
     if (!this.validateCurrentStep()) return;
 
     this.isSubmitting = true;
@@ -300,7 +332,6 @@ export class AuditsComponent implements OnInit {
     });
   }
 
-  // ── File viewer — fetch with auth then create blob URL
   openFileViewer(rawUrl: string, name: string): void {
     this.viewingRawUrl   = rawUrl;
     this.viewingFileName = name;
@@ -309,20 +340,17 @@ export class AuditsComponent implements OnInit {
     this.showFileViewer  = true;
     this.renderer.setStyle(document.body, 'overflow', 'hidden');
 
-    const token = this.tokenSvc.getToken();
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`
-    });
+    const token   = this.tokenSvc.getToken();
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
     this.http.get(rawUrl, { headers, responseType: 'blob' }).subscribe({
       next: blob => {
-        const objectUrl = URL.createObjectURL(blob);
+        const objectUrl     = URL.createObjectURL(blob);
         this.viewingFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
         this.isLoadingFile  = false;
         this.cdr.detectChanges();
       },
       error: () => {
-        // Fallback: try direct URL
         this.viewingFileUrl = this.sanitizer.bypassSecurityTrustResourceUrl(rawUrl);
         this.isLoadingFile  = false;
         this.cdr.detectChanges();

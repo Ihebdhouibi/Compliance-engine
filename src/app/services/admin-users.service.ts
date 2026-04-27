@@ -82,4 +82,8 @@ export class AdminUsersService {
     `${this.base}/all_users_pg`, { params }
   );
 }
+
+deleteUser(userId: number): Observable<any> {
+    return this.http.delete(`${this.base}/delete/${userId}`, { responseType: 'text' });
+  }
 }

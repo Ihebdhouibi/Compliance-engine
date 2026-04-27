@@ -39,7 +39,7 @@ app-topbar {
 
 .shell__content {
   flex: 1;
-  overflow-y: auto;     // ONLY this element scrolls
+  overflow-y: auto;     // scroll at shell level for normal pages
   overflow-x: hidden;
   padding: 28px 32px;
   min-height: 0;

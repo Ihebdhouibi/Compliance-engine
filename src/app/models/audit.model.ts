@@ -40,6 +40,36 @@ export interface AuditFormTemplate {
   active:       boolean;
   createdAt:    Date;
   steps:        AuditFormStep[];
+  processSteps?: AuditProcessStep[];  // ADD — populated when fetched with process steps
+}
+
+// ── NEW: audit process steps defined by admin on the template
+export interface AuditProcessStep {
+  id:          number;
+  name:        string;
+  stepOrder:   number;
+  isDefault:   boolean;
+  createdAt?:  string;
+}
+
+// ── NEW: result filled by auditor per step per request
+export interface AuditStepResult {
+  id:           number;
+  stepName:     string;
+  processStep?: { id: number; name: string; stepOrder: number };
+  description:  string;
+  status:       'DRAFT' | 'SAVED';
+  filledBy?:    User;
+  createdAt:    string;
+  updatedAt:    string;
+}
+
+// ── NEW: lightweight template ref returned inside AuditRequest
+export interface AuditRequestTemplate {
+  id:           number;
+  title:        string;
+  auditType:    AuditType;
+  processSteps?: AuditProcessStep[];
 }
 
 export interface AuditRequestAnswer {
@@ -47,13 +77,14 @@ export interface AuditRequestAnswer {
   fieldId:      number;
   fieldLabel:   string;
   answerValue?: string;
-  fileMedia?:   MediaModel;   // populated only for FILE-type fields
+  fileMedia?:   MediaModel;
 }
 
 export interface AuditRequest {
   id:               number;
   auditType:        AuditType;
   status:           AuditStatus;
+  template?:        AuditRequestTemplate;  // ADD — linked template with processSteps
   submittedBy:      User;
   assignedTo?:      User;
   dueDate?:         Date;
@@ -64,7 +95,7 @@ export interface AuditRequest {
   answers:          AuditRequestAnswer[];
 }
 
-// ── Request payloads
+// ── Request payloads — all unchanged
 export interface SubmitAuditAnswerPayload {
   fieldId:      number;
   fieldLabel:   string;
@@ -106,4 +137,20 @@ export interface AddFieldPayload {
   required?:    boolean;
   fieldOrder?:  number;
   options?:     AddFieldOptionPayload[];
+}
+
+// ── Step result payloads
+export interface SaveStepResultPayload {
+  processStepId: number;
+  stepName:      string;
+  description:   string;
+  status:        'DRAFT' | 'SAVED';
+}
+
+export interface AuditProcessStep {
+  id: number;
+  name: string;
+  stepOrder: number;
+  isDefault: boolean;
+  createdAt?: string;
 }

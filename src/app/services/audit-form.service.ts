@@ -64,4 +64,12 @@ export class AuditFormService {
     return this.http.patch<void>(
       `${this.base}/steps/${stepId}/fields/reorder`, fields);
   }
+
+  updateTemplate(id: number, payload: { title: string; description?: string }): Observable<AuditFormTemplate> {
+  return this.http.patch<AuditFormTemplate>(
+    `${this.base}/templates/${id}`, payload);
+}
+
+
+
 }

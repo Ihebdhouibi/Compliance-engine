@@ -111,6 +111,12 @@ export class AuditRequestService {
       `${this.auditorBase}/my-audits/${id}/reassign`, payload);
   }
 
+  auditorGetAuditById(id: number): Observable<AuditRequest> {
+  return this.http.get<AuditRequest>(
+    `${this.auditorBase}/my-audits/${id}`
+  );
+}
+
   // ── File helpers
 
   getFileUrl(relativePath: string): string {
@@ -156,4 +162,9 @@ export class AuditRequestService {
   openFile(relativePath: string): void {
     window.open(this.getFileUrl(relativePath), '_blank');
   }
+
+  getProcessStepsByAuditType(auditType: string, isAuditor: boolean): Observable<any[]> {
+  const base = isAuditor ? this.auditorBase : this.adminBase;
+  return this.http.get<any[]>(`${base}/process-steps/${auditType}`);
+}
 }
