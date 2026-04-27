@@ -65,7 +65,7 @@ public class User implements Serializable {
     @Column(name = "timestamp")
     private Date timestamp = new Date();
     @JsonIgnore
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name="user_device")
     private UserDevice device;
 

@@ -7,9 +7,12 @@ import com.devteam.aiauditserver.enums.Project.AuditType;
 import com.devteam.aiauditserver.models.project.AuditForm.AuditFormField;
 import com.devteam.aiauditserver.models.project.AuditForm.AuditFormStep;
 import com.devteam.aiauditserver.models.project.AuditForm.AuditFormTemplate;
+import com.devteam.aiauditserver.models.project.AuditRequest.AuditProcessStep;
 import com.devteam.aiauditserver.models.project.AuditRequest.AuditRequest;
 import com.devteam.aiauditserver.repositories.project.AuditFormFieldRepository;
 import com.devteam.aiauditserver.repositories.project.AuditFormStepRepository;
+import com.devteam.aiauditserver.repositories.project.AuditFormTemplateRepository;
+import com.devteam.aiauditserver.repositories.project.AuditProcessStepRepository;
 import com.devteam.aiauditserver.requests.project.AddFieldRequest;
 import com.devteam.aiauditserver.requests.project.AddStepRequest;
 import com.devteam.aiauditserver.requests.project.AssignAuditRequest;
@@ -47,6 +50,12 @@ public class AdminAuditsController extends BaseController {
 
     @Autowired
     private AuditFormFieldRepository fieldRepository;
+
+    @Autowired
+    private AuditFormTemplateRepository templateRepository;
+
+    @Autowired
+    private AuditProcessStepRepository processStepRepository;
 
     // ════════════════════════════════════════
     // FORM TEMPLATE MANAGEMENT
@@ -87,6 +96,14 @@ public class AdminAuditsController extends BaseController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AuditFormTemplate> toggleTemplate(@PathVariable Long id) {
         return ResponseEntity.ok(templateService.toggleActive(id));
+    }
+
+    @PatchMapping("/templates/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<AuditFormTemplate> updateTemplate(
+            @PathVariable Long id,
+            @RequestBody CreateAuditFormTemplateRequest req) {
+        return ResponseEntity.ok(templateService.updateTemplate(id, req));
     }
 
     // ── Steps
@@ -226,5 +243,16 @@ public class AdminAuditsController extends BaseController {
             }
         }
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/process-steps/{auditType}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<AuditProcessStep>> getProcessStepsForAuditType(
+            @PathVariable AuditType auditType) {
+        return templateRepository.findByAuditType(auditType)
+                .map(template -> ResponseEntity.ok(
+                        processStepRepository.findByTemplateIdOrderByStepOrderAsc(template.getId())
+                ))
+                .orElse(ResponseEntity.ok(List.of()));
     }
 }

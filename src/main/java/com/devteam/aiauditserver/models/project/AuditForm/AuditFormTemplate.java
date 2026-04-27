@@ -2,13 +2,12 @@ package com.devteam.aiauditserver.models.project.AuditForm;
 
 
 import com.devteam.aiauditserver.enums.Project.AuditType;
+import com.devteam.aiauditserver.models.project.AuditRequest.AuditProcessStep;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Table(name = "audit_form_templates")
@@ -43,6 +42,14 @@ public class AuditFormTemplate {
     @JsonManagedReference("template-steps")
     private List<AuditFormStep> steps = new ArrayList<>();
 
+    @OneToMany(mappedBy = "template",
+            cascade = CascadeType.ALL,
+            orphanRemoval = false,
+            fetch = FetchType.LAZY)
+    @OrderBy("stepOrder ASC")
+    @JsonManagedReference("template-process-steps")
+    private Set<AuditProcessStep> processSteps = new HashSet<>();
+
     // ── Getters & Setters
 
     public Long getId() { return id; }
@@ -65,4 +72,12 @@ public class AuditFormTemplate {
 
     public List<AuditFormStep> getSteps() { return steps; }
     public void setSteps(List<AuditFormStep> steps) { this.steps = steps; }
+
+    public Set<AuditProcessStep> getProcessSteps() {
+        return processSteps;
+    }
+
+    public void setProcessSteps(Set<AuditProcessStep> processSteps) {
+        this.processSteps = processSteps;
+    }
 }

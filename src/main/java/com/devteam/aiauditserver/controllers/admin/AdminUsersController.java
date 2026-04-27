@@ -117,4 +117,20 @@ public class AdminUsersController extends BaseController {
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
+
+
+    @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    @ApiOperation(value = "Delete a user by ID", notes = "Endpoint to soft delete a user from the system")
+    public ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        try {
+            if (!userService.existById(id)) {
+                return new ResponseEntity<>("User not found with id: " + id, HttpStatus.NOT_FOUND);
+            }
+            userService.deleteUser(id);
+            return new ResponseEntity<>("User deleted successfully", HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>("Error occurred while deleting user", HttpStatus.NOT_ACCEPTABLE);
+        }
+    }
 }

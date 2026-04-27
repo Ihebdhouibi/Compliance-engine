@@ -60,6 +60,17 @@ public class AuditFormTemplateService {
         return templateRepository.save(template);
     }
 
+    public AuditFormTemplate updateTemplate(Long id, CreateAuditFormTemplateRequest req) {
+        AuditFormTemplate template = getById(id);
+        if (req.getTitle() != null && !req.getTitle().isBlank()) {
+            template.setTitle(req.getTitle());
+        }
+        if (req.getDescription() != null) {
+            template.setDescription(req.getDescription());
+        }
+        return templateRepository.save(template);
+    }
+
     // ── Add step to template
     public AuditFormStep addStep(Long templateId, AddStepRequest req) {
         AuditFormTemplate template = getById(templateId);
