@@ -1,0 +1,15 @@
+# -- Knowledge base & embeddings --
+qdrant-client==1.12.1
+fastembed==0.4.2
+
+# -- API layer --
+fastapi==0.135.1
+uvicorn==0.41.0
+python-dotenv==1.2.2
+
+# -- LLM integration --
+openai==2.26.0
+
+# -- Streamlit UI --
+streamlit==1.55.0
+httpx==0.28.1

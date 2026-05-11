@@ -107,3 +107,6 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Keep Python requirements tracked despite *.txt rule above
+!requirements.txt
