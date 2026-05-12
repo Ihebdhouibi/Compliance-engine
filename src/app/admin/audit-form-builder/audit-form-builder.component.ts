@@ -89,6 +89,14 @@ export class AuditFormBuilderComponent implements OnInit {
   editOptLabel      = '';
   editOptValue      = '';
 
+  // ── Field preview / expand inline
+  expandedFieldId: number | null = null;
+
+  toggleFieldExpand(field: AuditFormField, e?: Event): void {
+    if (e) { e.stopPropagation(); e.preventDefault(); }
+    this.expandedFieldId = this.expandedFieldId === field.id ? null : (field.id ?? null);
+  }
+
   // ── Drag — form steps
   dragStepIdx:     number | null = null;
   dragOverStepIdx: number | null = null;

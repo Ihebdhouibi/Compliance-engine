@@ -583,12 +583,19 @@
           <div class="fi-left">
             <span class="fi-type-tag">{{ fieldTypeIcon(f.fieldType) }}</span>
             <div class="fi-info">
-              <span class="fi-label">{{ f.label }}</span>
+              <span class="fi-label"
+                    [class.fi-label--expanded]="expandedFieldId === f.id"
+                    [title]="f.label">{{ f.label }}</span>
               <span class="fi-type-name">{{ fieldTypeLabel(f.fieldType) }}</span>
             </div>
           </div>
           <div class="fi-right">
             <span class="fi-req-badge" *ngIf="f.required">Required</span>
+            <button class="more-btn" type="button"
+                    [title]="expandedFieldId === f.id ? 'Hide details' : 'Read more'"
+                    (click)="toggleFieldExpand(f, $event)">
+              {{ expandedFieldId === f.id ? 'Hide' : 'Read more' }}
+            </button>
             <button class="edit-btn" title="Edit field"
                     (click)="startEditField(f, $event)">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -610,6 +617,23 @@
 
         <div class="fi-options" *ngIf="f.options?.length && editingFieldId !== f.id">
           <span class="fi-opt" *ngFor="let o of f.options">{{ o.label }}</span>
+        </div>
+
+        <div class="fi-details" *ngIf="expandedFieldId === f.id && editingFieldId !== f.id">
+          <div class="fi-detail-row">
+            <span class="fi-detail-label">Full label</span>
+            <span class="fi-detail-value">{{ f.label }}</span>
+          </div>
+          <div class="fi-detail-row" *ngIf="f.placeholder">
+            <span class="fi-detail-label">Placeholder / hint</span>
+            <span class="fi-detail-value fi-detail-value--muted">{{ f.placeholder }}</span>
+          </div>
+          <div class="fi-detail-row" *ngIf="f.options?.length">
+            <span class="fi-detail-label">Options</span>
+            <ul class="fi-detail-options">
+              <li *ngFor="let o of f.options">{{ o.label }}<span *ngIf="o.value && o.value !== o.label" class="fi-detail-opt-val"> — {{ o.value }}</span></li>
+            </ul>
+          </div>
         </div>
 
         <div class="field-edit-form" *ngIf="editingFieldId === f.id">
