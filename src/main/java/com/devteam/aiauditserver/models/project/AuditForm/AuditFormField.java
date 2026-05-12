@@ -22,10 +22,10 @@ public class AuditFormField {
     @Column(name = "field_order", nullable = false)
     private Integer fieldOrder;
 
-    @Column(name = "label", nullable = false)
+    @Column(name = "label", nullable = false, columnDefinition = "TEXT")
     private String label;
 
-    @Column(name = "placeholder")
+    @Column(name = "placeholder", columnDefinition = "TEXT")
     private String placeholder;
 
     @Enumerated(EnumType.STRING)
@@ -34,6 +34,10 @@ public class AuditFormField {
 
     @Column(name = "required")
     private Boolean required = false;
+
+    /** When fieldType=FILE, allows multiple files per answer. Ignored for other field types. */
+    @Column(name = "multiple_files")
+    private Boolean multipleFiles = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "step_id", nullable = false)
@@ -71,6 +75,9 @@ public class AuditFormField {
 
     public Boolean getRequired() { return required; }
     public void setRequired(Boolean required) { this.required = required; }
+
+    public Boolean getMultipleFiles() { return multipleFiles; }
+    public void setMultipleFiles(Boolean multipleFiles) { this.multipleFiles = multipleFiles; }
 
     public AuditFormStep getStep() { return step; }
     public void setStep(AuditFormStep step) { this.step = step; }

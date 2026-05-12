@@ -45,6 +45,18 @@ export class AuditRequestService {
       `${this.userBase}/my-requests/${requestId}/upload/${fieldId}`, fd);
   }
 
+  uploadAnswerFiles(requestId: number, fieldId: number, files: File[]): Observable<AuditRequest> {
+    const fd = new FormData();
+    files.forEach(f => fd.append('files', f));
+    return this.http.patch<AuditRequest>(
+      `${this.userBase}/my-requests/${requestId}/upload-multi/${fieldId}`, fd);
+  }
+
+  deleteAnswerFile(requestId: number, fieldId: number, fileId: number): Observable<AuditRequest> {
+    return this.http.delete<AuditRequest>(
+      `${this.userBase}/my-requests/${requestId}/upload/${fieldId}/file/${fileId}`);
+  }
+
   // ── ADMIN
   adminGetAllRequests(
     page = 0, size = 10,

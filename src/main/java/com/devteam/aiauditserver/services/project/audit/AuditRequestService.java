@@ -4,9 +4,13 @@ package com.devteam.aiauditserver.services.project.audit;
 import com.devteam.aiauditserver.enums.Project.AuditStatus;
 import com.devteam.aiauditserver.models.File.MediaModel;
 import com.devteam.aiauditserver.models.User.User;
+import com.devteam.aiauditserver.models.project.AuditForm.AuditFormField;
 import com.devteam.aiauditserver.models.project.AuditRequest.AuditRequest;
 import com.devteam.aiauditserver.models.project.AuditRequest.AuditRequestAnswer;
+import com.devteam.aiauditserver.models.project.AuditRequest.AuditRequestAnswerFile;
 import com.devteam.aiauditserver.repositories.File.FilesStorageService;
+import com.devteam.aiauditserver.repositories.project.AuditFormFieldRepository;
+import com.devteam.aiauditserver.repositories.project.AuditRequestAnswerFileRepository;
 import com.devteam.aiauditserver.repositories.project.AuditRequestAnswerRepository;
 import com.devteam.aiauditserver.repositories.project.AuditRequestRepository;
 import com.devteam.aiauditserver.requests.project.AssignAuditRequest;
@@ -36,6 +40,12 @@ public class AuditRequestService {
     private AuditRequestAnswerRepository answerRepository;
 
     @Autowired
+    private AuditRequestAnswerFileRepository answerFileRepository;
+
+    @Autowired
+    private AuditFormFieldRepository fieldRepository;
+
+    @Autowired
     private FilesStorageService filesStorageService;
 
 
@@ -46,25 +56,66 @@ public class AuditRequestService {
 
         AuditRequest auditRequest = getById(requestId);
 
+        AuditFormField field = fieldRepository.findById(fieldId).orElse(null);
+        boolean multi = field != null
+                && Boolean.TRUE.equals(field.getMultipleFiles());
+        String fieldLabel = field != null ? field.getLabel() : "File Upload";
+
         // Find existing answer for this field or create a new one
         AuditRequestAnswer answer = answerRepository
                 .findByAuditRequestIdAndFieldId(requestId, fieldId)
                 .orElseGet(() -> {
                     AuditRequestAnswer a = new AuditRequestAnswer();
                     a.setFieldId(fieldId);
-                    a.setFieldLabel("File Upload");   // overwritten below if found
+                    a.setFieldLabel(fieldLabel);
                     a.setAuditRequest(auditRequest);
                     return a;
                 });
 
-        // Save the file and get a MediaModel back — same pattern as profile image
         MediaModel saved = filesStorageService.save_file(
                 file, "audits/answers/" + requestId);
 
-        answer.setFileMedia(saved);
+        if (multi) {
+            int order = answer.getFiles() != null ? answer.getFiles().size() : 0;
+            AuditRequestAnswerFile entry = new AuditRequestAnswerFile(saved, answer, order);
+            answer.getFiles().add(entry);
+        } else {
+            answer.setFileMedia(saved);
+        }
         answerRepository.save(answer);
 
         // Return the refreshed request with answers
+        return getById(requestId);
+    }
+
+    @Transactional
+    public AuditRequest uploadAnswerFiles(Long requestId,
+                                          Long fieldId,
+                                          MultipartFile[] files) {
+        if (files != null) {
+            for (MultipartFile f : files) {
+                if (f != null && !f.isEmpty()) {
+                    uploadAnswerFile(requestId, fieldId, f);
+                }
+            }
+        }
+        return getById(requestId);
+    }
+
+    @Transactional
+    public AuditRequest removeAnswerFile(Long requestId, Long fieldId, Long fileId) {
+        AuditRequestAnswer answer = answerRepository
+                .findByAuditRequestIdAndFieldId(requestId, fieldId)
+                .orElseThrow(() -> new RuntimeException("Answer not found"));
+
+        AuditRequestAnswerFile target = answer.getFiles().stream()
+                .filter(f -> f.getId().equals(fileId))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("File not found in answer"));
+
+        answer.getFiles().remove(target);
+        answerFileRepository.delete(target);
+        answerRepository.save(answer);
         return getById(requestId);
     }
 

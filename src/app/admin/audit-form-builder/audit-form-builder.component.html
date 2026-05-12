@@ -6,14 +6,29 @@
       <h1>Audit Form Builder</h1>
       <p>Design dynamic audit forms and configure auditor workflow steps</p>
     </div>
-    <button class="btn-add" (click)="showCreateTemplate = !showCreateTemplate">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-           width="15" height="15" style="display:block;">
-        <line x1="12" y1="5" x2="12" y2="19"/>
-        <line x1="5" y1="12" x2="19" y2="12"/>
-      </svg>
-      New Template
-    </button>
+    <div class="page-header__actions">
+      <button class="btn-add btn-add--ghost"
+              (click)="generateDefaultRicsTemplate()"
+              [disabled]="isSaving"
+              title="Generate the built-in RICS Responsible AI review form">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             width="14" height="14" style="display:block;">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="9"  y1="13" x2="15" y2="13"/>
+          <line x1="9"  y1="17" x2="15" y2="17"/>
+        </svg>
+        Default RICS Template
+      </button>
+      <button class="btn-add" (click)="showCreateTemplate = !showCreateTemplate">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+             width="15" height="15" style="display:block;">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        New Template
+      </button>
+    </div>
   </div>
 
   <!-- Alerts -->
@@ -494,6 +509,11 @@
             <label for="req-check">Mark as required</label>
           </div>
 
+          <div class="f-check" *ngIf="addFieldForm.get('fieldType')?.value === 'FILE'">
+            <input type="checkbox" formControlName="multipleFiles" id="multi-check"/>
+            <label for="multi-check">Allow multiple files</label>
+          </div>
+
           <div class="options-section" *ngIf="hasOptions(currentFieldType)">
             <div class="options-header">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -632,6 +652,11 @@
             <div class="f-check">
               <input type="checkbox" formControlName="required" id="edit-req-check"/>
               <label for="edit-req-check">Mark as required</label>
+            </div>
+
+            <div class="f-check" *ngIf="editFieldForm.get('fieldType')?.value === 'FILE'">
+              <input type="checkbox" formControlName="multipleFiles" id="edit-multi-check"/>
+              <label for="edit-multi-check">Allow multiple files</label>
             </div>
 
             <div class="options-section" *ngIf="hasOptions(editFieldType)">

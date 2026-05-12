@@ -1,7 +1,11 @@
 import { MediaModel } from './media.model';
 import { User } from './user.model';
 
-export type AuditType   = 'RICS_AUDIT';
+export type AuditType =
+  | 'AI_READINESS_REVIEW'
+  | 'INTERNAL_AI_GOVERNANCE'
+  | 'RESPONSIBLE_AI_ASSURANCE'
+  | 'RICS_RESPONSIBLE_AI';
 export type AuditStatus = 'SUBMITTED' | 'ASSIGNED' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED';
 export type FieldType   =
   | 'TEXT' | 'TEXTAREA' | 'NUMBER' | 'EMAIL' | 'DATE'
@@ -15,13 +19,14 @@ export interface AuditFormFieldOption {
 }
 
 export interface AuditFormField {
-  id:           number;
-  fieldOrder:   number;
-  label:        string;
-  placeholder?: string;
-  fieldType:    FieldType;
-  required:     boolean;
-  options:      AuditFormFieldOption[];
+  id:             number;
+  fieldOrder:     number;
+  label:          string;
+  placeholder?:   string;
+  fieldType:      FieldType;
+  required:       boolean;
+  multipleFiles?: boolean;
+  options:        AuditFormFieldOption[];
 }
 
 export interface AuditFormStep {
@@ -72,12 +77,19 @@ export interface AuditRequestTemplate {
   processSteps?: AuditProcessStep[];
 }
 
+export interface AuditRequestAnswerFile {
+  id:        number;
+  media:     MediaModel;
+  fileOrder: number;
+}
+
 export interface AuditRequestAnswer {
   id:           number;
   fieldId:      number;
   fieldLabel:   string;
   answerValue?: string;
   fileMedia?:   MediaModel;
+  files?:       AuditRequestAnswerFile[];
 }
 
 export interface AuditRequest {
@@ -131,12 +143,13 @@ export interface AddFieldOptionPayload {
 }
 
 export interface AddFieldPayload {
-  label:        string;
-  placeholder?: string;
-  fieldType:    FieldType;
-  required?:    boolean;
-  fieldOrder?:  number;
-  options?:     AddFieldOptionPayload[];
+  label:          string;
+  placeholder?:   string;
+  fieldType:      FieldType;
+  required?:      boolean;
+  multipleFiles?: boolean;
+  fieldOrder?:    number;
+  options?:       AddFieldOptionPayload[];
 }
 
 // ── Step result payloads

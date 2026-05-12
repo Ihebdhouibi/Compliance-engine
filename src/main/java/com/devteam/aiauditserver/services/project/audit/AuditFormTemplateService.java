@@ -105,6 +105,7 @@ public class AuditFormTemplateService {
         field.setPlaceholder(req.getPlaceholder());
         field.setFieldType(req.getFieldType());
         field.setRequired(req.getRequired() != null ? req.getRequired() : false);
+        field.setMultipleFiles(req.getMultipleFiles() != null ? req.getMultipleFiles() : false);
 
         int order = req.getFieldOrder() != null
                 ? req.getFieldOrder()

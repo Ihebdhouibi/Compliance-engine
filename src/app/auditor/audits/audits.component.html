@@ -198,7 +198,24 @@
                     (click)="svc.downloadFile(a.fileMedia.url, a.fileMedia.name);
                              $event.stopPropagation()">Download</button>
           </div>
-          <span *ngIf="!a.fileMedia" class="a-value">{{ a.answerValue || '—' }}</span>
+          <div *ngIf="a.files && a.files.length > 0" class="a-files-list">
+            <div *ngFor="let f of a.files" class="a-file-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                   width="14" height="14"
+                   style="display:block;flex-shrink:0;color:var(--color-accent,#00d4ed);">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+              <span class="file-name">{{ f.media.name }}</span>
+              <button class="file-action-btn"
+                      (click)="openFileViewer(svc.getFileUrl(f.media.url), f.media.name);
+                               $event.stopPropagation()">Open</button>
+              <button class="file-action-btn file-action-btn--dl"
+                      (click)="svc.downloadFile(f.media.url, f.media.name);
+                               $event.stopPropagation()">Download</button>
+            </div>
+          </div>
+          <span *ngIf="!a.fileMedia && (!a.files || a.files.length === 0)" class="a-value">{{ a.answerValue || '—' }}</span>
         </div>
       </div>
 

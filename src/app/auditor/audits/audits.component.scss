@@ -290,6 +290,7 @@ table { width: 100%; border-collapse: collapse;
 
 .a-value { font-size: .88rem; color: #fff; line-height: 1.5; }
 
+.a-files-list { display: flex; flex-direction: column; gap: 6px; }
 .a-file-row {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
 }

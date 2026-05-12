@@ -10,6 +10,7 @@ public class AddFieldRequest {
     private String placeholder;
     private FieldType fieldType;
     private Boolean required = false;
+    private Boolean multipleFiles = false;
     private Integer fieldOrder;
     private List<FieldOptionRequest> options;
 
@@ -39,6 +40,9 @@ public class AddFieldRequest {
 
     public Boolean getRequired() { return required; }
     public void setRequired(Boolean required) { this.required = required; }
+
+    public Boolean getMultipleFiles() { return multipleFiles; }
+    public void setMultipleFiles(Boolean multipleFiles) { this.multipleFiles = multipleFiles; }
 
     public Integer getFieldOrder() { return fieldOrder; }
     public void setFieldOrder(Integer fieldOrder) { this.fieldOrder = fieldOrder; }

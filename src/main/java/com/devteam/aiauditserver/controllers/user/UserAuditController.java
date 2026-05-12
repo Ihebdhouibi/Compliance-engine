@@ -102,4 +102,45 @@ public class UserAuditController extends BaseController {
         AuditRequest updated = requestService.uploadAnswerFile(requestId, fieldId, file);
         return ResponseEntity.ok(updated);
     }
+
+    @PatchMapping("/my-requests/{requestId}/upload-multi/{fieldId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> uploadAnswerFiles(
+            @PathVariable Long requestId,
+            @PathVariable Long fieldId,
+            @RequestParam("files") MultipartFile[] files) {
+
+        User me = userService.findByUserName(getCurrentUser().getUsername());
+        AuditRequest request = requestService.getById(requestId);
+
+        if (!request.getSubmittedBy().getId().equals(me.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body("You can only upload files to your own requests");
+        }
+
+        if (files == null || files.length == 0) {
+            return ResponseEntity.badRequest().body("At least one file is required");
+        }
+
+        AuditRequest updated = requestService.uploadAnswerFiles(requestId, fieldId, files);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/my-requests/{requestId}/upload/{fieldId}/file/{fileId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<?> removeAnswerFile(
+            @PathVariable Long requestId,
+            @PathVariable Long fieldId,
+            @PathVariable Long fileId) {
+
+        User me = userService.findByUserName(getCurrentUser().getUsername());
+        AuditRequest request = requestService.getById(requestId);
+
+        if (!request.getSubmittedBy().getId().equals(me.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        AuditRequest updated = requestService.removeAnswerFile(requestId, fieldId, fileId);
+        return ResponseEntity.ok(updated);
+    }
 }

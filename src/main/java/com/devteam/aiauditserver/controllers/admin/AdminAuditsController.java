@@ -22,6 +22,7 @@ import com.devteam.aiauditserver.responses.Response.DynamicResponse;
 import com.devteam.aiauditserver.services.auth.UserService;
 import com.devteam.aiauditserver.services.project.audit.AuditFormTemplateService;
 import com.devteam.aiauditserver.services.project.audit.AuditRequestService;
+import com.devteam.aiauditserver.services.project.audit.DefaultTemplateLoaderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -38,6 +39,9 @@ public class AdminAuditsController extends BaseController {
 
     @Autowired
     private AuditFormTemplateService templateService;
+
+    @Autowired
+    private DefaultTemplateLoaderService defaultTemplateLoaderService;
 
     @Autowired
     private AuditRequestService requestService;
@@ -89,6 +93,20 @@ public class AdminAuditsController extends BaseController {
             return new ResponseEntity<>(created, HttpStatus.CREATED);
         } catch (RuntimeException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        }
+    }
+
+    @PostMapping("/templates/generate-default-rics")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> generateDefaultRicsTemplate() {
+        try {
+            AuditFormTemplate created =
+                    defaultTemplateLoaderService.generateDefaultRicsTemplate();
+            return new ResponseEntity<>(created, HttpStatus.CREATED);
+        } catch (IllegalStateException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 

@@ -1,5 +1,6 @@
 import {
-  Component, OnInit, ChangeDetectorRef, Renderer2
+  Component, OnInit, ChangeDetectorRef, Renderer2,
+  ViewChild, ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -57,7 +58,7 @@ export class AuditsComponent implements OnInit {
 
   currentStepIdx    = 0;
   formState:        FormState = {};
-  fileMap:          { [fieldId: number]: File } = {};
+  fileMap:          { [fieldId: number]: File[] } = {};
   isSubmitting      = false;
   submitSuccess     = false;
   uploadingFieldId: number | null = null;
@@ -68,7 +69,10 @@ export class AuditsComponent implements OnInit {
   errorMsg   = '';
 
   readonly auditTypes: { value: AuditType; label: string }[] = [
-    { value: 'RICS_AUDIT', label: 'RICS Compliance Audit' }
+    { value: 'AI_READINESS_REVIEW',     label: 'AI Readiness Review' },
+    { value: 'INTERNAL_AI_GOVERNANCE',  label: 'Internal AI Governance Review' },
+    { value: 'RESPONSIBLE_AI_ASSURANCE',label: 'Responsible AI Assurance Review' },
+    { value: 'RICS_RESPONSIBLE_AI',     label: 'RICS Responsible AI Review' }
   ];
 
   constructor(
@@ -196,46 +200,83 @@ export class AuditsComponent implements OnInit {
   }
   get totalSteps(): number { return this.auditForm?.steps?.length ?? 0; }
 
+  private findFieldById(fieldId: number): AuditFormField | null {
+    if (!this.auditForm) return null;
+    for (const step of this.auditForm.steps) {
+      const f = step.fields.find(x => x.id === fieldId);
+      if (f) return f;
+    }
+    return null;
+  }
+
   validateCurrentStep(): boolean {
     this.validationErrors = {};
     if (!this.currentStep) return true;
 
     let valid = true;
+    let firstInvalidId: number | null = null;
     for (const field of this.currentStep.fields) {
       if (!field.required) continue;
 
       if (field.fieldType === 'FILE') {
-        if (!this.fileMap[field.id]) {
+        const files = this.fileMap[field.id];
+        if (!files || files.length === 0) {
           this.validationErrors[field.id] = 'This file is required.';
           valid = false;
+          if (firstInvalidId === null) firstInvalidId = field.id;
         }
       } else if (field.fieldType === 'MULTI_CHECKBOX' || field.fieldType === 'CHECKBOX') {
         const v = this.getCheckboxValues(field.id);
         if (v.length === 0) {
           this.validationErrors[field.id] = 'Please select at least one option.';
           valid = false;
+          if (firstInvalidId === null) firstInvalidId = field.id;
         }
       } else {
         const v = this.getFieldValue(field.id);
         if (!v || v.trim() === '') {
           this.validationErrors[field.id] = 'This field is required.';
           valid = false;
+          if (firstInvalidId === null) firstInvalidId = field.id;
         }
       }
     }
     this.cdr.detectChanges();
+    if (!valid && firstInvalidId !== null) {
+      this.scrollToField(firstInvalidId);
+    }
     return valid;
+  }
+
+  private scrollToField(fieldId: number): void {
+    setTimeout(() => {
+      const el = document.getElementById('field-' + fieldId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 0);
   }
 
   nextStep(): void {
     if (!this.validateCurrentStep()) return;
     if (!this.isLastStep) this.currentStepIdx++;
     this.validationErrors = {};
+    this.scrollWizardToTop();
   }
 
   prevStep(): void {
     if (!this.isFirstStep) this.currentStepIdx--;
     this.validationErrors = {};
+    this.scrollWizardToTop();
+  }
+
+  @ViewChild('wizardBody') wizardBody?: ElementRef<HTMLElement>;
+
+  private scrollWizardToTop(): void {
+    setTimeout(() => {
+      const el = this.wizardBody?.nativeElement;
+      if (el) el.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 0);
   }
 
   getFieldValue(fieldId: number): string {
@@ -265,17 +306,44 @@ export class AuditsComponent implements OnInit {
     return this.getCheckboxValues(fieldId).includes(value);
   }
 
-  onFileChange(fieldId: number, e: Event): void {
-    const file = (e.target as HTMLInputElement).files?.[0];
-    if (file) {
-      this.fileMap[fieldId]   = file;
-      this.formState[fieldId] = file.name;
-      delete this.validationErrors[fieldId];
+  onFileChange(fieldId: number, e: Event, multiple = false): void {
+    const input = e.target as HTMLInputElement;
+    const list  = input.files;
+    if (!list || list.length === 0) return;
+    const incoming = Array.from(list);
+
+    if (multiple) {
+      const existing = this.fileMap[fieldId] ?? [];
+      this.fileMap[fieldId] = [...existing, ...incoming];
+    } else {
+      this.fileMap[fieldId] = [incoming[0]];
+    }
+    this.formState[fieldId] = this.fileMap[fieldId].map(f => f.name).join(', ');
+    delete this.validationErrors[fieldId];
+    // Allow re-selecting the same file later
+    input.value = '';
+  }
+
+  removePendingFile(fieldId: number, index: number): void {
+    const files = this.fileMap[fieldId];
+    if (!files) return;
+    files.splice(index, 1);
+    if (files.length === 0) {
+      delete this.fileMap[fieldId];
+      delete this.formState[fieldId];
+    } else {
+      this.formState[fieldId] = files.map(f => f.name).join(', ');
     }
   }
 
+  getPendingFiles(fieldId: number): File[] {
+    return this.fileMap[fieldId] ?? [];
+  }
+
   getFileName(fieldId: number): string {
-    return this.fileMap[fieldId]?.name ?? '';
+    const files = this.fileMap[fieldId];
+    if (!files || files.length === 0) return '';
+    return files.length === 1 ? files[0].name : `${files.length} files selected`;
   }
 
   async submitAudit(): Promise<void> {
@@ -308,10 +376,16 @@ export class AuditsComponent implements OnInit {
       next: async (created) => {
         const fileFieldIds = Object.keys(this.fileMap).map(Number);
         for (const fieldId of fileFieldIds) {
+          const files = this.fileMap[fieldId];
+          if (!files || files.length === 0) continue;
           this.uploadingFieldId = fieldId;
           try {
-            await this.svc.uploadAnswerFile(
-              created.id, fieldId, this.fileMap[fieldId]).toPromise();
+            const field = this.findFieldById(fieldId);
+            if (field?.multipleFiles) {
+              await this.svc.uploadAnswerFiles(created.id, fieldId, files).toPromise();
+            } else {
+              await this.svc.uploadAnswerFile(created.id, fieldId, files[0]).toPromise();
+            }
           } catch {}
         }
         this.uploadingFieldId = null;

@@ -30,6 +30,12 @@ export class AuditFormService {
     return this.http.post<AuditFormTemplate>(`${this.base}/templates`, payload);
   }
 
+  /** Generates the built-in RICS Responsible AI template from the knowledge base. */
+  generateDefaultRicsTemplate(): Observable<AuditFormTemplate> {
+    return this.http.post<AuditFormTemplate>(
+      `${this.base}/templates/generate-default-rics`, null);
+  }
+
   toggleTemplate(id: number): Observable<AuditFormTemplate> {
     return this.http.patch<AuditFormTemplate>(
       `${this.base}/templates/${id}/toggle`, null);

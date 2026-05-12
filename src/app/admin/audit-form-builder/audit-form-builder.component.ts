@@ -27,7 +27,10 @@ export const FIELD_TYPES: { value: FieldType; label: string; icon: string }[] = 
 ];
 
 const AUDIT_TYPES: { value: AuditType; label: string }[] = [
-  { value: 'RICS_AUDIT', label: 'RICS Audit' }
+  { value: 'AI_READINESS_REVIEW',     label: 'AI Readiness Review' },
+  { value: 'INTERNAL_AI_GOVERNANCE',  label: 'Internal AI Governance Review' },
+  { value: 'RESPONSIBLE_AI_ASSURANCE',label: 'Responsible AI Assurance Review' },
+  { value: 'RICS_RESPONSIBLE_AI',     label: 'RICS Responsible AI Review' }
 ];
 
 @Component({
@@ -101,6 +104,10 @@ export class AuditFormBuilderComponent implements OnInit {
   hasOptions = (t: FieldType) =>
     ['DROPDOWN', 'RADIO', 'CHECKBOX', 'MULTI_CHECKBOX'].includes(t);
 
+  get hasRicsTemplate(): boolean {
+    return this.templates.some(t => t.auditType === 'RICS_RESPONSIBLE_AI');
+  }
+
   constructor(
     private svc:            AuditFormService,
     private fb:             FormBuilder,
@@ -134,16 +141,18 @@ export class AuditFormBuilderComponent implements OnInit {
       description: ['']
     });
     this.addFieldForm = this.fb.group({
-      label:       ['', Validators.required],
-      placeholder: [''],
-      fieldType:   ['TEXT', Validators.required],
-      required:    [false]
+      label:         ['', Validators.required],
+      placeholder:   [''],
+      fieldType:     ['TEXT', Validators.required],
+      required:      [false],
+      multipleFiles: [false]
     });
     this.editFieldForm = this.fb.group({
-      label:       ['', Validators.required],
-      placeholder: [''],
-      fieldType:   ['TEXT', Validators.required],
-      required:    [false]
+      label:         ['', Validators.required],
+      placeholder:   [''],
+      fieldType:     ['TEXT', Validators.required],
+      required:      [false],
+      multipleFiles: [false]
     });
     this.editTemplateForm = this.fb.group({
       title:       ['', Validators.required],
@@ -321,6 +330,26 @@ export class AuditFormBuilderComponent implements OnInit {
     });
   }
 
+  generateDefaultRicsTemplate(): void {
+    if (this.isSaving) return;
+    this.isSaving = true;
+    this.errorMsg = '';
+    this.svc.generateDefaultRicsTemplate().subscribe({
+      next: t => {
+        this.selectedTemplate = t;
+        this.selectedStep     = null;
+        this.isSaving         = false;
+        this.flash('Default RICS Responsible AI template generated.');
+        this.loadTemplates();
+      },
+      error: err => {
+        this.isSaving = false;
+        this.errorMsg = typeof err.error === 'string'
+          ? err.error : 'Failed to generate default RICS template.';
+      }
+    });
+  }
+
   // ════════════════════════════════════════
   // FORM STEPS
   // ════════════════════════════════════════
@@ -403,7 +432,7 @@ export class AuditFormBuilderComponent implements OnInit {
         this.selectedStep!.fields.push(field);
         this.showAddField = false;
         this.addFieldForm.reset({
-          label: '', placeholder: '', fieldType: 'TEXT', required: false
+          label: '', placeholder: '', fieldType: 'TEXT', required: false, multipleFiles: false
         });
         this.fieldOptions = [];
         this.isSaving     = false;
@@ -428,10 +457,11 @@ export class AuditFormBuilderComponent implements OnInit {
     this.editingFieldId = field.id;
     this.showAddField   = false;
     this.editFieldForm.patchValue({
-      label:       field.label,
-      placeholder: field.placeholder ?? '',
-      fieldType:   field.fieldType,
-      required:    field.required
+      label:         field.label,
+      placeholder:   field.placeholder ?? '',
+      fieldType:     field.fieldType,
+      required:      field.required,
+      multipleFiles: !!field.multipleFiles
     });
     this.editFieldOptions = field.options.map(o => ({
       label:       o.label,
