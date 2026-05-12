@@ -48,6 +48,9 @@ public class AuditRequestService {
     @Autowired
     private FilesStorageService filesStorageService;
 
+    @Autowired(required = false)
+    private com.devteam.aiauditserver.services.project.ocr.OcrOrchestratorService ocrOrchestrator;
+
 
     @Transactional
     public AuditRequest uploadAnswerFile(Long requestId,
@@ -137,7 +140,15 @@ public class AuditRequestService {
             }
         }
 
-        return requestRepository.save(auditRequest);
+        AuditRequest saved = requestRepository.save(auditRequest);
+
+        // Fire-and-forget OCR on all evidence attached to this request.
+        // Runs on a separate thread (@Async) so the HTTP submit returns fast.
+        if (ocrOrchestrator != null) {
+            try { ocrOrchestrator.submitEvidenceForOcr(saved); }
+            catch (Exception ignored) { /* never block submit on OCR */ }
+        }
+        return saved;
     }
 
     // ── Admin assigns audit to an auditor (or themselves)

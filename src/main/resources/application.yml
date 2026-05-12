@@ -48,6 +48,11 @@ spring:
     enabled: false
 server:
   port: ${PORT:8080}
+
+ocr:
+  base-url: ${OCR_BASE_URL:http://localhost:8000}
+  upload-root: ${OCR_UPLOAD_ROOT:WebContent}
+  callback-secret: ${OCR_CALLBACK_SECRET:dev-ocr-shared-secret-change-me}
   servlet:
     encoding:
       charset: UTF-8
