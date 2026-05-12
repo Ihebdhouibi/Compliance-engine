@@ -87,6 +87,13 @@ public class AuditRequestService {
         }
         answerRepository.save(answer);
 
+        // Fire OCR now that the media is actually persisted. Async — never
+        // blocks the upload response.
+        if (ocrOrchestrator != null) {
+            try { ocrOrchestrator.enqueueMedia(requestId, saved); }
+            catch (Exception ignored) { /* never block upload on OCR */ }
+        }
+
         // Return the refreshed request with answers
         return getById(requestId);
     }

@@ -332,8 +332,11 @@
 .data-file {
   display: flex; align-items: center; gap: 8px;
   padding: 4px 0;
+  flex-wrap: wrap;
   &__name {
-    flex: 1; font-size: .78rem; color: rgb(var(--fg-rgb) / .8);
+    flex: 1 1 100%;
+    min-width: 0;
+    font-size: .78rem; color: rgb(var(--fg-rgb) / .8);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   &__btn {
@@ -347,6 +350,104 @@
 }
 
 .data-files { display: flex; flex-direction: column; gap: 2px; }
+
+// ── OCR badge ───────────────────────────────────────────────
+.ocr-badge {
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &--pending {
+    background: rgb(var(--fg-rgb) / .08);
+    color:      rgb(var(--fg-rgb) / .55);
+    border: 1px solid rgb(var(--fg-rgb) / .12);
+  }
+  &--done {
+    background: rgba(16, 185, 129, .12);
+    color:      rgb(5, 122, 85);
+    border: 1px solid rgba(16, 185, 129, .35);
+  }
+  &--failed {
+    background: rgba(239, 68, 68, .12);
+    color:      rgb(185, 28, 28);
+    border: 1px solid rgba(239, 68, 68, .35);
+  }
+}
+
+.data-file__btn--ocr {
+  background: rgba(16, 185, 129, .14) !important;
+  border-color: rgba(16, 185, 129, .35) !important;
+  color: rgb(5, 122, 85) !important;
+  &:hover { background: rgba(16, 185, 129, .24) !important; }
+}
+
+.data-file__btn--retry {
+  background: rgba(239, 68, 68, .12) !important;
+  border-color: rgba(239, 68, 68, .35) !important;
+  color: rgb(185, 28, 28) !important;
+  &:hover { background: rgba(239, 68, 68, .22) !important; }
+}
+
+// ── OCR text viewer modal ───────────────────────────────────
+.ws-ocr-modal {
+  max-width: 720px;
+  width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ws-ocr-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 8px 16px;
+  font-size: .75rem;
+  color: rgb(var(--fg-rgb) / .75);
+  border-bottom: 1px solid rgb(var(--fg-rgb) / .08);
+  flex-shrink: 0;
+  strong { color: rgb(var(--fg-rgb) / .9); margin-right: 4px; }
+}
+
+.ws-ocr-body {
+  padding: 12px 16px 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto !important;
+  overflow-x: hidden;
+  display: block;          // override base flex center
+  align-items: stretch;
+  justify-content: flex-start;
+  background: rgb(var(--bg-card-rgb));
+}
+
+.ws-ocr-text {
+  margin: 0;
+  font-family: ui-monospace, "Cascadia Code", Consolas, Menlo, monospace;
+  font-size: .78rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: rgb(var(--fg-rgb) / .88);
+}
+
+.ws-ocr-empty { font-size: .8rem; color: rgb(var(--fg-rgb) / .55); }
+
+.ws-ocr-error {
+  background: rgba(239, 68, 68, .08);
+  border: 1px solid rgba(239, 68, 68, .35);
+  color: rgb(185, 28, 28);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: .78rem;
+  margin-bottom: 10px;
+}
 
 // ── AI Suggestions card ─────────────────────────────────────
 .ai-suggest {

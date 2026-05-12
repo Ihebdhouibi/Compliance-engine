@@ -166,6 +166,21 @@
             <span class="data-file__name" [title]="a.fileMedia.name">
               {{ a.fileMedia.name }}
             </span>
+            <span [class]="ocrClass(ocrFor(a.fileMedia.id))"
+                  [title]="ocrFor(a.fileMedia.id)?.error || ocrLabel(ocrFor(a.fileMedia.id))">
+              {{ ocrLabel(ocrFor(a.fileMedia.id)) }}
+            </span>
+            <button class="data-file__btn data-file__btn--ocr"
+                    *ngIf="ocrFor(a.fileMedia.id)?.status === 'DONE'"
+                    (click)="openOcrViewer(a.fileMedia.id)">
+              Preview evidence
+            </button>
+            <button class="data-file__btn data-file__btn--retry"
+                    *ngIf="isRetryable(ocrFor(a.fileMedia.id))"
+                    (click)="retryOcr(a.fileMedia.id, $event)"
+                    title="Re-run OCR on this file">
+              Retry
+            </button>
             <button class="data-file__btn"
                     (click)="openFileViewer(getFileUrl(a.fileMedia.url), a.fileMedia.name)">
               Open
@@ -183,6 +198,21 @@
               <span class="data-file__name" [title]="f.media.name">
                 {{ f.media.name }}
               </span>
+              <span [class]="ocrClass(ocrFor(f.media.id))"
+                    [title]="ocrFor(f.media.id)?.error || ocrLabel(ocrFor(f.media.id))">
+                {{ ocrLabel(ocrFor(f.media.id)) }}
+              </span>
+              <button class="data-file__btn data-file__btn--ocr"
+                      *ngIf="ocrFor(f.media.id)?.status === 'DONE'"
+                      (click)="openOcrViewer(f.media.id)">
+                Preview evidence
+              </button>
+              <button class="data-file__btn data-file__btn--retry"
+                      *ngIf="isRetryable(ocrFor(f.media.id))"
+                      (click)="retryOcr(f.media.id, $event)"
+                      title="Re-run OCR on this file">
+                Retry
+              </button>
               <button class="data-file__btn"
                       (click)="openFileViewer(getFileUrl(f.media.url), f.media.name)">
                 Open
@@ -326,6 +356,38 @@
            [src]="viewingFileUrl" [alt]="viewingFileName" class="file-preview-img"/>
       <iframe *ngIf="!isLoadingFile && viewingFileUrl && !isImage(viewingFileName || '')"
               [src]="viewingFileUrl" class="file-preview-iframe"></iframe>
+    </div>
+  </div>
+</ng-container>
+
+<!-- OCR extracted-text viewer -->
+<ng-container *ngIf="showOcrViewer && viewingOcr">
+  <div class="ws-file-backdrop" (click)="closeOcrViewer()"></div>
+  <div class="ws-file-modal ws-ocr-modal">
+    <div class="ws-file-head">
+      <span class="ws-file-name">
+        OCR · {{ viewingOcr.fileName || ('Media #' + viewingOcr.mediaId) }}
+      </span>
+      <button class="ws-file-close" (click)="closeOcrViewer()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" width="14" height="14" style="display:block;">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="ws-ocr-meta">
+      <span><strong>Status:</strong> {{ viewingOcr.status }}</span>
+      <span *ngIf="viewingOcr.pageCount != null"><strong>Pages:</strong> {{ viewingOcr.pageCount }}</span>
+      <span *ngIf="viewingOcr.engine"><strong>Engine:</strong> {{ viewingOcr.engine }}</span>
+      <span *ngIf="viewingOcr.elapsedMs != null"><strong>Elapsed:</strong> {{ viewingOcr.elapsedMs }} ms</span>
+    </div>
+    <div class="ws-file-body ws-ocr-body">
+      <div *ngIf="viewingOcr.error" class="ws-ocr-error">{{ viewingOcr.error }}</div>
+      <pre class="ws-ocr-text" *ngIf="viewingOcr.rawText">{{ viewingOcr.rawText }}</pre>
+      <div *ngIf="!viewingOcr.rawText && !viewingOcr.error" class="ws-ocr-empty">
+        No text was extracted.
+      </div>
     </div>
   </div>
 </ng-container>

@@ -5,6 +5,7 @@ import com.devteam.aiauditserver.models.project.AuditRequest.AuditRequest;
 import com.devteam.aiauditserver.models.project.AuditRequest.AuditRequestAnswer;
 import com.devteam.aiauditserver.models.project.AuditRequest.AuditRequestAnswerFile;
 import com.devteam.aiauditserver.models.project.AuditRequest.EvidenceOcrResult;
+import com.devteam.aiauditserver.repositories.File.MediaRepository;
 import com.devteam.aiauditserver.repositories.project.EvidenceOcrResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +51,13 @@ public class OcrOrchestratorService {
     private String uploadRoot;
 
     private final EvidenceOcrResultRepository ocrRepo;
+    private final MediaRepository mediaRepo;
     private final RestTemplate http = new RestTemplate();
 
-    public OcrOrchestratorService(EvidenceOcrResultRepository ocrRepo) {
+    public OcrOrchestratorService(EvidenceOcrResultRepository ocrRepo,
+                                  MediaRepository mediaRepo) {
         this.ocrRepo = ocrRepo;
+        this.mediaRepo = mediaRepo;
     }
 
     /**
@@ -73,6 +77,16 @@ public class OcrOrchestratorService {
                 }
             }
         }
+    }
+
+    /**
+     * Public hook: enqueue OCR for a single freshly-uploaded media file.
+     * Called from `AuditRequestService.uploadAnswerFile` once the file is
+     * persisted, which is the only point where evidence actually exists.
+     */
+    @Async
+    public void enqueueMedia(Long auditId, MediaModel media) {
+        enqueueOne(auditId, media);
     }
 
     private void enqueueOne(Long auditId, MediaModel media) {
@@ -124,12 +138,80 @@ public class OcrOrchestratorService {
     }
 
     private String resolveAbsolutePath(String relativeUrl) {
-        // MediaModel.url is stored as e.g. "/audits/answers/1/file.pdf".
-        // The static resource handler maps "/<uploadRoot>/**" → "<uploadRoot>/**".
-        // The OCR worker needs the absolute filesystem path.
-        String cleaned = relativeUrl == null ? "" : relativeUrl;
+        // MediaModel.url is stored as e.g. "/WebContent/audits/answers/1/file.pdf"
+        // (the FilesStorageService prepends "/WebContent/"). The OCR worker
+        // needs the absolute filesystem path under `upload-root` (default
+        // "WebContent"), so we strip a leading "/WebContent/" prefix to
+        // avoid producing "WebContent/WebContent/..." paths.
+        String cleaned = relativeUrl == null ? "" : relativeUrl.replace('\\', '/');
         if (cleaned.startsWith("/")) cleaned = cleaned.substring(1);
+        // Strip an optional leading "<uploadRoot>/" or "WebContent/" segment.
+        String rootPrefix = (uploadRoot == null ? "WebContent" : uploadRoot)
+                .replace('\\', '/');
+        if (rootPrefix.endsWith("/")) rootPrefix = rootPrefix.substring(0, rootPrefix.length() - 1);
+        if (cleaned.equalsIgnoreCase(rootPrefix)
+                || cleaned.toLowerCase().startsWith(rootPrefix.toLowerCase() + "/")) {
+            cleaned = cleaned.substring(rootPrefix.length());
+            if (cleaned.startsWith("/")) cleaned = cleaned.substring(1);
+        } else if (cleaned.toLowerCase().startsWith("webcontent/")) {
+            cleaned = cleaned.substring("webcontent/".length());
+        }
         Path p = Paths.get(uploadRoot, cleaned).toAbsolutePath().normalize();
         return p.toString();
+    }
+
+    /**
+     * Re-run OCR for a single (audit, media) pair. Resets the row to
+     * PENDING and POSTs a fresh job to FastAPI. Used by the admin/auditor
+     * "Retry" button on a failed evidence file.
+     */
+    public EvidenceOcrResult retry(Long auditId, Long mediaId) {
+        EvidenceOcrResult row = ocrRepo
+                .findByAuditRequestIdAndMediaId(auditId, mediaId)
+                .orElseThrow(() -> new RuntimeException(
+                        "No OCR record for audit=" + auditId + " media=" + mediaId));
+
+        row.setStatus(EvidenceOcrResult.OcrStatus.PENDING);
+        row.setError(null);
+        row.setRawText(null);
+        row.setPageCount(null);
+        row.setElapsedMs(null);
+        row.setJobId(null);
+        ocrRepo.save(row);
+
+        try {
+            MediaModel media = mediaRepo.findById(mediaId).orElseThrow(
+                    () -> new RuntimeException("Media not found: " + mediaId));
+            String absPath = resolveAbsolutePath(media.getUrl());
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("audit_id", auditId);
+            body.put("media_id", mediaId);
+            body.put("file_path", absPath);
+            body.put("mime", media.getType());
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            @SuppressWarnings("unchecked")
+            Map<String, Object> resp = http.postForObject(
+                    ocrBaseUrl + "/ocr/jobs",
+                    new HttpEntity<>(body, headers),
+                    Map.class
+            );
+            if (resp != null && resp.get("id") != null) {
+                row.setJobId(resp.get("id").toString());
+                ocrRepo.save(row);
+            }
+            log.info("[OCR] retried audit={} media={} jobId={}",
+                    auditId, mediaId, row.getJobId());
+        } catch (Exception e) {
+            log.warn("[OCR] retry failed audit={} media={}: {}",
+                    auditId, mediaId, e.getMessage());
+            row.setStatus(EvidenceOcrResult.OcrStatus.FAILED);
+            row.setError("Retry failed: " + e.getMessage());
+            ocrRepo.save(row);
+        }
+        return row;
     }
 }

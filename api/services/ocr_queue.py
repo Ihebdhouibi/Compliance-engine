@@ -19,14 +19,24 @@ from datetime import datetime
 from typing import Optional
 
 import httpx
+from dotenv import load_dotenv
 
 from api.services.ocr_engine import get_engine, OcrResult
+
+# Ensure .env is loaded before reading OCR_* vars, regardless of import order.
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
 NUM_WORKERS = int(os.getenv("OCR_NUM_WORKERS", "2"))
 CALLBACK_URL = os.getenv("OCR_CALLBACK_URL", "")
 CALLBACK_SECRET = os.getenv("OCR_CALLBACK_SECRET", "")
+logger.info(
+    "[ocr-queue] config: workers=%d callback_url=%s callback_secret_len=%d",
+    NUM_WORKERS,
+    CALLBACK_URL or "(unset)",
+    len(CALLBACK_SECRET),
+)
 
 
 @dataclass

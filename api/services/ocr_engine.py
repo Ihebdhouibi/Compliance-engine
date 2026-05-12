@@ -19,6 +19,7 @@ import logging
 import os
 import platform
 import tempfile
+import threading
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -106,6 +107,13 @@ class OcrEngine:
         self._temp_dir = os.environ.get("OCR_TEMP_DIR") or os.path.join(
             tempfile.gettempdir(), "compliance-engine-ocr"
         )
+        # PaddleOCR's underlying C++ predictor is NOT thread-safe.
+        # All predict() calls must be serialized across worker threads,
+        # otherwise tensors get clobbered ("Tensor holds no memory",
+        # "EventStatus shall be not SCHEDULED"). The asyncio queue still
+        # parallelizes I/O (PDF rasterize, file ops); only inference is
+        # mutually exclusive.
+        self._predict_lock = threading.Lock()
 
     # ── lifecycle ────────────────────────────────────────────────────────────
     def initialize(self) -> None:
@@ -164,6 +172,18 @@ class OcrEngine:
         if not os.path.exists(file_path):
             raise FileNotFoundError(file_path)
 
+        # Serialize the ENTIRE recognition for one file. PaddleX's pipeline
+        # chains multiple sub-models (doc orient → det → rec), and they
+        # share internal predictor state. Locking only individual predict()
+        # calls still lets a second job interleave between sub-models and
+        # corrupt the first job's tensors. One job at a time is the safe
+        # contract; the queue's parallelism still buys us I/O overlap
+        # (rasterize page N+1 while page N is being recognized? no — same
+        # engine — but uploads/callbacks/file ops do overlap).
+        with self._predict_lock:
+            return self._recognize_locked(file_path, mime)
+
+    def _recognize_locked(self, file_path: str, mime: Optional[str]) -> OcrResult:
         start = time.time()
         kind = _kind(file_path, mime)
         logger.info("[OCR] recognize start file=%s kind=%s mime=%s", file_path, kind, mime)

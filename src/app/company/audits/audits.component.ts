@@ -166,6 +166,7 @@ export class AuditsComponent implements OnInit {
         this.fileMap        = {};
         this.submitSuccess  = false;
         this.validationErrors = {};
+        this.prefillDefaults(form);
         this.cdr.detectChanges();
       },
       error: () => {
@@ -173,6 +174,50 @@ export class AuditsComponent implements OnInit {
         this.formLoadError = 'Failed to load audit form. Please try again.';
       }
     });
+  }
+
+  /**
+   * Dev/QA convenience: prefill every non-FILE field with a sensible default
+   * ("Not applicable" for text, first option for choice fields, etc.) so the
+   * tester can run an audit end-to-end with one click per step. FILE fields
+   * are left empty so evidence still has to be attached manually.
+   */
+  private prefillDefaults(form: AuditFormTemplate): void {
+    const today = new Date().toISOString().slice(0, 10);
+    for (const step of form.steps ?? []) {
+      for (const field of step.fields ?? []) {
+        switch (field.fieldType) {
+          case 'FILE':
+            continue;
+          case 'NUMBER':
+            this.formState[field.id] = '0';
+            break;
+          case 'EMAIL':
+            this.formState[field.id] = 'na@example.com';
+            break;
+          case 'DATE':
+            this.formState[field.id] = today;
+            break;
+          case 'DROPDOWN':
+          case 'RADIO': {
+            const opt = field.options?.[0]?.value;
+            this.formState[field.id] = opt ?? 'Not applicable';
+            break;
+          }
+          case 'CHECKBOX':
+          case 'MULTI_CHECKBOX': {
+            const opt = field.options?.[0]?.value;
+            this.formState[field.id] = opt ? [opt] : [];
+            break;
+          }
+          case 'TEXT':
+          case 'TEXTAREA':
+          default:
+            this.formState[field.id] = 'Not applicable';
+            break;
+        }
+      }
+    }
   }
 
   openNewAudit(): void {

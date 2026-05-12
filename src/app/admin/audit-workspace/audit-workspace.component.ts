@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, inject, ChangeDetectorRef
+  Component, OnInit, OnDestroy, inject, ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,6 +29,24 @@ interface WorkspaceStep {
   isDefault?: boolean;
 }
 
+/** OCR row returned by GET /api/v1/audits/{id}/ocr. */
+interface OcrResult {
+  id:             number;
+  auditRequestId: number;
+  mediaId:        number;
+  fileName?:      string;
+  mimeType?:      string;
+  jobId?:         string;
+  status:         'PENDING' | 'RUNNING' | 'DONE' | 'FAILED';
+  pageCount?:     number;
+  engine?:        string;
+  elapsedMs?:     number;
+  rawText?:       string;
+  error?:         string;
+  createdAt?:     string;
+  updatedAt?:     string;
+}
+
 @Component({
   selector: 'app-audit-workspace',
   standalone: true,
@@ -36,7 +54,7 @@ interface WorkspaceStep {
   templateUrl: './audit-workspace.component.html',
   styleUrl: './audit-workspace.component.scss'
 })
-export class AuditWorkspaceComponent implements OnInit {
+export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   request:     AuditRequest | null = null;
   steps:       WorkspaceStep[]     = [];
@@ -54,6 +72,12 @@ export class AuditWorkspaceComponent implements OnInit {
   viewingFileUrl:  SafeResourceUrl | null = null;
   viewingFileName: string | null = null;
   isLoadingFile    = false;
+
+  // ── OCR (extracted-text preview per evidence file) ─────────────────
+  ocrByMedia: Record<number, OcrResult> = {};
+  showOcrViewer = false;
+  viewingOcr:   OcrResult | null = null;
+  private ocrPollHandle: any = null;
 
   isAuditorMode = false;
 
@@ -76,6 +100,13 @@ export class AuditWorkspaceComponent implements OnInit {
     this.loadRequest(id);
   }
 
+  ngOnDestroy(): void {
+    if (this.ocrPollHandle) {
+      clearTimeout(this.ocrPollHandle);
+      this.ocrPollHandle = null;
+    }
+  }
+
   loadRequest(id: number): void {
     const request$ = this.isAuditorMode
       ? this.reqSvc.auditorGetAuditById(id)
@@ -95,6 +126,7 @@ export class AuditWorkspaceComponent implements OnInit {
         this.loadFormSteps(req.auditType);
 
         this.loadResults(id);
+        this.loadOcr(id);
         this.cdr.detectChanges();
       },
       error: () => this.flash('Failed to load audit request.', true)
@@ -275,6 +307,104 @@ export class AuditWorkspaceComponent implements OnInit {
     this.showFileViewer  = false;
     this.viewingFileUrl  = null;
     this.viewingFileName = null;
+  }
+
+  // ── OCR ────────────────────────────────────────────────────────────
+  /** Fetch all OCR rows for the audit and index them by mediaId. */
+  loadOcr(auditId: number, scheduleNext = true): void {
+    const token   = this.tokenSvc.getToken();
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    const url     = `${environment.apiUrl}/audits/${auditId}/ocr`;
+
+    this.http.get<OcrResult[]>(url, { headers }).subscribe({
+      next: rows => {
+        const map: Record<number, OcrResult> = {};
+        for (const r of rows ?? []) map[r.mediaId] = r;
+        this.ocrByMedia = map;
+        this.cdr.detectChanges();
+
+        if (scheduleNext) this.scheduleOcrPoll(auditId);
+      },
+      error: () => {
+        if (scheduleNext) this.scheduleOcrPoll(auditId);
+      }
+    });
+  }
+
+  /** Re-poll every 4s while any row is PENDING/RUNNING. Stops once all done/failed. */
+  private scheduleOcrPoll(auditId: number): void {
+    if (this.ocrPollHandle) {
+      clearTimeout(this.ocrPollHandle);
+      this.ocrPollHandle = null;
+    }
+    const pending = Object.values(this.ocrByMedia).some(
+      r => r.status === 'PENDING' || r.status === 'RUNNING'
+    );
+    // Always re-poll at least once after first load — fresh submits may not
+    // have created rows yet.
+    const empty = Object.keys(this.ocrByMedia).length === 0;
+    if (pending || empty) {
+      this.ocrPollHandle = setTimeout(
+        () => this.loadOcr(auditId, true), 4000);
+    }
+  }
+
+  ocrFor(mediaId: number | undefined | null): OcrResult | null {
+    if (mediaId == null) return null;
+    return this.ocrByMedia[mediaId] ?? null;
+  }
+
+  ocrLabel(r: OcrResult | null): string {
+    if (!r) return 'OCR queued';
+    switch (r.status) {
+      case 'PENDING': return 'OCR pending';
+      case 'RUNNING': return 'OCR running';
+      case 'DONE':    return `OCR · ${r.pageCount ?? 0}p`;
+      case 'FAILED':  return 'OCR failed';
+    }
+    return 'OCR';
+  }
+
+  ocrClass(r: OcrResult | null): string {
+    if (!r) return 'ocr-badge ocr-badge--pending';
+    switch (r.status) {
+      case 'DONE':    return 'ocr-badge ocr-badge--done';
+      case 'FAILED':  return 'ocr-badge ocr-badge--failed';
+      default:        return 'ocr-badge ocr-badge--pending';
+    }
+  }
+
+  openOcrViewer(mediaId: number | undefined | null): void {
+    const r = this.ocrFor(mediaId);
+    if (!r) return;
+    this.viewingOcr   = r;
+    this.showOcrViewer = true;
+  }
+
+  closeOcrViewer(): void {
+    this.showOcrViewer = false;
+    this.viewingOcr   = null;
+  }
+
+  /** Re-queue OCR for a single evidence file. */
+  retryOcr(mediaId: number | undefined | null, ev?: Event): void {
+    if (ev) ev.stopPropagation();
+    if (mediaId == null || !this.request) return;
+    const token   = this.tokenSvc.getToken();
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    const url = `${environment.apiUrl}/audits/${this.request.id}/ocr/media/${mediaId}/retry`;
+    this.http.post<OcrResult>(url, {}, { headers }).subscribe({
+      next: row => {
+        this.ocrByMedia[row.mediaId] = row;
+        this.cdr.detectChanges();
+        if (this.request) this.scheduleOcrPoll(this.request.id);
+      }
+    });
+  }
+
+  /** True when the badge should act as a Retry button (failed or stuck). */
+  isRetryable(r: OcrResult | null): boolean {
+    return !!r && r.status === 'FAILED';
   }
 
   getFileUrl(url: string): string {
