@@ -110,3 +110,6 @@ Thumbs.db
 
 # Keep Python requirements tracked despite *.txt rule above
 !requirements.txt
+
+# Runtime upload artifacts
+WebContent/
