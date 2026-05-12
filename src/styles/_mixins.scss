@@ -1,17 +1,16 @@
-@use 'tokens' as t;
+﻿@use 'tokens' as t;
 
 @mixin glass($blur: 22px) {
   background: t.$glass-bg;
-  backdrop-filter: blur($blur) saturate(1.4);
-  -webkit-backdrop-filter: blur($blur) saturate(1.4);
   border: 1px solid t.$glass-border;
+  box-shadow: t.$shadow-card;
 }
 
 @mixin input-field {
   width: 100%;
   padding: 13px 16px 13px 46px;
   background: t.$input-bg;
-  border: 1px solid rgba(t.$cyan-400, 0.16);
+  border: 1px solid rgb(var(--accent-rgb) / 0.16);
   border-radius: t.$r-md;
   color: t.$text-primary;
   font-family: t.$font-body;
@@ -19,11 +18,11 @@
   outline: none;
   transition: border-color t.$t-base, box-shadow t.$t-base, background t.$t-base;
   &::placeholder { color: t.$text-muted; }
-  &:hover { border-color: rgba(t.$cyan-400, 0.32); }
+  &:hover { border-color: rgb(var(--accent-rgb) / 0.32); }
   &:focus {
     border-color: t.$cyan-400;
     box-shadow: t.$shadow-input;
-    background: rgba(t.$navy-700, 0.85);
+    background: rgb(var(--bg-card-rgb) / 0.85);
   }
   &.ng-invalid.ng-touched {
     border-color: t.$error;
@@ -55,7 +54,7 @@
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.18), transparent 60%);
+    background: linear-gradient(135deg, rgb(var(--fg-rgb) / 0.18), transparent 60%);
     opacity: 0;
     transition: opacity t.$t-fast;
   }
@@ -90,15 +89,15 @@
 
 @mixin grid-bg {
   background-image:
-    linear-gradient(rgba(0,212,237,0.032) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,212,237,0.032) 1px, transparent 1px);
+    linear-gradient(rgb(var(--accent-rgb) / 0.032) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--accent-rgb) / 0.032) 1px, transparent 1px);
   background-size: 44px 44px;
 }
 
 @mixin spinner($size: 18px) {
   width: $size;
   height: $size;
-  border: 2px solid rgba(t.$navy-900, 0.28);
+  border: 2px solid rgb(var(--bg-app-rgb) / 0.28);
   border-top-color: t.$navy-900;
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
@@ -113,6 +112,6 @@
   transition: transform t.$t-base, box-shadow t.$t-base;
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 12px 40px rgba(0,212,237,0.1);
+    box-shadow: 0 12px 40px rgb(var(--accent-rgb) / 0.1);
   }
 }

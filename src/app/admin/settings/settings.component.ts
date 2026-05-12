@@ -79,22 +79,14 @@ export class SettingsComponent {
 };
 
 readonly lightModeColors: Record<ColorKey, string> = {
-  // 1. THE NAVIGATORS: A unified, very dark "Slate"
-  // This is slightly lighter than black but dark enough for all white text/icons.
-  sideNavbarColor:   '#1e293b',   // Slate-800
-  topNavbarColor:    '#1e293b',   // Matches Sidebar perfectly
-
-  // 2. THE CANVAS: A bright "Zinc" grey
-  // This is bright like light mode, but has enough "grey" in it so that 
-  // your hardcoded grey cards don't look too dark or "dirty" by comparison.
-  backgroundColor:   '#f4f4f5',   // Zinc-100 (Clean, bright, professional)
-
-  // 3. THE ACCENTS: Saturated, professional colors
-  // These provide the "pop" that makes it look attractive.
+  // Stripe / Notion inspired — fully light, professional, sophisticated
+  sideNavbarColor:   '#ffffff',   // Clean white sidebar
+  topNavbarColor:    '#ffffff',   // Clean white topbar
+  backgroundColor:   '#f9fafb',   // Slate-50 — soft canvas
   accentColor:       '#4f46e5',   // Indigo-600
-  addButtonColor:    '#10b981',   // Emerald Green (Better for "Add" in light mode)
-  updateButtonColor: '#3b82f6',   // Bright Blue
-  deleteButtonColor: '#ef4444',   // Standard Red
+  addButtonColor:    '#059669',   // Emerald-600
+  updateButtonColor: '#2563eb',   // Blue-600
+  deleteButtonColor: '#dc2626',   // Red-600
 };
 
 /* readonly lightModeColors: Record<ColorKey, string> = {
@@ -199,12 +191,16 @@ applyDarkMode(): void {
   (Object.keys(this.darkModeColors) as ColorKey[]).forEach(k => {
     (this.form as Record<string, string>)[k] = this.darkModeColors[k];
   });
+  document.body.classList.add('dark-mode');
+  localStorage.setItem('colorMode', 'dark');
 }
 
 applyLightMode(): void {
   (Object.keys(this.lightModeColors) as ColorKey[]).forEach(k => {
     (this.form as Record<string, string>)[k] = this.lightModeColors[k];
   });
+  document.body.classList.remove('dark-mode');
+  localStorage.setItem('colorMode', 'light');
 }
 
   private showSuccess(msg: string): void {
@@ -239,7 +235,7 @@ applyLightMode(): void {
     next: () => {
       this.isSaving = false;
       localStorage.setItem('colorMode',
-        document.body.classList.contains('light-mode') ? 'light' : 'dark');
+        document.body.classList.contains('dark-mode') ? 'dark' : 'light');
       this.showSuccess('Settings saved successfully.');
     },
     error: () => {

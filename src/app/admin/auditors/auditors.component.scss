@@ -1,4 +1,4 @@
-@use 'styles/tokens' as t;
+﻿@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
 .page {
@@ -6,7 +6,7 @@
   animation: fadeUp .3s ease both;
 }
 
-// ── Header
+// â”€â”€ Header
 .page-header {
   display: flex;
   align-items: flex-start;
@@ -19,24 +19,24 @@
     font-family: t.$font-display;
     font-size: 1.45rem;
     font-weight: 800;
-    color: #fff;
+    color: rgb(var(--fg-strong-rgb));
     margin-bottom: 3px;
   }
 
   p {
     font-size: .84rem;
-    color: rgba(255, 255, 255, .4);
+    color: rgb(var(--fg-rgb) / .4);
   }
 }
 
-// ── Add button — uses --color-btn-add from settings
+// â”€â”€ Add button â€” uses --color-btn-add from settings
 .btn-add {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   padding: 10px 20px;
-  background: var(--color-btn-add, #00d4ed);
-  color: #020912;
+  background: var(--color-btn-add, rgb(var(--accent-rgb)));
+  color: rgb(var(--bg-app-rgb));
   font-family: t.$font-display;
   font-size: .84rem;
   font-weight: 700;
@@ -46,16 +46,16 @@
   border-radius: 10px;
   cursor: pointer;
   transition: transform .2s, box-shadow .2s, background .3s;
-  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-btn-add, #00d4ed) 30%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-btn-add, rgb(var(--accent-rgb))) 30%, transparent);
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-btn-add, #00d4ed) 45%, transparent);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--color-btn-add, rgb(var(--accent-rgb))) 45%, transparent);
     filter: brightness(1.1);
   }
 }
 
-// ── Toast
+// â”€â”€ Toast
 .toast {
   display: flex;
   align-items: center;
@@ -67,19 +67,19 @@
   animation: fadeUp .3s ease both;
 
   &--success {
-    background: rgba(0, 229, 160, .09);
-    border: 1px solid rgba(0, 229, 160, .25);
-    color: #00e5a0;
+    background: rgb(var(--success-rgb) / .09);
+    border: 1px solid rgb(var(--success-rgb) / .25);
+    color: rgb(var(--success-rgb));
   }
 
   &--error {
-    background: rgba(255, 77, 106, .09);
-    border: 1px solid rgba(255, 77, 106, .25);
-    color: #ff4d6a;
+    background: rgb(var(--danger-rgb) / .09);
+    border: 1px solid rgb(var(--danger-rgb) / .25);
+    color: rgb(var(--danger-rgb));
   }
 }
 
-// ── Filters
+// â”€â”€ Filters
 .filters {
   display: flex;
   align-items: center;
@@ -96,12 +96,12 @@
   min-width: 220px;
   max-width: 340px;
   padding: 10px 14px;
-  background: rgba(7, 21, 40, .7);
-  border: 1px solid rgba(0, 212, 237, .13);
+  background: rgb(var(--bg-card-rgb) / .7);
+  border: 1px solid rgb(var(--accent-rgb) / .13);
   border-radius: 10px;
 
   svg {
-    color: rgba(255, 255, 255, .28);
+    color: rgb(var(--fg-rgb) / .28);
   }
 
   input {
@@ -109,51 +109,51 @@
     background: none;
     border: none;
     outline: none;
-    color: #fff;
+    color: rgb(var(--fg-strong-rgb));
     font-family: t.$font-body;
     font-size: .87rem;
 
     &::placeholder {
-      color: rgba(255, 255, 255, .28);
+      color: rgb(var(--fg-rgb) / .28);
     }
   }
 }
 
 .f-select {
   padding: 10px 12px;
-  background: rgba(7, 21, 40, .7);
-  border: 1px solid rgba(0, 212, 237, .13);
+  background: rgb(var(--bg-card-rgb) / .7);
+  border: 1px solid rgb(var(--accent-rgb) / .13);
   border-radius: 10px;
-  color: rgba(255, 255, 255, .7);
+  color: rgb(var(--fg-rgb) / .7);
   font-family: t.$font-body;
   font-size: .85rem;
   outline: none;
   cursor: pointer;
 
   option {
-    background: #071528;
-    color: #fff;
+    background: rgb(var(--bg-card-rgb));
+    color: rgb(var(--fg-strong-rgb));
   }
 
   &:focus {
-    border-color: rgba(0, 212, 237, .35);
+    border-color: rgb(var(--accent-rgb) / .35);
   }
 }
 
 .btn-search {
   padding: 10px 18px;
-  background: color-mix(in srgb, var(--color-accent, #00d4ed) 12%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent, #00d4ed) 30%, transparent);
+  background: color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 30%, transparent);
   border-radius: 10px;
   cursor: pointer;
   font-family: t.$font-body;
   font-size: .85rem;
   font-weight: 600;
-  color: var(--color-accent, #00d4ed);
+  color: var(--color-accent, rgb(var(--accent-rgb)));
   transition: all .15s;
 
   &:hover {
-    background: color-mix(in srgb, var(--color-accent, #00d4ed) 22%, transparent);
+    background: color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 22%, transparent);
   }
 }
 
@@ -162,26 +162,26 @@
   align-items: center;
   gap: 6px;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, .04);
-  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgb(var(--fg-rgb) / .04);
+  border: 1px solid rgb(var(--fg-rgb) / .1);
   border-radius: 10px;
   cursor: pointer;
   font-family: t.$font-body;
   font-size: .84rem;
-  color: rgba(255, 255, 255, .45);
+  color: rgb(var(--fg-rgb) / .45);
   transition: all .15s;
 
   &:hover {
-    background: rgba(255, 255, 255, .09);
-    color: #fff;
+    background: rgb(var(--fg-rgb) / .09);
+    color: rgb(var(--fg-strong-rgb));
   }
 }
 
-// ── Table card
+// â”€â”€ Table card
 .table-card {
-  background: rgba(7, 21, 40, .7);
+  background: rgb(var(--bg-card-rgb) / .7);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 212, 237, .1);
+  border: 1px solid rgb(var(--accent-rgb) / .1);
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 18px;
@@ -194,14 +194,14 @@
   justify-content: center;
   gap: 12px;
   padding: 56px 24px;
-  color: rgba(255, 255, 255, .35);
+  color: rgb(var(--fg-rgb) / .35);
   font-size: .87rem;
 
   .loader {
     width: 26px;
     height: 26px;
-    border: 2.5px solid rgba(0, 212, 237, .18);
-    border-top-color: var(--color-accent, #00d4ed);
+    border: 2.5px solid rgb(var(--accent-rgb) / .18);
+    border-top-color: var(--color-accent, rgb(var(--accent-rgb)));
     border-radius: 50%;
     animation: spin .7s linear infinite;
   }
@@ -216,7 +216,7 @@ table {
   border-collapse: collapse;
 
   thead tr {
-    border-bottom: 1px solid rgba(0, 212, 237, .1);
+    border-bottom: 1px solid rgb(var(--accent-rgb) / .1);
   }
 
   th {
@@ -227,12 +227,12 @@ table {
     font-size: .63rem;
     letter-spacing: .12em;
     text-transform: uppercase;
-    color: rgba(255, 255, 255, .38);
+    color: rgb(var(--fg-rgb) / .38);
     font-weight: 600;
   }
 
   tbody tr {
-    border-bottom: 1px solid rgba(255, 255, 255, .04);
+    border-bottom: 1px solid rgb(var(--fg-rgb) / .04);
     transition: background .15s;
 
     &:last-child {
@@ -240,23 +240,23 @@ table {
     }
 
     &:hover {
-      background: rgba(0, 212, 237, .03);
+      background: rgb(var(--accent-rgb) / .03);
     }
   }
 
   td {
     padding: 13px 16px;
     font-size: .86rem;
-    color: #fff;
+    color: rgb(var(--fg-strong-rgb));
     vertical-align: middle;
 
     &.dim {
-      color: rgba(255, 255, 255, .52);
+      color: rgb(var(--fg-rgb) / .52);
     }
   }
 }
 
-// ── User cell
+// â”€â”€ User cell
 .user-cell {
   display: flex;
   align-items: center;
@@ -272,12 +272,12 @@ table {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  background: color-mix(in srgb, var(--color-accent, #00d4ed) 14%, #071528);
-  border: 1.5px solid color-mix(in srgb, var(--color-accent, #00d4ed) 28%, transparent);
+  background: color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 14%, rgb(var(--bg-card-rgb)));
+  border: 1.5px solid color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 28%, transparent);
   font-family: t.$font-display;
   font-size: .68rem;
   font-weight: 800;
-  color: var(--color-accent, #00d4ed);
+  color: var(--color-accent, rgb(var(--accent-rgb)));
 
   img {
     width: 100%;
@@ -289,7 +289,7 @@ table {
     width: 66px;
     height: 66px;
     font-size: 1rem;
-    border: 2px solid color-mix(in srgb, var(--color-accent, #00d4ed) 35%, transparent);
+    border: 2px solid color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 35%, transparent);
   }
 }
 
@@ -297,7 +297,7 @@ table {
   font-weight: 600;
 }
 
-// ── Status pill
+// â”€â”€ Status pill
 .pill {
   display: inline-flex;
   align-items: center;
@@ -319,22 +319,22 @@ table {
   }
 
   &--on {
-    background: rgba(0, 229, 160, .09);
-    border: 1px solid rgba(0, 229, 160, .22);
-    color: #00e5a0;
+    background: rgb(var(--success-rgb) / .09);
+    border: 1px solid rgb(var(--success-rgb) / .22);
+    color: rgb(var(--success-rgb));
 
     i {
-      background: #00e5a0;
+      background: rgb(var(--success-rgb));
     }
   }
 
   &--off {
-    background: rgba(255, 77, 106, .09);
-    border: 1px solid rgba(255, 77, 106, .2);
-    color: #ff4d6a;
+    background: rgb(var(--danger-rgb) / .09);
+    border: 1px solid rgb(var(--danger-rgb) / .2);
+    color: rgb(var(--danger-rgb));
 
     i {
-      background: #ff4d6a;
+      background: rgb(var(--danger-rgb));
     }
   }
 }
@@ -343,7 +343,7 @@ table {
   margin-top: 4px;
 }
 
-// ── Action buttons — each maps to a settings color
+// â”€â”€ Action buttons â€” each maps to a settings color
 .acts {
   display: flex;
   align-items: center;
@@ -356,55 +356,55 @@ table {
   border: none; border-radius: 7px; cursor: pointer; transition: all .15s;
 
   &--view {
-    background: color-mix(in srgb, var(--color-accent, #00d4ed) 12%, transparent);
-    color: var(--color-accent, #00d4ed);
-    border: 1px solid color-mix(in srgb, var(--color-accent, #00d4ed) 22%, transparent);
+    background: color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 12%, transparent);
+    color: var(--color-accent, rgb(var(--accent-rgb)));
+    border: 1px solid color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 22%, transparent);
     &:hover {
-      background: color-mix(in srgb, var(--color-accent, #00d4ed) 24%, transparent);
-      border-color: color-mix(in srgb, var(--color-accent, #00d4ed) 45%, transparent);
+      background: color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 24%, transparent);
+      border-color: color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 45%, transparent);
     }
   }
   &--deact {
-    background: color-mix(in srgb, var(--color-btn-delete, #ff4d6a) 10%, transparent);
-    color: var(--color-btn-delete, #ff4d6a);
-    border: 1px solid color-mix(in srgb, var(--color-btn-delete, #ff4d6a) 22%, transparent);
+    background: color-mix(in srgb, var(--color-btn-delete, rgb(var(--danger-rgb))) 10%, transparent);
+    color: var(--color-btn-delete, rgb(var(--danger-rgb)));
+    border: 1px solid color-mix(in srgb, var(--color-btn-delete, rgb(var(--danger-rgb))) 22%, transparent);
     &:hover {
-      background: color-mix(in srgb, var(--color-btn-delete, #ff4d6a) 22%, transparent);
-      border-color: color-mix(in srgb, var(--color-btn-delete, #ff4d6a) 45%, transparent);
+      background: color-mix(in srgb, var(--color-btn-delete, rgb(var(--danger-rgb))) 22%, transparent);
+      border-color: color-mix(in srgb, var(--color-btn-delete, rgb(var(--danger-rgb))) 45%, transparent);
     }
   }
   &--act {
-    background: color-mix(in srgb, var(--color-btn-add, #00d4ed) 10%, transparent);
-    color: var(--color-btn-add, #00d4ed);
-    border: 1px solid color-mix(in srgb, var(--color-btn-add, #00d4ed) 22%, transparent);
+    background: color-mix(in srgb, var(--color-btn-add, rgb(var(--accent-rgb))) 10%, transparent);
+    color: var(--color-btn-add, rgb(var(--accent-rgb)));
+    border: 1px solid color-mix(in srgb, var(--color-btn-add, rgb(var(--accent-rgb))) 22%, transparent);
     &:hover {
-      background: color-mix(in srgb, var(--color-btn-add, #00d4ed) 22%, transparent);
-      border-color: color-mix(in srgb, var(--color-btn-add, #00d4ed) 45%, transparent);
+      background: color-mix(in srgb, var(--color-btn-add, rgb(var(--accent-rgb))) 22%, transparent);
+      border-color: color-mix(in srgb, var(--color-btn-add, rgb(var(--accent-rgb))) 45%, transparent);
     }
   }
   &--key {
-    background: rgba(245,184,0,.09); color: #f5b800;
-    border: 1px solid rgba(245,184,0,.2);
-    &:hover { background: rgba(245,184,0,.2); border-color: rgba(245,184,0,.4); }
+    background: rgb(var(--warning-rgb) / .09); color: rgb(var(--warning-rgb));
+    border: 1px solid rgb(var(--warning-rgb) / .2);
+    &:hover { background: rgb(var(--warning-rgb) / .2); border-color: rgb(var(--warning-rgb) / .4); }
   }
   &--del {
-    background: color-mix(in srgb, var(--color-btn-delete, #ff4d6a) 10%, transparent);
-    color: var(--color-btn-delete, #ff4d6a);
-    border: 1px solid color-mix(in srgb, var(--color-btn-delete, #ff4d6a) 22%, transparent);
+    background: color-mix(in srgb, var(--color-btn-delete, rgb(var(--danger-rgb))) 10%, transparent);
+    color: var(--color-btn-delete, rgb(var(--danger-rgb)));
+    border: 1px solid color-mix(in srgb, var(--color-btn-delete, rgb(var(--danger-rgb))) 22%, transparent);
     &:hover {
-      background: color-mix(in srgb, var(--color-btn-delete, #ff4d6a) 22%, transparent);
-      border-color: color-mix(in srgb, var(--color-btn-delete, #ff4d6a) 45%, transparent);
+      background: color-mix(in srgb, var(--color-btn-delete, rgb(var(--danger-rgb))) 22%, transparent);
+      border-color: color-mix(in srgb, var(--color-btn-delete, rgb(var(--danger-rgb))) 45%, transparent);
     }
   }
   &:disabled { opacity: .32; cursor: not-allowed; }
 
   &--edit {
-  background: color-mix(in srgb, var(--color-btn-update, #00bcd4) 10%, transparent);
-  color: var(--color-btn-update, #00bcd4);
-  border: 1px solid color-mix(in srgb, var(--color-btn-update, #00bcd4) 22%, transparent);
+  background: color-mix(in srgb, var(--color-btn-update, rgb(var(--accent-rgb))) 10%, transparent);
+  color: var(--color-btn-update, rgb(var(--accent-rgb)));
+  border: 1px solid color-mix(in srgb, var(--color-btn-update, rgb(var(--accent-rgb))) 22%, transparent);
   &:hover {
-    background: color-mix(in srgb, var(--color-btn-update, #00bcd4) 22%, transparent);
-    border-color: color-mix(in srgb, var(--color-btn-update, #00bcd4) 45%, transparent);
+    background: color-mix(in srgb, var(--color-btn-update, rgb(var(--accent-rgb))) 22%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-update, rgb(var(--accent-rgb))) 45%, transparent);
   }
 }
 }
@@ -412,13 +412,13 @@ table {
 .mini-spin {
   width: 12px;
   height: 12px;
-  border: 1.5px solid rgba(255, 255, 255, .2);
+  border: 1.5px solid rgb(var(--fg-rgb) / .2);
   border-top-color: currentColor;
   border-radius: 50%;
   animation: spin .6s linear infinite;
 }
 
-// ── Pagination
+// â”€â”€ Pagination
 .pager {
   display: flex;
   align-items: center;
@@ -433,11 +433,11 @@ table {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(7, 21, 40, .7);
-  border: 1px solid rgba(0, 212, 237, .1);
+  background: rgb(var(--bg-card-rgb) / .7);
+  border: 1px solid rgb(var(--accent-rgb) / .1);
   border-radius: 8px;
   cursor: pointer;
-  color: rgba(255, 255, 255, .5);
+  color: rgb(var(--fg-rgb) / .5);
   font-family: t.$font-body;
   font-size: .83rem;
   transition: all .15s;
@@ -448,15 +448,15 @@ table {
   }
 
   &.on {
-    background: color-mix(in srgb, var(--color-accent, #00d4ed) 14%, transparent);
-    border-color: color-mix(in srgb, var(--color-accent, #00d4ed) 40%, transparent);
-    color: var(--color-accent, #00d4ed);
+    background: color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 14%, transparent);
+    border-color: color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 40%, transparent);
+    color: var(--color-accent, rgb(var(--accent-rgb)));
     font-weight: 700;
   }
 
   &:hover:not(:disabled):not(.on) {
-    background: rgba(0, 212, 237, .07);
-    color: #fff;
+    background: rgb(var(--accent-rgb) / .07);
+    color: rgb(var(--fg-strong-rgb));
   }
 
   &:disabled {
@@ -469,14 +469,14 @@ table {
   margin-left: 6px;
   font-family: t.$font-mono;
   font-size: .76rem;
-  color: rgba(255, 255, 255, .35);
+  color: rgb(var(--fg-rgb) / .35);
 }
 
-// ════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // MODALS
-// position:fixed relative to VIEWPORT — not any parent
+// position:fixed relative to VIEWPORT â€” not any parent
 // z-index 9998/9999 breaks out of all stacking contexts
-// ════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 .modal-backdrop {
   position: fixed;
@@ -484,7 +484,7 @@ table {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(2, 9, 18, .84);
+  background: rgb(var(--bg-app-rgb) / .84);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: 9998;
@@ -505,12 +505,12 @@ table {
   display: flex;
   flex-direction: column;
 
-  background: #040f1e;
-  border: 1px solid rgba(0, 212, 237, .22);
+  background: rgb(var(--bg-card-strong-rgb));
+  border: 1px solid rgb(var(--accent-rgb) / .22);
   border-radius: 18px;
   box-shadow:
-    0 0 0 1px rgba(0, 212, 237, .05) inset,
-    0 48px 100px rgba(2, 9, 18, .98),
+    0 0 0 1px rgb(var(--accent-rgb) / .05) inset,
+    0 48px 100px rgb(var(--bg-app-rgb) / .98),
     0 8px 32px rgba(0, 0, 0, .85);
 
   animation: fadeUp .22s cubic-bezier(.4, 0, .2, 1) both;
@@ -526,13 +526,13 @@ table {
   }
 }
 
-// ── Modal header
+// â”€â”€ Modal header
 .mb-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 18px 22px 14px;
-  border-bottom: 1px solid rgba(0, 212, 237, .1);
+  border-bottom: 1px solid rgb(var(--accent-rgb) / .1);
   flex-shrink: 0;
 }
 
@@ -543,10 +543,10 @@ table {
   font-family: t.$font-display;
   font-size: .96rem;
   font-weight: 700;
-  color: #fff;
+  color: rgb(var(--fg-strong-rgb));
 
   svg {
-    color: var(--color-accent, #00d4ed);
+    color: var(--color-accent, rgb(var(--accent-rgb)));
   }
 }
 
@@ -557,20 +557,20 @@ table {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, .05);
-  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgb(var(--fg-rgb) / .05);
+  border: 1px solid rgb(var(--fg-rgb) / .1);
   border-radius: 8px;
   cursor: pointer;
-  color: rgba(255, 255, 255, .45);
+  color: rgb(var(--fg-rgb) / .45);
   transition: all .15s;
 
   &:hover {
-    background: rgba(255, 255, 255, .12);
-    color: #fff;
+    background: rgb(var(--fg-rgb) / .12);
+    color: rgb(var(--fg-strong-rgb));
   }
 }
 
-// ── Modal scrollable body
+// â”€â”€ Modal scrollable body
 .mb-body {
   padding: 20px 22px;
   overflow-y: auto;
@@ -586,12 +586,12 @@ table {
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(0, 212, 237, .2);
+    background: rgb(var(--accent-rgb) / .2);
     border-radius: 2px;
   }
 }
 
-// ── Modal footer
+// â”€â”€ Modal footer
 .mb-footer {
   display: flex;
   justify-content: flex-end;
@@ -599,10 +599,10 @@ table {
   gap: 10px;
   padding-top: 16px;
   margin-top: 6px;
-  border-top: 1px solid rgba(255, 255, 255, .06);
+  border-top: 1px solid rgb(var(--fg-rgb) / .06);
 }
 
-// ── Form elements
+// â”€â”€ Form elements
 .f-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -626,7 +626,7 @@ table {
     font-weight: 600;
     letter-spacing: .11em;
     text-transform: uppercase;
-    color: var(--color-accent, #00d4ed);
+    color: var(--color-accent, rgb(var(--accent-rgb)));
     opacity: .85;
   }
 
@@ -641,10 +641,10 @@ table {
   input,
   select {
     padding: 10px 14px;
-    background: rgba(2, 9, 18, .7);
-    border: 1px solid rgba(0, 212, 237, .16);
+    background: rgb(var(--bg-app-rgb) / .7);
+    border: 1px solid rgb(var(--accent-rgb) / .16);
     border-radius: 9px;
-    color: #fff;
+    color: rgb(var(--fg-strong-rgb));
     width: 100%;
     font-family: t.$font-body;
     font-size: .88rem;
@@ -652,37 +652,37 @@ table {
     transition: border-color .2s, box-shadow .2s;
 
     &::placeholder {
-      color: rgba(255, 255, 255, .25);
+      color: rgb(var(--fg-rgb) / .25);
     }
 
     &:focus {
-      border-color: var(--color-accent, #00d4ed);
-      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent, #00d4ed) 12%, transparent);
+      border-color: var(--color-accent, rgb(var(--accent-rgb)));
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 12%, transparent);
     }
 
     option {
-      background: #071528;
-      color: #fff;
+      background: rgb(var(--bg-card-rgb));
+      color: rgb(var(--fg-strong-rgb));
     }
   }
 }
 
 .ferr {
   font-size: .74rem;
-  color: var(--color-btn-delete, #ff4d6a);
+  color: var(--color-btn-delete, rgb(var(--danger-rgb)));
   margin-top: 2px;
 }
 
-// ── Alerts inside modal
+// â”€â”€ Alerts inside modal
 .m-success {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
   border-radius: 9px;
-  background: rgba(0, 229, 160, .09);
-  border: 1px solid rgba(0, 229, 160, .22);
-  color: #00e5a0;
+  background: rgb(var(--success-rgb) / .09);
+  border: 1px solid rgb(var(--success-rgb) / .22);
+  color: rgb(var(--success-rgb));
   font-size: .83rem;
   margin-bottom: 14px;
   animation: fadeUp .25s ease both;
@@ -694,9 +694,9 @@ table {
   gap: 8px;
   padding: 10px 14px;
   border-radius: 9px;
-  background: color-mix(in srgb, var(--color-btn-delete, #ff4d6a) 9%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-btn-delete, #ff4d6a) 22%, transparent);
-  color: var(--color-btn-delete, #ff4d6a);
+  background: color-mix(in srgb, var(--color-btn-delete, rgb(var(--danger-rgb))) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-btn-delete, rgb(var(--danger-rgb))) 22%, transparent);
+  color: var(--color-btn-delete, rgb(var(--danger-rgb)));
   font-size: .83rem;
   margin-bottom: 14px;
   animation: fadeUp .25s ease both;
@@ -708,46 +708,46 @@ table {
   gap: 8px;
   padding: 10px 13px;
   border-radius: 9px;
-  background: color-mix(in srgb, var(--color-accent, #00d4ed) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--color-accent, #00d4ed) 12%, transparent);
+  background: color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 12%, transparent);
   font-size: .79rem;
-  color: rgba(255, 255, 255, .5);
+  color: rgb(var(--fg-rgb) / .5);
   line-height: 1.5;
   margin-bottom: 6px;
 
   svg {
-    color: var(--color-accent, #00d4ed);
+    color: var(--color-accent, rgb(var(--accent-rgb)));
     flex-shrink: 0;
     margin-top: 1px;
   }
 }
 
-// ── Modal buttons — wired to settings colors
+// â”€â”€ Modal buttons â€” wired to settings colors
 .btn-cancel {
   padding: 10px 20px;
-  background: rgba(255, 255, 255, .05);
-  border: 1px solid rgba(255, 255, 255, .1);
+  background: rgb(var(--fg-rgb) / .05);
+  border: 1px solid rgb(var(--fg-rgb) / .1);
   border-radius: 9px;
   cursor: pointer;
   font-family: t.$font-body;
   font-size: .85rem;
-  color: rgba(255, 255, 255, .55);
+  color: rgb(var(--fg-rgb) / .55);
   transition: all .15s;
 
   &:hover {
-    background: rgba(255, 255, 255, .1);
-    color: #fff;
+    background: rgb(var(--fg-rgb) / .1);
+    color: rgb(var(--fg-strong-rgb));
   }
 }
 
-// Add / Create → --color-btn-add from settings
+// Add / Create â†’ --color-btn-add from settings
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   padding: 10px 22px;
-  background: var(--color-btn-add, #00d4ed);
-  color: #020912;
+  background: var(--color-btn-add, rgb(var(--accent-rgb)));
+  color: rgb(var(--bg-app-rgb));
   font-family: t.$font-display;
   font-size: .85rem;
   font-weight: 700;
@@ -757,11 +757,11 @@ table {
   border-radius: 9px;
   cursor: pointer;
   transition: transform .2s, box-shadow .2s, filter .2s;
-  box-shadow: 0 3px 14px color-mix(in srgb, var(--color-btn-add, #00d4ed) 28%, transparent);
+  box-shadow: 0 3px 14px color-mix(in srgb, var(--color-btn-add, rgb(var(--accent-rgb))) 28%, transparent);
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-btn-add, #00d4ed) 42%, transparent);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-btn-add, rgb(var(--accent-rgb))) 42%, transparent);
     filter: brightness(1.08);
   }
 
@@ -771,14 +771,14 @@ table {
   }
 }
 
-// Save / Update → --color-btn-update from settings
+// Save / Update â†’ --color-btn-update from settings
 .btn-update {
   display: inline-flex;
   align-items: center;
   gap: 7px;
   padding: 10px 22px;
-  background: var(--color-btn-update, #00bcd4);
-  color: #020912;
+  background: var(--color-btn-update, rgb(var(--accent-rgb)));
+  color: rgb(var(--bg-app-rgb));
   font-family: t.$font-display;
   font-size: .85rem;
   font-weight: 700;
@@ -788,11 +788,11 @@ table {
   border-radius: 9px;
   cursor: pointer;
   transition: transform .2s, box-shadow .2s, filter .2s;
-  box-shadow: 0 3px 14px color-mix(in srgb, var(--color-btn-update, #00bcd4) 28%, transparent);
+  box-shadow: 0 3px 14px color-mix(in srgb, var(--color-btn-update, rgb(var(--accent-rgb))) 28%, transparent);
 
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-btn-update, #00bcd4) 42%, transparent);
+    box-shadow: 0 6px 20px color-mix(in srgb, var(--color-btn-update, rgb(var(--accent-rgb))) 42%, transparent);
     filter: brightness(1.08);
   }
 
@@ -802,20 +802,20 @@ table {
   }
 }
 
-// ── Profile view modal
+// â”€â”€ Profile view modal
 .profile-hero {
   display: flex;
   align-items: center;
   gap: 18px;
   margin-bottom: 18px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 212, 237, .08);
+  border-bottom: 1px solid rgb(var(--accent-rgb) / .08);
 
   h2 {
     font-family: t.$font-display;
     font-size: 1.1rem;
     font-weight: 800;
-    color: #fff;
+    color: rgb(var(--fg-strong-rgb));
     margin: 0 0 4px;
   }
 }
@@ -831,7 +831,7 @@ table {
   font-size: .62rem;
   letter-spacing: .12em;
   text-transform: uppercase;
-  color: var(--color-accent, #00d4ed);
+  color: var(--color-accent, rgb(var(--accent-rgb)));
 }
 
 .mt4 {
@@ -841,14 +841,14 @@ table {
 .tabs {
   display: flex;
   margin-bottom: 16px;
-  border-bottom: 1px solid rgba(0, 212, 237, .1);
+  border-bottom: 1px solid rgb(var(--accent-rgb) / .1);
 }
 
 .tab {
   padding: 8px 16px;
   font-size: .85rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, .38);
+  color: rgb(var(--fg-rgb) / .38);
   border-bottom: 2px solid transparent;
   display: flex;
   align-items: center;
@@ -857,8 +857,8 @@ table {
   cursor: pointer;
 
   &--on {
-    color: var(--color-accent, #00d4ed);
-    border-bottom-color: var(--color-accent, #00d4ed);
+    color: var(--color-accent, rgb(var(--accent-rgb)));
+    border-bottom-color: var(--color-accent, rgb(var(--accent-rgb)));
   }
 
   &--disabled {
@@ -873,10 +873,10 @@ table {
   letter-spacing: .08em;
   text-transform: uppercase;
   padding: 2px 7px;
-  background: rgba(245, 184, 0, .12);
-  border: 1px solid rgba(245, 184, 0, .22);
+  background: rgb(var(--warning-rgb) / .12);
+  border: 1px solid rgb(var(--warning-rgb) / .22);
   border-radius: 4px;
-  color: #f5b800;
+  color: rgb(var(--warning-rgb));
 }
 
 .detail-grid {
@@ -892,8 +892,8 @@ table {
 
 .detail-item {
   padding: 11px 13px;
-  background: rgba(2, 9, 18, .45);
-  border: 1px solid color-mix(in srgb, var(--color-accent, #00d4ed) 8%, transparent);
+  background: rgb(var(--bg-app-rgb) / .45);
+  border: 1px solid color-mix(in srgb, var(--color-accent, rgb(var(--accent-rgb))) 8%, transparent);
   border-radius: 9px;
   display: flex;
   flex-direction: column;
@@ -905,17 +905,17 @@ table {
   font-size: .6rem;
   letter-spacing: .1em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, .3);
+  color: rgb(var(--fg-rgb) / .3);
 }
 
 .dv {
   font-size: .87rem;
-  color: #fff;
+  color: rgb(var(--fg-strong-rgb));
   font-weight: 500;
 
   &.mono {
     font-family: t.$font-mono;
-    color: var(--color-accent, #00d4ed);
+    color: var(--color-accent, rgb(var(--accent-rgb)));
     font-size: .82rem;
   }
 }

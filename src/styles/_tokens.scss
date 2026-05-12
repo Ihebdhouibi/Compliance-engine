@@ -1,55 +1,82 @@
-// ═══════════════════════════════════
-// AI AUDIT SYSTEM — Design Tokens
-// 50% Navy · 30% Slate · 20% Cyan
-// ═══════════════════════════════════
+// =====================================================
+// AI AUDIT SYSTEM Design Tokens
+// All colour tokens map to CSS custom properties.
+// Switch theme by toggling `body.dark-mode` class.
+// =====================================================
 
-$navy-950: #020912;
-$navy-900: #040d1a;
-$navy-800: #071528;
-$navy-700: #0a1f3d;
-$navy-600: #0d2850;
-$navy-500: #112f5e;
-$navy-400: #1a3f78;
+// Surfaces
+$bg-app:          rgb(var(--bg-app-rgb));
+$bg-card:         rgb(var(--bg-card-rgb));
+$bg-card-strong:  rgb(var(--bg-card-strong-rgb));
+$bg-deep:         rgb(var(--bg-deep-rgb));
+$bg-elev:         rgb(var(--bg-elev-rgb));
 
-$slate-600: #26456a;
-$slate-500: #2e557c;
-$slate-400: #3d6b96;
-$slate-300: #5282ab;
+// Foreground
+$fg:              rgb(var(--fg-rgb));
+$fg-strong:       rgb(var(--fg-strong-rgb));
+$fg-mute:         rgb(var(--fg-mute-rgb));
 
-$cyan-600: #00a8b8;
-$cyan-500: #00bcd4;
-$cyan-400: #00d4ed;
-$cyan-300: #18e8ff;
-$cyan-200: #6ef4ff;
-$cyan-glow: rgba(0, 212, 237, 0.22);
+// Accent (logo sage)
+$accent:          rgb(var(--accent-rgb));
+$accent-strong:   rgb(var(--accent-strong-rgb));
+$accent-soft:     rgb(var(--accent-soft-rgb));
 
-$success: #00e5a0;
-$warning: #f5b800;
-$error:   #ff4d6a;
-$error-bg: rgba(255, 77, 106, 0.1);
+// Borders
+$border:          rgb(var(--border-rgb));
 
-$text-primary:   #ffffff;
-$text-secondary: rgba(255,255,255,0.65);
-$text-muted:     rgba(255,255,255,0.38);
+// Status
+$success: rgb(var(--success-rgb));
+$warning: rgb(var(--warning-rgb));
+$error:   rgb(var(--danger-rgb));
+$error-bg: rgb(var(--danger-rgb) / 0.10);
 
-$glass-bg:     rgba(7, 21, 40, 0.72);
-$glass-border: rgba(0, 212, 237, 0.13);
-$input-bg:     rgba(4, 13, 26, 0.75);
+// Legacy aliases so existing component SCSS keeps compiling
+$navy-950: rgb(var(--bg-app-rgb));
+$navy-900: rgb(var(--bg-app-rgb));
+$navy-800: rgb(var(--bg-card-rgb));
+$navy-700: rgb(var(--bg-card-rgb));
+$navy-600: rgb(var(--bg-card-rgb));
+$navy-500: rgb(var(--bg-card-rgb));
+$navy-400: rgb(var(--bg-deep-rgb));
 
+$slate-600: rgb(var(--fg-mute-rgb));
+$slate-500: rgb(var(--fg-mute-rgb));
+$slate-400: rgb(var(--fg-mute-rgb));
+$slate-300: rgb(var(--fg-mute-rgb));
+
+$cyan-600: rgb(var(--accent-strong-rgb));
+$cyan-500: rgb(var(--accent-rgb));
+$cyan-400: rgb(var(--accent-rgb));
+$cyan-300: rgb(var(--accent-strong-rgb));
+$cyan-200: rgb(var(--accent-rgb));
+$cyan-glow: rgb(var(--accent-rgb) / 0.22);
+
+$text-primary:   rgb(var(--fg-strong-rgb));
+$text-secondary: rgb(var(--fg-rgb));
+$text-muted:     rgb(var(--fg-mute-rgb));
+
+$glass-bg:     rgb(var(--bg-card-rgb));
+$glass-border: rgb(var(--border-rgb));
+$input-bg:     rgb(var(--bg-deep-rgb));
+
+// Typography
 $font-display: 'Plus Jakarta Sans', sans-serif;
 $font-body:    'Inter', sans-serif;
 $font-mono:    'JetBrains Mono', monospace;
 
+// Radii
 $r-sm:  6px;
 $r-md:  12px;
 $r-lg:  18px;
 $r-xl:  24px;
 $r-2xl: 32px;
 
-$shadow-card: 0 32px 80px rgba(2,9,18,0.9), 0 4px 32px rgba(0,212,237,0.06);
-$shadow-input: 0 0 0 3px rgba(0,212,237,0.22), inset 0 1px 4px rgba(0,0,0,0.4);
-$shadow-btn:   0 8px 32px rgba(0,212,237,0.38);
+// Shadows
+$shadow-card:  0 4px 16px rgb(var(--fg-strong-rgb) / 0.06), 0 1px 2px rgb(var(--fg-strong-rgb) / 0.04);
+$shadow-input: 0 0 0 3px rgb(var(--accent-rgb) / 0.20);
+$shadow-btn:   0 4px 14px rgb(var(--accent-rgb) / 0.25);
 
+// Motion
 $t-fast: 0.15s ease;
 $t-base: 0.25s ease;
 $t-slow: 0.4s cubic-bezier(0.4,0,0.2,1);

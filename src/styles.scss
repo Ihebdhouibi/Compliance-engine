@@ -1,89 +1,168 @@
-@use 'styles/tokens' as t;
+﻿@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-// ── Dynamic design variables (overwritten at runtime by DesignSettingsService)
+// ============================================================
+// DESIGN TOKENS
+// Every component references colour via:
+//   rgb(var(--TOKEN-rgb) / alpha)
+// Light is default; body.dark-mode flips palette.
+// Logo palette: sage #7FAA9E + navy #0F1B26
+// ============================================================
+
 :root {
-  --color-sidebar-bg:  #071528;
-  --color-topbar-bg:   #071528;
-  --color-page-bg:     #020912;
-  --color-accent:      #00d4ed;
-  --color-btn-add:     #00d4ed;
-  --color-btn-update:  #00bcd4;
-  --color-btn-delete:  #ff4d6a;
+  --bg-app-rgb:         246 248 247;
+  --bg-card-rgb:        255 255 255;
+  --bg-card-strong-rgb: 255 255 255;
+  --bg-deep-rgb:        241 244 243;
+  --bg-elev-rgb:        255 255 255;
+
+  --fg-rgb:             26 35 50;
+  --fg-strong-rgb:      17 24 39;
+  --fg-mute-rgb:        107 114 128;
+
+  --accent-rgb:         90 143 127;
+  --accent-strong-rgb:  61 111 94;
+  --accent-soft-rgb:    230 240 236;
+
+  --border-rgb:         226 232 229;
+
+  --success-rgb:        16 130 96;
+  --warning-rgb:        180 120 0;
+  --danger-rgb:         185 28 28;
+
+  --color-sidebar-bg:   rgb(255 255 255);
+  --color-topbar-bg:    rgb(255 255 255);
+  --color-page-bg:      rgb(var(--bg-app-rgb));
+  --color-accent:       rgb(var(--accent-rgb));
+  --color-btn-add:      #059669;
+  --color-btn-update:   #2563eb;
+  --color-btn-delete:   #dc2626;
 }
 
-*,*::before,*::after { box-sizing:border-box; margin:0; padding:0 }
-html { font-size:16px; scroll-behavior:smooth; -webkit-text-size-adjust:100% }
+body.dark-mode {
+  --bg-app-rgb:         10 21 32;
+  --bg-card-rgb:        16 32 46;
+  --bg-card-strong-rgb: 21 40 54;
+  --bg-deep-rgb:        13 26 38;
+  --bg-elev-rgb:        21 40 54;
+
+  --fg-rgb:             232 238 240;
+  --fg-strong-rgb:      248 250 252;
+  --fg-mute-rgb:        168 181 188;
+
+  --accent-rgb:         127 170 158;
+  --accent-strong-rgb:  156 199 184;
+  --accent-soft-rgb:    30 50 44;
+
+  --border-rgb:         31 49 66;
+
+  --success-rgb:        0 229 160;
+  --warning-rgb:        245 184 0;
+  --danger-rgb:         255 77 106;
+
+  --color-sidebar-bg:   rgb(13 26 38);
+  --color-topbar-bg:    rgb(13 26 38);
+  --color-page-bg:      rgb(var(--bg-app-rgb));
+  --color-accent:       rgb(var(--accent-rgb));
+}
+
+// ============================================================
+// BASE
+// ============================================================
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
 body {
   font-family: t.$font-body;
-  background: var(--color-page-bg);
-  color: #fff;
+  background: rgb(var(--bg-app-rgb));
+  color: rgb(var(--fg-rgb));
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   line-height: 1.6;
 }
-::-webkit-scrollbar { width:5px }
-::-webkit-scrollbar-track { background: #071528 }
-::-webkit-scrollbar-thumb { background: rgba(0,212,237,.28); border-radius:3px }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,212,237,.45) }
-::selection { background: rgba(0,212,237,.28); color:#fff }
-:focus-visible { outline:2px solid var(--color-accent); outline-offset:2px; border-radius:4px }
-input:-webkit-autofill,input:-webkit-autofill:focus {
-  -webkit-box-shadow:0 0 0 1000px #071528 inset !important;
-  -webkit-text-fill-color:#fff !important;
-  caret-color:#fff;
+a { color: inherit; text-decoration: none; }
+img, svg { display: block; max-width: 100%; }
+button { font-family: inherit; cursor: pointer; }
+
+::selection      { background: rgb(var(--accent-rgb) / .25); color: rgb(var(--fg-strong-rgb)); }
+:focus-visible   { outline: 2px solid rgb(var(--accent-rgb)); outline-offset: 2px; border-radius: 4px; }
+
+::-webkit-scrollbar       { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: rgb(var(--bg-deep-rgb)); }
+::-webkit-scrollbar-thumb {
+  background: rgb(var(--border-rgb));
+  border-radius: 5px;
+  &:hover { background: rgb(var(--fg-mute-rgb) / .5); }
 }
-a { color:inherit; text-decoration:none }
-img,svg { display:block; max-width:100% }
-button { font-family:inherit; cursor:pointer }
 
-// ════════════════════════════════════════
-// GLOBAL MODAL STYLES
-// Must be global — not component-scoped
-// ════════════════════════════════════════
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1000px rgb(var(--bg-card-rgb)) inset !important;
+  -webkit-text-fill-color: rgb(var(--fg-rgb)) !important;
+  caret-color: rgb(var(--fg-rgb));
+}
 
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"],
+input[type="month"] { color-scheme: light; }
+
+body.dark-mode input[type="date"],
+body.dark-mode input[type="datetime-local"],
+body.dark-mode input[type="time"],
+body.dark-mode input[type="month"] { color-scheme: dark; }
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity .2s;
+  &:hover { opacity: 1; }
+}
+body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator,
+body.dark-mode input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+body.dark-mode input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(.7) sepia(1) saturate(5) hue-rotate(120deg) brightness(.9);
+}
+
+// ============================================================
+// GLOBAL MODAL
+// ============================================================
 .modal-backdrop {
   position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  background: rgba(2, 9, 18, .85) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  top: 0 !important; left: 0 !important;
+  width: 100vw !important; height: 100vh !important;
+  background: rgb(var(--fg-strong-rgb) / .55) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
   z-index: 99998 !important;
   animation: fadeIn .18s ease both;
 }
 
 .modal-box {
   position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
+  top: 50% !important; left: 50% !important;
   transform: translate(-50%, -50%) !important;
   z-index: 99999 !important;
-
   width: calc(100vw - 40px) !important;
   max-width: 500px;
   max-height: 88vh;
-
   display: flex;
   flex-direction: column;
-
-  background: #040f1e;
-  border: 1px solid rgba(0, 212, 237, .22);
+  background: rgb(var(--bg-card-strong-rgb));
+  border: 1px solid rgb(var(--border-rgb));
   border-radius: 18px;
   box-shadow:
-    0 0 0 1px rgba(0,212,237,.05) inset,
-    0 48px 100px rgba(2,9,18,.98),
-    0 8px 32px rgba(0,0,0,.85);
-
+    0 24px 64px rgb(var(--fg-strong-rgb) / .18),
+    0 4px 12px rgb(var(--fg-strong-rgb) / .08);
   animation: fadeUp .22s cubic-bezier(.4,0,.2,1) both;
 
-  &--wide {
-    max-width: 580px !important;
-  }
+  &--wide { max-width: 580px !important; }
+  &--form { max-width: 620px !important; max-height: 90vh !important; }
+  &--file { max-width: 860px !important; max-height: 92vh !important; }
 }
 
 @media (max-width: 560px) {
@@ -94,140 +173,12 @@ button { font-family:inherit; cursor:pointer }
   }
 }
 
-.modal-box--form {
-  max-width: 620px !important;
-  max-height: 90vh !important;
-}
-
-.modal-box--file {
-  max-width: 860px !important;
-  max-height: 92vh !important;
-}
-
-// ════════════════════════════════════════
-// DATE INPUT — force dark color scheme
-// so the browser calendar popup matches
-// ════════════════════════════════════════
-
-input[type="date"],
-input[type="datetime-local"],
-input[type="time"],
-input[type="month"] {
-  color-scheme: dark;
-}
-
-// Calendar picker indicator icon — invert to match dark theme
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.7) sepia(1) saturate(5) hue-rotate(160deg) brightness(0.9);
-  cursor: pointer;
-  opacity: 0.8;
-  transition: opacity .2s;
-
-  &:hover { opacity: 1; }
-}
-
-// ════════════════════════════════════════
-// LIGHT MODE — card & table overrides only
-// Fixes hardcoded dark backgrounds in components
-// ════════════════════════════════════════
-body.light-mode {
-
-  color: #1e293b;
-
-  // ── Hardcoded card/panel backgrounds ──
-  // Targets the dark #040f1e / #071528 cards used across all components
-  [class*="card"],
-  [class*="-card"],
-  [class*="table-card"],
-  [class*="block__body"],
-  [class*="settings-block"],
-  [class*="detail"],
-  [class*="panel"] {
-    background: #ffffff !important;
-    border-color: #dbeafe !important;
-    color: #1e293b !important;
-  }
-
-  // ── Tables ──
-  table {
-    background: #ffffff !important;
-  }
-  thead tr {
-    background: #eff6ff !important;
-  }
-  thead th {
-    color: #3b82f6 !important;
-    border-bottom-color: #bfdbfe !important;
-  }
-  tbody tr {
-    border-bottom-color: #eff6ff !important;
-    &:hover { background: #f0f9ff !important; }
-  }
-  tbody td {
-    color: #1e293b !important;
-  }
-
-  // ── Inputs ──
-  input:not([type="color"]),
-  select,
-  textarea {
-    background: #f8fafc !important;
-    color: #1e293b !important;
-    border-color: #bfdbfe !important;
-    &::placeholder { color: #94a3b8 !important; }
-  }
-
-  // ── Muted/dim text ──
-  .dim { color: #64748b !important; }
-
-  // ── Modal boxes ──
-  .modal-box {
-    background: #ffffff !important;
-    border-color: #bfdbfe !important;
-    color: #1e293b !important;
-  }
-  .modal-backdrop {
-    background: rgba(15, 23, 42, .5) !important;
-  }
-
-  // ── Scrollbar ──
-  ::-webkit-scrollbar-track { background: #eff6ff !important; }
-  ::-webkit-scrollbar-thumb { background: rgba(37,99,235,.3) !important; }
-
-  // ── Autofill ──
-  input:-webkit-autofill,
-  input:-webkit-autofill:focus {
-    -webkit-box-shadow: 0 0 0 1000px #f8fafc inset !important;
-    -webkit-text-fill-color: #1e293b !important;
-    caret-color: #1e293b;
-  }
-}
-
-.settings-page {
-  &.light-mode {
-    // Force top navbar items to be white if they aren't inheriting correctly
-    .top-navbar-user-info, .sign-out-btn {
-      color: #ffffff !important;
-      border-color: rgba(255, 255, 255, 0.2);
-    }
-    
-    // Ensure the settings title on the light background is dark
-    .settings-page__header h1 {
-      color: #0f172a; 
-    }
-  }
-}
-
-// Workspace route — no padding, fills full height
+// Workspace route
 app-audit-workspace {
   display: flex;
   flex-direction: column;
   height: 100%;
 }
-
-// When workspace is active, remove shell content padding
 .shell__content:has(app-audit-workspace) {
   padding: 0 !important;
   overflow: hidden !important;
