@@ -16,6 +16,19 @@ import { AuditBotComponent } from '../../layout/audit-bot/audit-bot.component';
 import { AuditRequest } from '../../models/audit.model';
 import { environment } from '../../environments/environment';
 
+/**
+ * Unified step model used by the workspace stepper.
+ * Built from intake form steps (preferred — they carry the actual fields)
+ * or from auditor process steps (fallback when no form template is available).
+ */
+interface WorkspaceStep {
+  id:        number;        // intake form step id, or -1 for synthetic fallback
+  name:      string;
+  stepOrder: number;
+  fieldIds:  number[];      // empty array => show all answers (fallback mode)
+  isDefault?: boolean;
+}
+
 @Component({
   selector: 'app-audit-workspace',
   standalone: true,
@@ -26,7 +39,7 @@ import { environment } from '../../environments/environment';
 export class AuditWorkspaceComponent implements OnInit {
 
   request:     AuditRequest | null = null;
-  steps:       AuditProcessStep[]  = [];
+  steps:       WorkspaceStep[]     = [];
   results:     AuditStepResult[]   = [];
   activeStep   = 0;
   botOpen      = false;
@@ -76,9 +89,10 @@ export class AuditWorkspaceComponent implements OnInit {
           this.autoStart(id);
         }
 
-        // ★ KEY FIX: AuditRequest has no FK to AuditFormTemplate
-        // Use auditType to find the template, then load its process steps
-        this.loadStepsByAuditType(req.auditType);
+        // Load intake form template — each form step becomes a workspace step.
+        // This gives the stepper meaningful navigation (Prev/Next across each
+        // intake section) AND exact per-step answer filtering by fieldId.
+        this.loadFormSteps(req.auditType);
 
         this.loadResults(id);
         this.cdr.detectChanges();
@@ -87,30 +101,67 @@ export class AuditWorkspaceComponent implements OnInit {
     });
   }
 
-  // ★ Uses auditType → getTemplateByType → getSteps
-  // This is the correct approach since AuditRequest only stores auditType
-  // REPLACE loadStepsByAuditType with this simpler direct call:
-private loadStepsByAuditType(auditType: string): void {
-  this.reqSvc.getProcessStepsByAuditType(auditType, this.isAuditorMode).subscribe({
-    next: steps => {
-      const real = steps.filter((s: any) => s.id > 0 && !s.isDefault);
-      if (real.length > 0) {
-        this.steps = real;
+  private loadFormSteps(auditType: string): void {
+    this.formSvc.getTemplateByType(auditType as any).subscribe({
+      next: tpl => {
+        const formSteps = (tpl?.steps ?? [])
+          .slice()
+          .sort((a, b) => (a.stepOrder ?? 0) - (b.stepOrder ?? 0));
+
+        if (formSteps.length > 0) {
+          this.steps = formSteps.map(s => ({
+            id:        s.id,
+            name:      s.title,
+            stepOrder: s.stepOrder,
+            fieldIds:  (s.fields ?? []).map(f => f.id)
+          }));
+        } else {
+          // No intake form steps — fall back to auditor process steps.
+          this.loadStepsByAuditType(auditType);
+          return;
+        }
+
         this.steps.forEach(s => {
           if (this.drafts[s.id] === undefined) this.drafts[s.id] = '';
         });
-      } else {
-        this.setDefaultStep();
-      }
-      this.cdr.detectChanges();
-    },
-    error: () => this.setDefaultStep()
-  });
-}
+        // Re-apply any results that loaded before steps were ready.
+        this.applyResultsToDrafts();
+        this.cdr.detectChanges();
+      },
+      error: () => this.loadStepsByAuditType(auditType)
+    });
+  }
+
+  // Fallback when no intake form template exists.
+  private loadStepsByAuditType(auditType: string): void {
+    this.reqSvc.getProcessStepsByAuditType(auditType, this.isAuditorMode).subscribe({
+      next: steps => {
+        const real = steps.filter((s: any) => s.id > 0 && !s.isDefault);
+        if (real.length > 0) {
+          this.steps = real.map((s: AuditProcessStep) => ({
+            id:        s.id,
+            name:      s.name,
+            stepOrder: s.stepOrder,
+            fieldIds:  [],
+            isDefault: s.isDefault
+          }));
+          this.steps.forEach(s => {
+            if (this.drafts[s.id] === undefined) this.drafts[s.id] = '';
+          });
+          this.applyResultsToDrafts();
+        } else {
+          this.setDefaultStep();
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => this.setDefaultStep()
+    });
+  }
 
   private setDefaultStep(): void {
-    this.steps    = [{ id: -1, name: 'Audit Review', stepOrder: 1, isDefault: true }];
+    this.steps = [{ id: -1, name: 'Audit Review', stepOrder: 1, fieldIds: [], isDefault: true }];
     this.drafts[-1] = '';
+    this.applyResultsToDrafts();
     this.cdr.detectChanges();
   }
 
@@ -131,24 +182,28 @@ private loadStepsByAuditType(auditType: string): void {
     this.resSvc.getResults(requestId).subscribe({
       next: results => {
         this.results = results;
-        results.forEach(r => {
-          const key = r.processStep?.id ?? -1;
-          this.drafts[key] = r.description ?? '';
-        });
+        this.applyResultsToDrafts();
         this.cdr.detectChanges();
       }
     });
   }
 
-  get currentStep(): AuditProcessStep | null {
+  /** Match results to current steps by stepName (resilient when results load before steps). */
+  private applyResultsToDrafts(): void {
+    if (!this.steps.length || !this.results.length) return;
+    for (const r of this.results) {
+      const matching = this.steps.find(s => s.name === r.stepName);
+      if (matching) this.drafts[matching.id] = r.description ?? '';
+    }
+  }
+
+  get currentStep(): WorkspaceStep | null {
     return this.steps[this.activeStep] ?? null;
   }
 
   get currentResult(): AuditStepResult | null {
     if (!this.currentStep) return null;
-    return this.results.find(r =>
-      (r.processStep?.id ?? -1) === this.currentStep!.id
-    ) ?? null;
+    return this.results.find(r => r.stepName === this.currentStep!.name) ?? null;
   }
 
   get currentDraft(): string {
@@ -163,9 +218,7 @@ private loadStepsByAuditType(auditType: string): void {
   get allStepsSaved(): boolean {
     if (this.steps.length === 0) return false;
     return this.steps.every(s =>
-      this.results.some(r =>
-        (r.processStep?.id ?? -1) === s.id && r.status === 'SAVED'
-      )
+      this.results.some(r => r.stepName === s.name && r.status === 'SAVED')
     );
   }
 
@@ -186,10 +239,8 @@ private loadStepsByAuditType(auditType: string): void {
     });
   }
 
-  stepStatus(step: AuditProcessStep): 'done' | 'draft' | 'active' | 'pending' {
-    const r = this.results.find(res =>
-      (res.processStep?.id ?? -1) === step.id
-    );
+  stepStatus(step: WorkspaceStep): 'done' | 'draft' | 'active' | 'pending' {
+    const r = this.results.find(res => res.stepName === step.name);
     if (r?.status === 'SAVED')  return 'done';
     if (r?.status === 'DRAFT')  return 'draft';
     if (this.steps[this.activeStep]?.id === step.id) return 'active';
@@ -235,6 +286,96 @@ private loadStepsByAuditType(auditType: string): void {
   }
 
   toggleBot(): void { this.botOpen = !this.botOpen; }
+
+  // ── Step-aware AI suggestions (heuristic, client-side stub) ──
+  get currentSuggestions(): string[] {
+    const step = this.currentStep;
+    if (!step) return [];
+    const name = (step.name || '').toLowerCase();
+    const ansCount = this.request?.answers?.length ?? 0;
+    const fileCount = this.evidenceFileCount;
+
+    const stepAnsCount = this.currentStepAnswers.length;
+    void ansCount;
+    const generic = [
+      `Review the ${stepAnsCount} answer${stepAnsCount === 1 ? '' : 's'} mapped to this step for completeness.`,
+      fileCount > 0
+        ? `Cross-check claims against the ${fileCount} attached evidence file${fileCount === 1 ? '' : 's'}.`
+        : 'No evidence files attached — request supporting documents.'
+    ];
+
+    if (/risk|hazard|threat/.test(name)) {
+      return [
+        'Identify primary risk drivers in the submitted answers.',
+        'Estimate likelihood × impact for each identified risk.',
+        ...generic
+      ];
+    }
+    if (/complian|regulat|legal|gdpr|iso/.test(name)) {
+      return [
+        'Map answers to applicable regulatory clauses.',
+        'Flag any unanswered or "NA" responses for follow-up.',
+        ...generic
+      ];
+    }
+    if (/evidence|document|record/.test(name)) {
+      return [
+        'Verify each evidence file is legible and current.',
+        'Confirm signatures, dates, and authorship where required.',
+        ...generic
+      ];
+    }
+    if (/conclus|final|decision|recommend/.test(name)) {
+      return [
+        'Summarise findings across the previous steps.',
+        'State the conclusion clearly: pass, conditional, or fail.',
+        'List actionable recommendations with owners.'
+      ];
+    }
+    return [
+      `Focus on the scope of "${step.name}" before drafting.`,
+      ...generic
+    ];
+  }
+
+  // ── Evidence helpers ──
+  /**
+   * Answers that belong to the current step.
+   * If the step carries `fieldIds` (intake-form-based), filter by exact membership.
+   * If `fieldIds` is empty (process-step fallback / default step), show all answers.
+   */
+  get currentStepAnswers() {
+    const answers = this.request?.answers ?? [];
+    const step    = this.currentStep;
+    if (!step) return [];
+    if (!step.fieldIds || step.fieldIds.length === 0) return answers;
+    const set = new Set(step.fieldIds);
+    return answers.filter(a => set.has(a.fieldId));
+  }
+
+  get evidenceFileCount(): number {
+    let total = 0;
+    for (const a of this.currentStepAnswers) {
+      if (a.fileMedia) total++;
+      if (a.files?.length) total += a.files.length;
+    }
+    return total;
+  }
+
+  // ── Quick-insert chip → append snippet to current draft ──
+  insertSnippet(label: string): void {
+    if (!this.currentStep || this.request?.status === 'COMPLETED') return;
+    const map: Record<string, string> = {
+      'Compliance OK':       '\n\n✓ Compliance assessment: Requirements met. ',
+      'Risk identified':     '\n\n⚠ Risk identified: ',
+      'Needs more evidence': '\n\n✱ Additional evidence required: ',
+      'Recommendation':      '\n\n→ Recommendation: '
+    };
+    const snippet = map[label] ?? `\n\n${label}: `;
+    const current = this.currentDraft || '';
+    this.drafts[this.currentStep.id] = (current + snippet).replace(/^\n+/, '');
+    this.cdr.detectChanges();
+  }
 
   goBack(): void {
     this.router.navigate(
@@ -292,7 +433,7 @@ private persistAsync(status: 'DRAFT' | 'SAVED'): Promise<void> {
     if (!desc.trim()) { resolve(); return; }
 
     const payload = {
-      processStepId: step.id > 0 ? step.id : -1,
+      processStepId: -1,
       stepName:      step.name,
       description:   desc,
       status
@@ -323,7 +464,7 @@ private persist(status: 'DRAFT' | 'SAVED'): void {
   const step     = this.currentStep;
 
   const payload = {
-    processStepId: step.id > 0 ? step.id : -1,
+    processStepId: -1,
     stepName:      step.name,
     description:   desc,
     status
@@ -361,11 +502,9 @@ submitAudit(): void {
       return draft && draft.length > 0;
     })
     .map(s => new Promise<void>((resolve) => {
-      const existing = this.results.find(r =>
-        (r.processStep?.id ?? -1) === s.id
-      );
+      const existing = this.results.find(r => r.stepName === s.name);
       const payload = {
-        processStepId: s.id > 0 ? s.id : -1,
+        processStepId: -1,
         stepName:      s.name,
         description:   this.drafts[s.id],
         status:        'SAVED' as const
