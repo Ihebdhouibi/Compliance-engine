@@ -103,8 +103,9 @@ public class TwoLevelAuditService {
                 .orElseThrow(() -> new RuntimeException("Request not found"));
         RoutingProfile profile = getRoutingProfile(requestId);
 
-        // Always route to the RICS L2 template (only one shipped today).
-        AuditFormTemplate l2 = templateRepo.findByAuditTypeAndLevel(
+        // Always route to the newest ACTIVE RICS L2 template (skips legacy
+        // non-versioned templates seeded by DefaultTemplateLoaderService).
+        AuditFormTemplate l2 = templateRepo.findFirstByAuditTypeAndLevelAndActiveTrueOrderByTemplateVersionDescIdDesc(
                         AuditType.RICS_RESPONSIBLE_AI, AuditLevel.LEVEL_2)
                 .orElseThrow(() -> new RuntimeException(
                         "RICS Level 2 template not seeded"));
@@ -129,8 +130,14 @@ public class TwoLevelAuditService {
         Long tplId = req.getLevel2TemplateId();
         AuditFormTemplate l2 = tplId != null
                 ? templateRepo.findById(tplId).orElse(null)
-                : templateRepo.findByAuditTypeAndLevel(
-                        AuditType.RICS_RESPONSIBLE_AI, AuditLevel.LEVEL_2).orElse(null);
+                : null;
+        // If the pinned template is missing or has been deactivated (e.g. it
+        // was a legacy/broken template replaced by the seeder), fall back to
+        // the newest active RICS L2 template.
+        if (l2 == null || !Boolean.TRUE.equals(l2.getActive())) {
+            l2 = templateRepo.findFirstByAuditTypeAndLevelAndActiveTrueOrderByTemplateVersionDescIdDesc(
+                    AuditType.RICS_RESPONSIBLE_AI, AuditLevel.LEVEL_2).orElse(null);
+        }
         if (l2 == null) {
             throw new RuntimeException("No Level 2 template available");
         }

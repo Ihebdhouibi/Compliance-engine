@@ -36,6 +36,17 @@ public interface AuditFormTemplateRepository extends JpaRepository<AuditFormTemp
 
     Optional<AuditFormTemplate> findByAuditTypeAndLevel(AuditType auditType, AuditLevel level);
 
+    /**
+     * Picks the newest ACTIVE template for the given type + level. Used by
+     * the two-level flow so stale/legacy duplicates (e.g. older templates
+     * seeded by {@code DefaultTemplateLoaderService} without a version)
+     * are ignored.
+     */
+    Optional<AuditFormTemplate> findFirstByAuditTypeAndLevelAndActiveTrueOrderByTemplateVersionDescIdDesc(
+            AuditType auditType, AuditLevel level);
+
+    List<AuditFormTemplate> findAllByAuditTypeAndLevel(AuditType auditType, AuditLevel level);
+
     Optional<AuditFormTemplate> findFirstByLevelAndActiveTrueOrderByTemplateVersionDesc(AuditLevel level);
 
     List<AuditFormTemplate> findByActiveTrue();

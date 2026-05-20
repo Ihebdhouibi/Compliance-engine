@@ -95,22 +95,47 @@ public class TwoLevelTemplateSeeder implements CommandLineRunner {
         AuditType type = AuditType.valueOf(root.path("auditType").asText());
         AuditLevel level = AuditLevel.valueOf(root.path("level").asText());
         int version = root.path("version").asInt(1);
+        int expectedSteps = root.path("steps").size();
 
-        AuditFormTemplate existing = templateRepo.findByAuditTypeAndLevel(type, level).orElse(null);
-        if (existing != null
-                && existing.getTemplateVersion() != null
-                && existing.getTemplateVersion() >= version) {
+        // Deactivate every stale template for this type+level whose version
+        // is null (legacy DefaultTemplateLoaderService output) or whose step
+        // count differs from the JSON. This rescues DBs polluted with the
+        // 245-step RICS dump or duplicates from earlier dev runs.
+        java.util.List<AuditFormTemplate> existingAll =
+                templateRepo.findAllByAuditTypeAndLevel(type, level);
+        AuditFormTemplate currentActive = null;
+        for (AuditFormTemplate t : existingAll) {
+            boolean legacy = t.getTemplateVersion() == null;
+            boolean wrongShape = t.getSteps() != null && t.getSteps().size() != expectedSteps;
+            if (legacy || wrongShape) {
+                if (Boolean.TRUE.equals(t.getActive())) {
+                    t.setActive(false);
+                    templateRepo.save(t);
+                    logger.warn("Deactivated stale {}/{} template id={} (version={}, steps={})",
+                            type, level, t.getId(), t.getTemplateVersion(),
+                            t.getSteps() == null ? 0 : t.getSteps().size());
+                }
+                continue;
+            }
+            if (Boolean.TRUE.equals(t.getActive()) &&
+                    (currentActive == null
+                            || (t.getTemplateVersion() != null
+                                && t.getTemplateVersion() > currentActive.getTemplateVersion()))) {
+                currentActive = t;
+            }
+        }
+
+        if (currentActive != null && currentActive.getTemplateVersion() != null
+                && currentActive.getTemplateVersion() >= version) {
             logger.info("Template {}/{} already at version {} — skipping seed",
-                    type, level, existing.getTemplateVersion());
+                    type, level, currentActive.getTemplateVersion());
             return;
         }
-        if (existing != null) {
-            // Soft-replace: keep old template (so historical answers still link)
-            // but mark inactive and bump version.
-            existing.setActive(false);
-            templateRepo.save(existing);
+        if (currentActive != null) {
+            currentActive.setActive(false);
+            templateRepo.save(currentActive);
             logger.info("Deactivated template id={} (v{}) before seeding v{}",
-                    existing.getId(), existing.getTemplateVersion(), version);
+                    currentActive.getId(), currentActive.getTemplateVersion(), version);
         }
 
         AuditFormTemplate template = new AuditFormTemplate();
