@@ -300,7 +300,7 @@ def convert_level2() -> dict:
             # Comment field
             comment = {
                 "fieldKey": field_key + "_comment",
-                "label": "Auditee response and supporting notes",
+                "label": "Your response and supporting notes",
                 "placeholder": "Explain how this is implemented in your organization.",
                 "fieldType": "TEXTAREA",
                 "required": False,
