@@ -305,6 +305,7 @@ def convert_level2() -> dict:
                 "fieldType": "TEXTAREA",
                 "required": False,
                 "fieldOrder": field_order,
+                "module": r.get("Level 2 Module"),
                 "category": cat,
                 "linkedToFieldKey": field_key,
             }
@@ -320,6 +321,7 @@ def convert_level2() -> dict:
                 "required": False,
                 "multipleFiles": True,
                 "fieldOrder": field_order,
+                "module": r.get("Level 2 Module"),
                 "category": cat,
                 "linkedToFieldKey": field_key,
             }
