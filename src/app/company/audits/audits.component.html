@@ -283,7 +283,12 @@
                     <p class="quote-rationale" *ngIf="routingProfile.rationale">{{ routingProfile.rationale }}</p>
 
                     <dl class="quote-meta">
-                        <div *ngIf="routingProfile.activeModules"><dt>Active modules</dt><dd>{{ routingProfile.activeModules }}</dd></div>
+                        <div class="qm-full" *ngIf="routingProfile.activeModules">
+                            <dt>Active modules</dt>
+                            <dd class="qm-chips">
+                                <span class="qm-chip" *ngFor="let m of routingProfile.activeModules.split(',')">{{ m.trim() }}</span>
+                            </dd>
+                        </div>
                         <div *ngIf="routingProfile.evidenceDepth"><dt>Evidence depth</dt><dd>{{ routingProfile.evidenceDepth }}</dd></div>
                         <div *ngIf="routingProfile.firmSizeCategory"><dt>Firm size</dt><dd>{{ routingProfile.firmSizeCategory }}</dd></div>
                         <div *ngIf="routingProfile.sectorCategory"><dt>Sector</dt><dd>{{ routingProfile.sectorCategory }}</dd></div>
