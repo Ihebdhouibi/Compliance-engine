@@ -138,10 +138,24 @@ public class TwoLevelTemplateSeeder implements CommandLineRunner {
                     currentActive.getId(), currentActive.getTemplateVersion(), version);
         }
 
+        // Avoid colliding with the (type, level, version) unique constraint:
+        // pick a version strictly greater than every row already in the DB
+        // (active or not), legacy nulls treated as 0.
+        int maxExistingVersion = 0;
+        for (AuditFormTemplate t : existingAll) {
+            int v = t.getTemplateVersion() == null ? 0 : t.getTemplateVersion();
+            if (v > maxExistingVersion) maxExistingVersion = v;
+        }
+        int effectiveVersion = Math.max(version, maxExistingVersion + 1);
+        if (effectiveVersion != version) {
+            logger.info("Bumping new {}/{} template version from {} to {} to avoid uk_template_type_level_version collision",
+                    type, level, version, effectiveVersion);
+        }
+
         AuditFormTemplate template = new AuditFormTemplate();
         template.setAuditType(type);
         template.setLevel(level);
-        template.setTemplateVersion(version);
+        template.setTemplateVersion(effectiveVersion);
         template.setTitle(root.path("title").asText());
         template.setDescription(root.path("description").asText(""));
         template.setActive(true);
