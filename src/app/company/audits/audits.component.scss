@@ -515,9 +515,9 @@ table { width: 100%; border-collapse: collapse;
 .form-field-wrap { display: flex; flex-direction: column; gap: 6px; }
 
 .fl {
-  font-family: t.$font-mono; font-size: .64rem; font-weight: 600;
-  letter-spacing: .11em; text-transform: uppercase;
-  color: var(--color-accent,rgb(var(--accent-rgb))); opacity: .85;
+  font-family: t.$font-body; font-size: .92rem; font-weight: 600;
+  letter-spacing: .005em; line-height: 1.4;
+  color: var(--color-btn-add, #059669); opacity: .95;
 }
 
 .req-star { color: var(--color-btn-delete,rgb(var(--danger-rgb))); margin-left: 2px; }
