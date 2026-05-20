@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 3,
   "auditType": "RICS_RESPONSIBLE_AI",
   "level": "LEVEL_2",
   "title": "RICS Responsible AI – Level 2 Audit",
@@ -9,7 +9,7 @@
       "category": "A. Governance ownership, accountability and ethical behaviour",
       "stepOrder": 1,
       "title": "A. Governance ownership, accountability and ethical behaviour",
-      "description": "Evidence-based RICS questions for category: A. Governance ownership, accountability and ethical behaviour",
+      "description": "Confirm who owns AI responsibility at senior level and how the firm upholds ethical conduct when AI is used in professional work.",
       "fields": [
         {
           "fieldKey": "q1",
@@ -242,7 +242,7 @@
       "category": "B. Baseline knowledge, competence and professional development",
       "stepOrder": 2,
       "title": "B. Baseline knowledge, competence and professional development",
-      "description": "Evidence-based RICS questions for category: B. Baseline knowledge, competence and professional development",
+      "description": "Show that staff using AI have the appropriate training, awareness and continuing professional development to do so responsibly.",
       "fields": [
         {
           "fieldKey": "q6",
@@ -430,7 +430,7 @@
       "category": "C. Data governance and protection",
       "stepOrder": 3,
       "title": "C. Data governance and protection",
-      "description": "Evidence-based RICS questions for category: C. Data governance and protection",
+      "description": "Demonstrate how the firm manages data quality, confidentiality, lawful basis and protection across AI inputs and outputs.",
       "fields": [
         {
           "fieldKey": "q10",
@@ -618,7 +618,7 @@
       "category": "D. System governance, AI registers and approved use",
       "stepOrder": 4,
       "title": "D. System governance, AI registers and approved use",
-      "description": "Evidence-based RICS questions for category: D. System governance, AI registers and approved use",
+      "description": "Evidence the firm's inventory of AI systems, the approval workflow, and the rules for who may use which tools and for which purposes.",
       "fields": [
         {
           "fieldKey": "q14",
@@ -896,7 +896,7 @@
       "category": "E. Risk management",
       "stepOrder": 5,
       "title": "E. Risk management",
-      "description": "Evidence-based RICS questions for category: E. Risk management",
+      "description": "Show how AI-specific risks (bias, accuracy, dependency, supply chain) are identified, assessed, mitigated and reviewed over time.",
       "fields": [
         {
           "fieldKey": "q20",
@@ -1174,7 +1174,7 @@
       "category": "F. Transparency of AI processes and client communication",
       "stepOrder": 6,
       "title": "F. Transparency of AI processes and client communication",
-      "description": "Evidence-based RICS questions for category: F. Transparency of AI processes and client communication",
+      "description": "Demonstrate how clients are informed when AI contributes to advice, decisions or deliverables, and how transparency is maintained.",
       "fields": [
         {
           "fieldKey": "q26",
@@ -1407,7 +1407,7 @@
       "category": "G. Monitoring AI output safety, reliance and assurance",
       "stepOrder": 7,
       "title": "G. Monitoring AI output safety, reliance and assurance",
-      "description": "Evidence-based RICS questions for category: G. Monitoring AI output safety, reliance and assurance",
+      "description": "Evidence the controls that monitor AI output quality, prevent over-reliance, and ensure professional human review where required.",
       "fields": [
         {
           "fieldKey": "q31",
@@ -1685,7 +1685,7 @@
       "category": "H. Procurement and due diligence",
       "stepOrder": 8,
       "title": "H. Procurement and due diligence",
-      "description": "Evidence-based RICS questions for category: H. Procurement and due diligence",
+      "description": "Show the due diligence applied when selecting, contracting and onboarding AI vendors, models and supporting infrastructure.",
       "fields": [
         {
           "fieldKey": "q37",
@@ -1918,7 +1918,7 @@
       "category": "I. Explainability",
       "stepOrder": 9,
       "title": "I. Explainability",
-      "description": "Evidence-based RICS questions for category: I. Explainability",
+      "description": "Demonstrate the firm's ability to explain — to clients, regulators and internal users — how an AI-assisted output was produced.",
       "fields": [
         {
           "fieldKey": "q42",
@@ -2106,7 +2106,7 @@
       "category": "J. Recordkeeping and documentation",
       "stepOrder": 10,
       "title": "J. Recordkeeping and documentation",
-      "description": "Evidence-based RICS questions for category: J. Recordkeeping and documentation",
+      "description": "Evidence the records kept of AI use, decisions, approvals and incidents so the firm can demonstrate accountability over time.",
       "fields": [
         {
           "fieldKey": "q46",
@@ -2339,7 +2339,7 @@
       "category": "K. Regular review and assurance of governance arrangements",
       "stepOrder": 11,
       "title": "K. Regular review and assurance of governance arrangements",
-      "description": "Evidence-based RICS questions for category: K. Regular review and assurance of governance arrangements",
+      "description": "Show how the firm periodically reviews, tests and improves its AI governance arrangements to keep pace with risk and practice.",
       "fields": [
         {
           "fieldKey": "q51",
