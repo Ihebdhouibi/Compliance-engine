@@ -5,6 +5,8 @@ import com.devteam.aiauditserver.enums.Project.FieldType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -100,6 +102,7 @@ public class AuditFormField {
             orphanRemoval = true,
             fetch = FetchType.EAGER
     )
+    @Fetch(FetchMode.SUBSELECT)
     @OrderBy("optionOrder ASC")
     @JsonManagedReference("field-options")
     private List<AuditFormFieldOption> options = new ArrayList<>();

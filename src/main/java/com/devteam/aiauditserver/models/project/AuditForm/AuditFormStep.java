@@ -4,6 +4,8 @@ package com.devteam.aiauditserver.models.project.AuditForm;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -36,6 +38,7 @@ public class AuditFormStep {
             cascade = CascadeType.ALL,
             orphanRemoval = true,
             fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @OrderBy("fieldOrder ASC")
     @JsonManagedReference("step-fields")
     private List<AuditFormField> fields = new ArrayList<>();
