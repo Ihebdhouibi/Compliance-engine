@@ -6,6 +6,23 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <style>
+    /* Prevent flash of unstyled content: paint a neutral background that matches
+       whichever theme the user last selected before Angular bootstraps. */
+    html, body { margin: 0; background: #f6f8f7; color: #1a2332; }
+    html.dark-mode, html.dark-mode body, body.dark-mode { background: #0a1520; color: #e8eef0; }
+  </style>
+  <script>
+    // Apply persisted theme synchronously, before Angular renders, to avoid FOUC.
+    try {
+      if (localStorage.getItem('colorMode') === 'dark') {
+        document.documentElement.classList.add('dark-mode');
+        document.addEventListener('DOMContentLoaded', function () {
+          document.body.classList.add('dark-mode');
+        });
+      }
+    } catch (e) { /* localStorage unavailable (SSR / privacy mode) */ }
+  </script>
 </head>
 <body>
   <app-root></app-root>
