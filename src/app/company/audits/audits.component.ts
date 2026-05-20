@@ -79,6 +79,20 @@ export class AuditsComponent implements OnInit {
   isLoadingQuote = false;
   quoteError = '';
 
+  /** Human-readable labels for the routing engine's package codes. */
+  private readonly packageLabels: Record<string, string> = {
+    RICS_PROVIDER_DEEP_AUDIT: 'RICS Provider Deep Audit',
+    RICS_MATERIAL_AUDIT:      'RICS Material-Use Audit',
+    RICS_INTERNAL_AUDIT:      'RICS Internal-Use Audit',
+    RICS_AWARENESS_BASELINE:  'RICS Awareness Baseline',
+  };
+
+  packageLabel(code: string | undefined | null): string {
+    if (!code) return 'Recommended package';
+    return this.packageLabels[code] ?? code.replace(/_/g, ' ').toLowerCase()
+      .replace(/\b\w/g, c => c.toUpperCase());
+  }
+
   readonly auditTypes: { value: AuditType; label: string }[] = [
     { value: 'AI_READINESS_REVIEW',     label: 'AI Readiness Review' },
     { value: 'INTERNAL_AI_GOVERNANCE',  label: 'Internal AI Governance Review' },
