@@ -278,7 +278,6 @@
                 <div class="form-load-error" *ngIf="quoteError">{{ quoteError }}</div>
 
                 <div class="quote-card" *ngIf="routingProfile && !isLoadingQuote">
-                    <div class="quote-pathway">{{ routingProfile.pathway }}</div>
                     <h3 class="quote-package">{{ packageLabel(routingProfile.recommendedPackage) }}</h3>
                     <p class="quote-rationale" *ngIf="routingProfile.rationale">{{ routingProfile.rationale }}</p>
 
