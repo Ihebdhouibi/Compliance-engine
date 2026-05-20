@@ -1,0 +1,57 @@
+<div class="scoring-container">
+  <header class="head">
+    <button class="btn ghost" (click)="back()">← Back</button>
+    <h2>Auditor scoring</h2>
+    <span *ngIf="request" class="muted">Audit #{{ request.id }} — {{ request.auditType }}</span>
+  </header>
+
+  <div *ngIf="loading" class="state-msg">Loading audit…</div>
+  <div *ngIf="errorMsg" class="state-msg error">{{ errorMsg }}</div>
+
+  <div *ngIf="!loading && rows.length === 0" class="state-msg">
+    No answers to score yet.
+  </div>
+
+  <table *ngIf="rows.length > 0" class="scoring-table">
+    <thead>
+      <tr>
+        <th style="width: 35%;">Question</th>
+        <th style="width: 25%;">Client answer</th>
+        <th style="width: 8%;">Score</th>
+        <th style="width: 14%;">Evidence</th>
+        <th>Auditor notes</th>
+        <th style="width: 110px;"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let row of rows">
+        <td>
+          <strong>{{ row.answer.fieldLabel }}</strong>
+          <div *ngIf="row.answer.fieldKey" class="key">{{ row.answer.fieldKey }}</div>
+        </td>
+        <td>{{ row.answer.answerValue || '—' }}</td>
+        <td>
+          <input type="number" min="0" max="5" step="1"
+                 [(ngModel)]="row.scoring.auditorScore" />
+        </td>
+        <td>
+          <select [(ngModel)]="row.scoring.evidenceProvidedStatus">
+            <option value="">—</option>
+            <option *ngFor="let e of evidenceStatuses" [value]="e.value">{{ e.label }}</option>
+          </select>
+          <input type="text" placeholder="reference"
+                 [(ngModel)]="row.scoring.evidenceReference" />
+        </td>
+        <td>
+          <textarea rows="2" [(ngModel)]="row.scoring.auditorNotes"></textarea>
+        </td>
+        <td>
+          <button class="btn primary sm" (click)="saveRow(row)" [disabled]="row.saving">
+            {{ row.saving ? '…' : (row.saved ? 'Saved' : 'Save') }}
+          </button>
+          <div *ngIf="row.error" class="row-err">{{ row.error }}</div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

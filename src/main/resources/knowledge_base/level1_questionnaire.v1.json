@@ -1,0 +1,1463 @@
+{
+  "version": 1,
+  "auditType": "AI_READINESS_REVIEW",
+  "level": "LEVEL_1",
+  "title": "Responsible AI – Level 1 Firm Profile",
+  "description": "Captures firm profile and market-insight data. Output is a routing profile that determines package, Level 2 pathway, active modules and evidence depth.",
+  "steps": [
+    {
+      "sectionId": "S0",
+      "stepOrder": 1,
+      "title": "Pre-Level 1 Package Selector",
+      "description": "A short 3-5 question selector shown before Level 1 to give indicative package and pricing.",
+      "fields": [
+        {
+          "fieldKey": "selector_ai_use",
+          "label": "How is your organisation currently using AI?",
+          "placeholder": "Shown before full Level 1. Used to show likely package and indicative price.",
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 1,
+          "optionSourceKey": "AI_Adoption_Stage",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Primary price/package selector",
+            "section:S0"
+          ]
+        },
+        {
+          "fieldKey": "selector_client_facing_ai",
+          "label": "Is AI used in client work, professional advice, reports, submissions or decisions?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 2,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Materiality / package uplift",
+            "section:S0"
+          ]
+        },
+        {
+          "fieldKey": "selector_org_type",
+          "label": "Which best describes your organisation?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 3,
+          "optionSourceKey": "Primary_Industry",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Sector/professional pathway",
+            "section:S0"
+          ]
+        },
+        {
+          "fieldKey": "selector_provider_flag",
+          "label": "Does your organisation build, configure, integrate, fine-tune or sell AI-enabled tools?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 4,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Provider/high-risk package",
+            "section:S0"
+          ]
+        },
+        {
+          "fieldKey": "selector_firm_size",
+          "label": "Approximate number of employees",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 5,
+          "optionSourceKey": "Firm_Size",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Pricing/proportionality",
+            "section:S0"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S1",
+      "stepOrder": 2,
+      "title": "Organisation Identity",
+      "description": "Basic entity information and profile data.",
+      "fields": [
+        {
+          "fieldKey": "legal_name",
+          "label": "Legal name of organisation",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": true,
+          "fieldOrder": 1,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Identity only",
+            "section:S1"
+          ]
+        },
+        {
+          "fieldKey": "trading_name",
+          "label": "Trading name / brand name",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 2,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Identity only",
+            "section:S1"
+          ]
+        },
+        {
+          "fieldKey": "company_number",
+          "label": "Company registration number",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 3,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Verification",
+            "section:S1"
+          ]
+        },
+        {
+          "fieldKey": "country_registration",
+          "label": "Country of registration",
+          "placeholder": null,
+          "fieldType": "DROPDOWN",
+          "required": true,
+          "fieldOrder": 4,
+          "optionSourceKey": "Country list",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Jurisdiction",
+            "section:S1"
+          ]
+        },
+        {
+          "fieldKey": "year_established",
+          "label": "Year established",
+          "placeholder": null,
+          "fieldType": "NUMBER",
+          "required": false,
+          "fieldOrder": 5,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Firm maturity insight",
+            "section:S1"
+          ]
+        },
+        {
+          "fieldKey": "website_url",
+          "label": "Website URL",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 6,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Public profile",
+            "section:S1"
+          ]
+        },
+        {
+          "fieldKey": "linkedin_url",
+          "label": "LinkedIn company page URL",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 7,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Market visibility",
+            "section:S1"
+          ]
+        },
+        {
+          "fieldKey": "group_structure_flag",
+          "label": "Is the organisation part of a wider group?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 8,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Complexity",
+            "section:S1"
+          ]
+        },
+        {
+          "fieldKey": "parent_company",
+          "label": "Parent company name, if applicable",
+          "placeholder": "Show if 1.8 = Yes",
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 9,
+          "optionSourceKey": null,
+          "visibilityRule": {
+            "all": [
+              {
+                "fieldKey": "group_structure_flag",
+                "op": "in",
+                "values": [
+                  "Yes"
+                ]
+              }
+            ]
+          },
+          "routingTags": [
+            "use:Complexity",
+            "section:S1"
+          ]
+        },
+        {
+          "fieldKey": "subsidiary_count",
+          "label": "Number of subsidiaries or connected entities",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 10,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Complexity",
+            "section:S1"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S2",
+      "stepOrder": 3,
+      "title": "Contact & Respondent",
+      "description": "Who is completing the profile and who sponsors the review.",
+      "fields": [
+        {
+          "fieldKey": "primary_contact_name",
+          "label": "Primary contact name",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": true,
+          "fieldOrder": 1,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Operational",
+            "section:S2"
+          ]
+        },
+        {
+          "fieldKey": "primary_contact_title",
+          "label": "Primary contact job title",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": true,
+          "fieldOrder": 2,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Engagement level",
+            "section:S2"
+          ]
+        },
+        {
+          "fieldKey": "primary_contact_function",
+          "label": "Primary contact department/function",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 3,
+          "optionSourceKey": "AI_Functions",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Functional interest",
+            "section:S2"
+          ]
+        },
+        {
+          "fieldKey": "primary_contact_email",
+          "label": "Primary contact email",
+          "placeholder": null,
+          "fieldType": "EMAIL",
+          "required": true,
+          "fieldOrder": 4,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Operational",
+            "section:S2"
+          ]
+        },
+        {
+          "fieldKey": "senior_sponsor_name",
+          "label": "Senior sponsor name, if different",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 5,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Executive involvement",
+            "section:S2"
+          ]
+        },
+        {
+          "fieldKey": "senior_sponsor_title",
+          "label": "Senior sponsor job title",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 6,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Executive involvement",
+            "section:S2"
+          ]
+        },
+        {
+          "fieldKey": "respondent_function",
+          "label": "Who completed this questionnaire?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 7,
+          "optionSourceKey": "AI_Functions",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Source quality",
+            "section:S2"
+          ]
+        },
+        {
+          "fieldKey": "date_completed",
+          "label": "Date completed",
+          "placeholder": null,
+          "fieldType": "DATE",
+          "required": true,
+          "fieldOrder": 8,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Version control",
+            "section:S2"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S3",
+      "stepOrder": 4,
+      "title": "Firm Size",
+      "description": "Size and operating scale used for proportionality and pricing bands.",
+      "fields": [
+        {
+          "fieldKey": "employee_band",
+          "label": "Number of employees",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 1,
+          "optionSourceKey": "Firm_Size",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Firm size dimension",
+            "section:S3"
+          ]
+        },
+        {
+          "fieldKey": "contractor_band",
+          "label": "Number of contractors / freelancers",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 2,
+          "optionSourceKey": "Firm_Size",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Extended workforce",
+            "section:S3"
+          ]
+        },
+        {
+          "fieldKey": "turnover_band",
+          "label": "Approximate annual turnover",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 3,
+          "optionSourceKey": "Turnover",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Pricing scale",
+            "section:S3"
+          ]
+        },
+        {
+          "fieldKey": "office_count",
+          "label": "Number of offices / physical locations",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 4,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Complexity",
+            "section:S3"
+          ]
+        },
+        {
+          "fieldKey": "operating_country_count",
+          "label": "Number of countries in which the firm operates",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 5,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Jurisdictional complexity",
+            "section:S3"
+          ]
+        },
+        {
+          "fieldKey": "client_count_band",
+          "label": "Approximate number of clients served annually",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 6,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Market reach",
+            "section:S3"
+          ]
+        },
+        {
+          "fieldKey": "project_count_band",
+          "label": "Approximate number of active projects / engagements annually",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 7,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Delivery volume",
+            "section:S3"
+          ]
+        },
+        {
+          "fieldKey": "client_type",
+          "label": "Does the firm operate mainly B2B, B2C, B2G, or mixed?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 8,
+          "optionSourceKey": "Client_Type",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Client type",
+            "section:S3"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S4",
+      "stepOrder": 5,
+      "title": "Industry & Sector Profile",
+      "description": "Sector classification and built environment relevance.",
+      "fields": [
+        {
+          "fieldKey": "primary_industry",
+          "label": "Primary industry",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 1,
+          "optionSourceKey": "Primary_Industry",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Sector dimension",
+            "section:S4"
+          ]
+        },
+        {
+          "fieldKey": "secondary_industries",
+          "label": "Secondary industries served",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 2,
+          "optionSourceKey": "Primary_Industry",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Sector exposure",
+            "section:S4"
+          ]
+        },
+        {
+          "fieldKey": "client_sector_base",
+          "label": "Which sector best describes the firm’s main client base?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 3,
+          "optionSourceKey": "Primary_Industry",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Client risk/market segmentation",
+            "section:S4"
+          ]
+        },
+        {
+          "fieldKey": "built_environment_flag",
+          "label": "Does the firm operate in the built environment?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 4,
+          "optionSourceKey": "Yes_No_Partially",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Built environment pathway",
+            "section:S4"
+          ]
+        },
+        {
+          "fieldKey": "regulated_sector_flag",
+          "label": "Does the firm operate in a regulated sector?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 5,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Regulatory exposure",
+            "section:S4"
+          ]
+        },
+        {
+          "fieldKey": "safety_critical_flag",
+          "label": "Does the firm operate in safety-critical environments?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 6,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Impact/materiality",
+            "section:S4"
+          ]
+        },
+        {
+          "fieldKey": "professional_advice_flag",
+          "label": "Does the firm provide professional advice or consultancy?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 7,
+          "optionSourceKey": "Yes_No_Partially",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Professional advice flag",
+            "section:S4"
+          ]
+        },
+        {
+          "fieldKey": "software_products_flag",
+          "label": "Does the firm provide technology/software products?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 8,
+          "optionSourceKey": "Yes_No_Partially",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Provider/software pathway",
+            "section:S4"
+          ]
+        },
+        {
+          "fieldKey": "managed_services_flag",
+          "label": "Does the firm provide managed services or outsourcing?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 9,
+          "optionSourceKey": "Yes_No_Partially",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Operational complexity",
+            "section:S4"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S5",
+      "stepOrder": 6,
+      "title": "Built Environment Profile",
+      "description": "Conditional section for construction, surveying, FM, infrastructure and related firms.",
+      "fields": [
+        {
+          "fieldKey": "built_environment_services",
+          "label": "Which built environment services does the firm provide?",
+          "placeholder": "Show if 4.4 = Yes/Partially",
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 1,
+          "optionSourceKey": "Built_Env_Services",
+          "visibilityRule": {
+            "all": [
+              {
+                "fieldKey": "built_environment_flag",
+                "op": "in",
+                "values": [
+                  "Yes",
+                  "Partially"
+                ]
+              }
+            ]
+          },
+          "routingTags": [
+            "use:Service profile",
+            "section:S5"
+          ]
+        },
+        {
+          "fieldKey": "project_stages",
+          "label": "Which project stages does the firm typically support?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 2,
+          "optionSourceKey": "Project_Stages",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Lifecycle context",
+            "section:S5"
+          ]
+        },
+        {
+          "fieldKey": "contract_environments",
+          "label": "Which contract environments does the firm commonly work under?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 3,
+          "optionSourceKey": "Contract_Types",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Commercial/legal context",
+            "section:S5"
+          ]
+        },
+        {
+          "fieldKey": "asset_types",
+          "label": "What types of assets/projects does the firm work on?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 4,
+          "optionSourceKey": "Primary_Industry",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Asset profile",
+            "section:S5"
+          ]
+        },
+        {
+          "fieldKey": "project_value_band",
+          "label": "Typical project value range",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 5,
+          "optionSourceKey": "Project_Value",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Project scale",
+            "section:S5"
+          ]
+        },
+        {
+          "fieldKey": "public_sector_projects_flag",
+          "label": "Does the firm work on public sector projects?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 6,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Public sector exposure",
+            "section:S5"
+          ]
+        },
+        {
+          "fieldKey": "infrastructure_projects_flag",
+          "label": "Does the firm work on infrastructure projects?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 7,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Complexity/materiality",
+            "section:S5"
+          ]
+        },
+        {
+          "fieldKey": "building_safety_flag",
+          "label": "Does the firm work on building safety / compliance-related projects?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 8,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Safety/compliance impact",
+            "section:S5"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S6",
+      "stepOrder": 7,
+      "title": "Geographic & Jurisdictional Footprint",
+      "description": "Operating territories and EU exposure indicators.",
+      "fields": [
+        {
+          "fieldKey": "office_countries",
+          "label": "Countries where the firm has offices",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 1,
+          "optionSourceKey": "Country list",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Operational footprint",
+            "section:S6"
+          ]
+        },
+        {
+          "fieldKey": "service_countries",
+          "label": "Countries where the firm provides services",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": true,
+          "fieldOrder": 2,
+          "optionSourceKey": "Country list",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Market exposure",
+            "section:S6"
+          ]
+        },
+        {
+          "fieldKey": "eu_clients_flag",
+          "label": "Does the firm serve clients in the EU?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 3,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:EU exposure",
+            "section:S6"
+          ]
+        },
+        {
+          "fieldKey": "uk_clients_flag",
+          "label": "Does the firm serve clients in the UK?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 4,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:UK relevance",
+            "section:S6"
+          ]
+        },
+        {
+          "fieldKey": "outside_uk_eu_flag",
+          "label": "Does the firm serve clients outside the UK/EU?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 5,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:International segmentation",
+            "section:S6"
+          ]
+        },
+        {
+          "fieldKey": "main_geographic_market",
+          "label": "Main geographic market",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 6,
+          "optionSourceKey": "Geographic_Market",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Market segmentation",
+            "section:S6"
+          ]
+        },
+        {
+          "fieldKey": "cross_border_projects_flag",
+          "label": "Does the firm operate cross-border projects?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 7,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Complexity",
+            "section:S6"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S7",
+      "stepOrder": 8,
+      "title": "Professional & Regulatory Affiliations",
+      "description": "Professional body, RICS and certification context.",
+      "fields": [
+        {
+          "fieldKey": "professional_body_flag",
+          "label": "Is the firm regulated by, registered with, or affiliated to a professional body?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 1,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Professional status",
+            "section:S7"
+          ]
+        },
+        {
+          "fieldKey": "professional_bodies",
+          "label": "Which professional bodies apply?",
+          "placeholder": "Show if 7.1 = Yes/Not sure",
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 2,
+          "optionSourceKey": "Professional_Bodies",
+          "visibilityRule": {
+            "all": [
+              {
+                "fieldKey": "professional_body_flag",
+                "op": "in",
+                "values": [
+                  "Yes",
+                  "Not sure"
+                ]
+              }
+            ]
+          },
+          "routingTags": [
+            "use:Professional pathway",
+            "section:S7"
+          ]
+        },
+        {
+          "fieldKey": "rics_regulated_flag",
+          "label": "Is the firm RICS-regulated?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 3,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:RICS pathway",
+            "section:S7"
+          ]
+        },
+        {
+          "fieldKey": "rics_members_flag",
+          "label": "Does the firm employ RICS members?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 4,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:RICS relevance",
+            "section:S7"
+          ]
+        },
+        {
+          "fieldKey": "qualified_staff_band",
+          "label": "Approximate number of professionally qualified staff",
+          "placeholder": null,
+          "fieldType": "TEXT",
+          "required": false,
+          "fieldOrder": 5,
+          "optionSourceKey": null,
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Professional maturity",
+            "section:S7"
+          ]
+        },
+        {
+          "fieldKey": "certification_flag",
+          "label": "Does the firm hold any ISO or formal management-system certifications?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 6,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Management maturity",
+            "section:S7"
+          ]
+        },
+        {
+          "fieldKey": "certifications_held",
+          "label": "Which certifications does the firm currently hold?",
+          "placeholder": "Show if 7.6 = Yes",
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 7,
+          "optionSourceKey": "Certifications",
+          "visibilityRule": {
+            "all": [
+              {
+                "fieldKey": "certification_flag",
+                "op": "in",
+                "values": [
+                  "Yes"
+                ]
+              }
+            ]
+          },
+          "routingTags": [
+            "use:Benchmarking",
+            "section:S7"
+          ]
+        },
+        {
+          "fieldKey": "pi_insurance_flag",
+          "label": "Does the firm maintain professional indemnity insurance?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 8,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Risk profile",
+            "section:S7"
+          ]
+        },
+        {
+          "fieldKey": "cyber_insurance_flag",
+          "label": "Does the firm maintain cyber insurance?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 9,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Digital risk profile",
+            "section:S7"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S8",
+      "stepOrder": 9,
+      "title": "Digital Maturity Profile",
+      "description": "General digital capability and systems context.",
+      "fields": [
+        {
+          "fieldKey": "digital_maturity_level",
+          "label": "How would the firm describe its current digital maturity?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 1,
+          "optionSourceKey": "Digital_Maturity",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Digital maturity dimension",
+            "section:S8"
+          ]
+        },
+        {
+          "fieldKey": "internal_it_flag",
+          "label": "Does the firm have an internal IT function?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 2,
+          "optionSourceKey": "Yes_No_Partially",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Capability",
+            "section:S8"
+          ]
+        },
+        {
+          "fieldKey": "data_function_flag",
+          "label": "Does the firm have an internal data/digital transformation function?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 3,
+          "optionSourceKey": "Yes_No_Partially",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Capability",
+            "section:S8"
+          ]
+        },
+        {
+          "fieldKey": "cloud_systems_flag",
+          "label": "Does the firm use cloud-based systems?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 4,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Digital adoption",
+            "section:S8"
+          ]
+        },
+        {
+          "fieldKey": "document_platforms_flag",
+          "label": "Does the firm use project/document management platforms?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 5,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Operational tech",
+            "section:S8"
+          ]
+        },
+        {
+          "fieldKey": "analytics_tools_flag",
+          "label": "Does the firm use business intelligence or analytics tools?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 6,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Data maturity",
+            "section:S8"
+          ]
+        },
+        {
+          "fieldKey": "automation_tools_flag",
+          "label": "Does the firm use automation tools?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 7,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Automation maturity",
+            "section:S8"
+          ]
+        },
+        {
+          "fieldKey": "ai_enabled_tools_flag",
+          "label": "Does the firm use AI-enabled tools in any form?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 8,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:AI adoption flag",
+            "section:S8"
+          ]
+        },
+        {
+          "fieldKey": "business_systems",
+          "label": "Which business systems are used?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 9,
+          "optionSourceKey": "Systems",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Technology ecosystem",
+            "section:S8"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S9",
+      "stepOrder": 10,
+      "title": "High-Level AI Adoption Profile",
+      "description": "AI adoption stage without testing controls or evidence.",
+      "fields": [
+        {
+          "fieldKey": "current_ai_use_flag",
+          "label": "Does the firm currently use AI-enabled tools?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 1,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:AI adoption category",
+            "section:S9"
+          ]
+        },
+        {
+          "fieldKey": "ai_adoption_stage",
+          "label": "How would the firm describe its AI adoption stage?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 2,
+          "optionSourceKey": "AI_Adoption_Stage",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:AI adoption category",
+            "section:S9"
+          ]
+        },
+        {
+          "fieldKey": "ai_tool_categories",
+          "label": "Which types of AI tools are currently used?",
+          "placeholder": "Show if AI use is Yes/Not sure",
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 3,
+          "optionSourceKey": "AI_Tool_Categories",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Tool category insight",
+            "section:S9"
+          ]
+        },
+        {
+          "fieldKey": "ai_functions",
+          "label": "Which functions currently use AI-enabled tools?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 4,
+          "optionSourceKey": "AI_Functions",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Departmental adoption",
+            "section:S9"
+          ]
+        },
+        {
+          "fieldKey": "ai_user_band",
+          "label": "Approximately how many staff use AI-enabled tools?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 5,
+          "optionSourceKey": "Firm_Size",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Adoption scale",
+            "section:S9"
+          ]
+        },
+        {
+          "fieldKey": "ai_usage_frequency",
+          "label": "How often are AI-enabled tools used?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 6,
+          "optionSourceKey": "Usage_Frequency",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Usage intensity",
+            "section:S9"
+          ]
+        },
+        {
+          "fieldKey": "ai_interest_drivers",
+          "label": "What are the main reasons the firm is interested in AI?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 7,
+          "optionSourceKey": "AI_Drivers",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Demand drivers",
+            "section:S9"
+          ]
+        },
+        {
+          "fieldKey": "ai_concerns",
+          "label": "What are the main concerns about AI?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 8,
+          "optionSourceKey": "AI_Concerns",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Market pain points",
+            "section:S9"
+          ]
+        },
+        {
+          "fieldKey": "ai_provider_flag",
+          "label": "Does the firm build, configure or sell AI-enabled tools?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 9,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Provider pathway",
+            "section:S9"
+          ]
+        },
+        {
+          "fieldKey": "third_party_ai_user_flag",
+          "label": "Does the firm mainly use third-party AI tools?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 10,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Supplier pathway",
+            "section:S9"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S10",
+      "stepOrder": 11,
+      "title": "Strategic Priorities & Product Interest",
+      "description": "Commercial drivers, concerns and support interest.",
+      "fields": [
+        {
+          "fieldKey": "business_priorities",
+          "label": "What are the firm’s top business priorities over the next 12 months?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 1,
+          "optionSourceKey": "Business_Priorities",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Commercial segmentation",
+            "section:S10"
+          ]
+        },
+        {
+          "fieldKey": "technology_priorities",
+          "label": "What are the firm’s top technology priorities over the next 12 months?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 2,
+          "optionSourceKey": "Technology_Priorities",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Product targeting",
+            "section:S10"
+          ]
+        },
+        {
+          "fieldKey": "risk_priorities",
+          "label": "What are the firm’s top risk/compliance priorities?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 3,
+          "optionSourceKey": "Risk_Priorities",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Market intelligence",
+            "section:S10"
+          ]
+        },
+        {
+          "fieldKey": "planned_ai_increase_flag",
+          "label": "Is the firm planning to increase AI adoption in the next 12 months?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 4,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Demand forecasting",
+            "section:S10"
+          ]
+        },
+        {
+          "fieldKey": "support_interest",
+          "label": "What support would the firm find most valuable?",
+          "placeholder": null,
+          "fieldType": "MULTI_CHECKBOX",
+          "required": false,
+          "fieldOrder": 5,
+          "optionSourceKey": "Support_Options",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Product interest",
+            "section:S10"
+          ]
+        },
+        {
+          "fieldKey": "completion_reason",
+          "label": "What is the main reason for completing this questionnaire?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 6,
+          "optionSourceKey": "Completion_Reason",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:User intent",
+            "section:S10"
+          ]
+        }
+      ]
+    },
+    {
+      "sectionId": "S11",
+      "stepOrder": 12,
+      "title": "Benchmarking & Insight Consent",
+      "description": "Consent for anonymised aggregated insights and follow-up.",
+      "fields": [
+        {
+          "fieldKey": "benchmarking_consent",
+          "label": "Can anonymised responses be used for aggregated benchmarking and market insights?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 1,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Benchmarking consent",
+            "section:S11"
+          ]
+        },
+        {
+          "fieldKey": "benchmark_comparison_interest",
+          "label": "Can the firm receive anonymised benchmark comparisons in future?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 2,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Product feature",
+            "section:S11"
+          ]
+        },
+        {
+          "fieldKey": "sector_report_interest",
+          "label": "Would the firm be interested in receiving sector insight reports?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 3,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Lead nurture",
+            "section:S11"
+          ]
+        },
+        {
+          "fieldKey": "research_roundtable_interest",
+          "label": "Would the firm be interested in participating in future research or roundtables?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": false,
+          "fieldOrder": 4,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Community development",
+            "section:S11"
+          ]
+        },
+        {
+          "fieldKey": "contact_permission",
+          "label": "Can the firm be contacted about relevant services or updates?",
+          "placeholder": null,
+          "fieldType": "RADIO",
+          "required": true,
+          "fieldOrder": 5,
+          "optionSourceKey": "Yes_No_NotSure",
+          "visibilityRule": null,
+          "routingTags": [
+            "use:Marketing permission",
+            "section:S11"
+          ]
+        }
+      ]
+    }
+  ]
+}

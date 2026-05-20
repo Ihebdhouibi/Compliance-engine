@@ -5,14 +5,16 @@
             <h1>My Audit Requests</h1>
             <p>{{ totalItems }} request{{ totalItems !== 1 ? 's' : '' }} submitted</p>
         </div>
-        <button class="btn-add" (click)="openNewAudit()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"
-                style="display:block;">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Request Audit
-        </button>
+        <div class="header-actions">
+            <button class="btn-add" (click)="openNewAudit()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="15" height="15"
+                    style="display:block;">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Request Audit
+            </button>
+        </div>
     </div>
 
     <div class="alert alert--success" *ngIf="successMsg">{{ successMsg }}</div>
@@ -249,33 +251,77 @@
                 <p>Your audit request has been received. We'll assign an auditor soon.</p>
             </div>
 
-            <!-- Audit type selector (no form loaded yet) -->
-            <ng-container *ngIf="!auditForm && !isLoadingForm && !submitSuccess">
-                <p class="form-intro">Select the type of audit you'd like to request:</p>
-                <div class="audit-type-grid">
-                    <button class="audit-type-card" *ngFor="let t of auditTypes" (click)="startNewAudit(t.value)">
-                        <div class="atc-icon">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28"
-                                height="28" style="display:block;">
-                                <path d="M9 11l3 3L22 4" />
-                                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
-                            </svg>
-                        </div>
-                        <span class="atc-label">{{ t.label }}</span>
-                        <span class="atc-type">{{ t.value }}</span>
+            <!-- Two-level phase indicator (L1 → Quote → L2) -->
+            <div class="two-level-phases" *ngIf="!submitSuccess">
+                <div class="tlp-step" [class.active]="twoLevelPhase === 'L1'" [class.done]="twoLevelPhase === 'QUOTE' || twoLevelPhase === 'L2'">
+                    <span class="tlp-num">1</span>
+                    <span class="tlp-label">Firm profile</span>
+                </div>
+                <span class="tlp-sep"></span>
+                <div class="tlp-step" [class.active]="twoLevelPhase === 'QUOTE'" [class.done]="twoLevelPhase === 'L2'">
+                    <span class="tlp-num">2</span>
+                    <span class="tlp-label">Quote</span>
+                </div>
+                <span class="tlp-sep"></span>
+                <div class="tlp-step" [class.active]="twoLevelPhase === 'L2'">
+                    <span class="tlp-num">3</span>
+                    <span class="tlp-label">RICS questionnaire</span>
+                </div>
+            </div>
+
+            <!-- Quote phase -->
+            <ng-container *ngIf="twoLevelPhase === 'QUOTE' && !submitSuccess">
+                <div class="form-loading" *ngIf="isLoadingQuote">
+                    <div class="loader"></div>
+                    <span>Computing your audit pathway…</span>
+                </div>
+                <div class="form-load-error" *ngIf="quoteError">{{ quoteError }}</div>
+
+                <div class="quote-card" *ngIf="routingProfile && !isLoadingQuote">
+                    <div class="quote-pathway">{{ routingProfile.pathway }}</div>
+                    <h3 class="quote-package">{{ routingProfile.recommendedPackage || 'Recommended package' }}</h3>
+                    <p class="quote-rationale" *ngIf="routingProfile.rationale">{{ routingProfile.rationale }}</p>
+
+                    <dl class="quote-meta">
+                        <div *ngIf="routingProfile.activeModules"><dt>Active modules</dt><dd>{{ routingProfile.activeModules }}</dd></div>
+                        <div *ngIf="routingProfile.evidenceDepth"><dt>Evidence depth</dt><dd>{{ routingProfile.evidenceDepth }}</dd></div>
+                        <div *ngIf="routingProfile.firmSizeCategory"><dt>Firm size</dt><dd>{{ routingProfile.firmSizeCategory }}</dd></div>
+                        <div *ngIf="routingProfile.sectorCategory"><dt>Sector</dt><dd>{{ routingProfile.sectorCategory }}</dd></div>
+                    </dl>
+
+                    <div class="quote-price" *ngIf="routingProfile.indicativePriceMin != null">
+                        <span class="qp-amount">
+                            {{ routingProfile.priceCurrency || 'GBP' }}
+                            {{ routingProfile.indicativePriceMin | number }}
+                            –
+                            {{ routingProfile.indicativePriceMax | number }}
+                        </span>
+                        <span class="qp-status">{{ routingProfile.priceStatus || 'INDICATIVE' }}</span>
+                    </div>
+
+                    <p class="quote-disclaimer">Final pricing is confirmed after scoping. Confirm to proceed to the detailed RICS questionnaire.</p>
+                </div>
+
+                <div class="step-nav" *ngIf="routingProfile && !isLoadingQuote">
+                    <button type="button" class="btn-cancel" (click)="closeNewAudit()">Save &amp; exit</button>
+                    <div style="flex:1"></div>
+                    <button type="button" class="btn-primary" [disabled]="isSubmitting" (click)="confirmQuoteAndStartL2()">
+                        <span class="mini-spin" *ngIf="isSubmitting"></span>
+                        {{ isSubmitting ? 'Confirming…' : 'Confirm &amp; continue' }}
                     </button>
                 </div>
-                <div class="form-load-error" *ngIf="formLoadError">{{ formLoadError }}</div>
             </ng-container>
 
             <!-- Loading form -->
-            <div class="form-loading" *ngIf="isLoadingForm">
+            <div class="form-loading" *ngIf="isLoadingForm && twoLevelPhase !== 'QUOTE'">
                 <div class="loader"></div>
-                <span>Loading audit form…</span>
+                <span>Loading {{ twoLevelPhase === 'L2' ? 'RICS questionnaire' : 'audit form' }}…</span>
             </div>
 
-            <!-- Multi-step form -->
-            <ng-container *ngIf="auditForm && !submitSuccess">
+            <div class="form-load-error" *ngIf="formLoadError && !isLoadingForm">{{ formLoadError }}</div>
+
+            <!-- Multi-step form (L1 or L2) -->
+            <ng-container *ngIf="auditForm && !submitSuccess && twoLevelPhase !== 'QUOTE'">
 
                 <!-- Step progress bar -->
                 <div class="step-progress">
@@ -462,7 +508,9 @@
                     <button type="button" class="btn-primary submit-btn" *ngIf="isLastStep" [disabled]="isSubmitting"
                         (click)="submitAudit()">
                         <span class="mini-spin" *ngIf="isSubmitting"></span>
-                        {{ isSubmitting ? 'Submitting…' : 'Submit Audit Request' }}
+                        {{ isSubmitting
+                              ? (twoLevelPhase === 'L1' ? 'Submitting…' : 'Submitting…')
+                              : (twoLevelPhase === 'L1' ? 'Get my quote' : 'Submit Audit Request') }}
                     </button>
                 </div>
 

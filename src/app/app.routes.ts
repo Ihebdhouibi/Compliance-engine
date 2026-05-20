@@ -120,6 +120,12 @@ export const routes: Routes = [
             .then(m => m.AuditsComponent)
       },
       {
+        path: 'audits/:id/scoring',
+        loadComponent: () =>
+          import('./auditor/audits/auditor-scoring.component')
+            .then(m => m.AuditorScoringComponent)
+      },
+      {
         path: 'profile',
         loadComponent: () =>
           import('./auditor/profile/profile.component')

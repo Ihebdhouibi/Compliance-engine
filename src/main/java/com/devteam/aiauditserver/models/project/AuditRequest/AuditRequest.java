@@ -1,5 +1,6 @@
 package com.devteam.aiauditserver.models.project.AuditRequest;
 
+import com.devteam.aiauditserver.enums.Project.AuditPhase;
 import com.devteam.aiauditserver.enums.Project.AuditStatus;
 import com.devteam.aiauditserver.enums.Project.AuditType;
 import com.devteam.aiauditserver.models.User.User;
@@ -27,6 +28,27 @@ public class AuditRequest {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private AuditStatus status = AuditStatus.SUBMITTED;
+
+    /**
+     * Two-level lifecycle phase. Defaults to LEGACY for any audit that pre-dates
+     * the two-level feature. New audits started via the Level 1 flow will set
+     * this to DRAFT_L1 and advance from there.
+     */
+    // NOTE: column is nullable at the schema level so Hibernate hbm2ddl=update
+    // can add it to pre-existing audit_requests rows without violating a
+    // NOT NULL constraint. SchemaUpgrader back-fills legacy rows with 'LEGACY'
+    // on startup, and the Java default ensures new rows always have a value.
+    @Enumerated(EnumType.STRING)
+    @Column(name = "phase")
+    private AuditPhase phase = AuditPhase.LEGACY;
+
+    /** Resolved L1 template id (snapshot — survives template re-seeding). */
+    @Column(name = "level1_template_id")
+    private Long level1TemplateId;
+
+    /** Resolved L2 template id (snapshot — survives template re-seeding). */
+    @Column(name = "level2_template_id")
+    private Long level2TemplateId;
 
     // The company user who submitted the request
     @ManyToOne(fetch = FetchType.EAGER)
@@ -71,6 +93,15 @@ public class AuditRequest {
 
     public AuditStatus getStatus() { return status; }
     public void setStatus(AuditStatus status) { this.status = status; }
+
+    public AuditPhase getPhase() { return phase; }
+    public void setPhase(AuditPhase phase) { this.phase = phase; }
+
+    public Long getLevel1TemplateId() { return level1TemplateId; }
+    public void setLevel1TemplateId(Long level1TemplateId) { this.level1TemplateId = level1TemplateId; }
+
+    public Long getLevel2TemplateId() { return level2TemplateId; }
+    public void setLevel2TemplateId(Long level2TemplateId) { this.level2TemplateId = level2TemplateId; }
 
     public User getSubmittedBy() { return submittedBy; }
     public void setSubmittedBy(User submittedBy) { this.submittedBy = submittedBy; }

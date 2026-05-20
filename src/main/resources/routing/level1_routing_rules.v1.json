@@ -1,0 +1,136 @@
+{
+  "version": "1.0.0",
+  "description": "Deterministic Level 1 → Level 2 routing rules. Inputs are fieldKey→value from the Level 1 answers (selector + full L1 fields). Output is a RoutingProfile describing the chosen pathway, package, active modules, evidence depth and indicative price band.",
+  "inputs": {
+    "selector_ai_use": "AI_Adoption_Stage",
+    "selector_client_facing_ai": "Yes_No_NotSure",
+    "selector_org_type": "Primary_Industry",
+    "selector_provider_flag": "Yes_No_NotSure",
+    "selector_firm_size": "Firm_Size"
+  },
+  "buckets": {
+    "firmSizeCategory": {
+      "MICRO": ["1-9"],
+      "SMALL": ["10-49"],
+      "MEDIUM": ["50-249"],
+      "LARGE": ["250-999", "1,000-4,999"],
+      "ENTERPRISE": ["5,000+"]
+    },
+    "aiAdoptionCategory": {
+      "NONE": ["No known AI use"],
+      "EXPLORING": ["Exploring AI", "Individual experimentation"],
+      "INTERNAL": ["Team-level experimentation", "Selected business use", "Widespread internal use"],
+      "EMBEDDED": ["AI embedded in service delivery"],
+      "PROVIDER": ["AI products/services offered to clients"]
+    },
+    "regulatedSectors": [
+      "Quantity surveying / cost consultancy",
+      "Surveying / valuation",
+      "Real estate",
+      "Construction",
+      "Architecture",
+      "Engineering consultancy",
+      "Project management",
+      "Infrastructure",
+      "Facilities management",
+      "Legal services",
+      "Financial services",
+      "Insurance",
+      "Healthcare",
+      "Public sector"
+    ]
+  },
+  "pathways": [
+    {
+      "id": "PATHWAY_4",
+      "name": "AI Provider / High-Risk Pathway",
+      "match": {
+        "any": [
+          { "fieldKey": "selector_provider_flag", "op": "equals", "value": "Yes" },
+          { "fieldKey": "selector_ai_use", "op": "in", "values": ["AI products/services offered to clients"] }
+        ]
+      },
+      "recommendedPackage": "RICS_PROVIDER_DEEP_AUDIT",
+      "activeModules": [
+        "Governance",
+        "DataPrivacy",
+        "ModelLifecycle",
+        "Procurement",
+        "RiskBiasFairness",
+        "HumanOversight",
+        "ClientCommunication",
+        "ContinuousImprovement"
+      ],
+      "evidenceDepth": "HIGH",
+      "indicativePrice": { "min": 12000, "max": 35000, "currency": "GBP", "status": "INDICATIVE" }
+    },
+    {
+      "id": "PATHWAY_3",
+      "name": "Client-Material AI Pathway",
+      "match": {
+        "all": [
+          { "fieldKey": "selector_client_facing_ai", "op": "equals", "value": "Yes" }
+        ]
+      },
+      "recommendedPackage": "RICS_MATERIAL_AUDIT",
+      "activeModules": [
+        "Governance",
+        "DataPrivacy",
+        "RiskBiasFairness",
+        "HumanOversight",
+        "ClientCommunication",
+        "ContinuousImprovement"
+      ],
+      "evidenceDepth": "MEDIUM",
+      "indicativePrice": { "min": 6500, "max": 18000, "currency": "GBP", "status": "INDICATIVE" }
+    },
+    {
+      "id": "PATHWAY_2",
+      "name": "Internal AI Use Pathway",
+      "match": {
+        "all": [
+          { "fieldKey": "selector_ai_use", "op": "in", "values": [
+            "Individual experimentation",
+            "Team-level experimentation",
+            "Selected business use",
+            "Widespread internal use"
+          ]}
+        ]
+      },
+      "recommendedPackage": "RICS_INTERNAL_AUDIT",
+      "activeModules": [
+        "Governance",
+        "DataPrivacy",
+        "HumanOversight",
+        "ContinuousImprovement"
+      ],
+      "evidenceDepth": "MEDIUM",
+      "indicativePrice": { "min": 3500, "max": 9500, "currency": "GBP", "status": "INDICATIVE" }
+    },
+    {
+      "id": "PATHWAY_1",
+      "name": "Awareness / Baseline Pathway",
+      "match": { "all": [] },
+      "recommendedPackage": "RICS_AWARENESS_BASELINE",
+      "activeModules": [
+        "Governance",
+        "ContinuousImprovement"
+      ],
+      "evidenceDepth": "LOW",
+      "indicativePrice": { "min": 1500, "max": 4500, "currency": "GBP", "status": "INDICATIVE" }
+    }
+  ],
+  "sizeAdjustments": {
+    "MICRO":      { "min": 0.7, "max": 0.7 },
+    "SMALL":      { "min": 0.85, "max": 0.85 },
+    "MEDIUM":     { "min": 1.0, "max": 1.0 },
+    "LARGE":      { "min": 1.4, "max": 1.6 },
+    "ENTERPRISE": { "min": 1.8, "max": 2.2 }
+  },
+  "explanations": {
+    "PATHWAY_4": "Your organisation builds, integrates or sells AI-enabled tools, so RICS treats you as an AI provider. A deep audit is required covering model lifecycle, procurement, fairness and oversight.",
+    "PATHWAY_3": "AI influences client-facing work, advice or decisions. RICS treats this as material use and requires evidence across governance, privacy, fairness, oversight and client communication.",
+    "PATHWAY_2": "AI is used internally only and does not directly drive client outcomes. A proportionate internal-use audit is appropriate.",
+    "PATHWAY_1": "There is little or no AI use today. A baseline awareness audit aligns you with RICS expectations and prepares you for future adoption."
+  }
+}

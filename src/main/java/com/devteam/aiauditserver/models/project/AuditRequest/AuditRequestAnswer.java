@@ -21,6 +21,10 @@ public class AuditRequestAnswer {
     @Column(name = "field_id", nullable = false)
     private Long fieldId;
 
+    /** Denormalised stable field key, copied from the L1/L2 template at submit time. */
+    @Column(name = "field_key", length = 120)
+    private String fieldKey;
+
     @Column(name = "field_label", nullable = false, columnDefinition = "TEXT")
     private String fieldLabel;
 
@@ -55,6 +59,9 @@ public class AuditRequestAnswer {
 
     public Long getFieldId() { return fieldId; }
     public void setFieldId(Long fieldId) { this.fieldId = fieldId; }
+
+    public String getFieldKey() { return fieldKey; }
+    public void setFieldKey(String fieldKey) { this.fieldKey = fieldKey; }
 
     public String getFieldLabel() { return fieldLabel; }
     public void setFieldLabel(String fieldLabel) { this.fieldLabel = fieldLabel; }

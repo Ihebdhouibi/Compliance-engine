@@ -11,6 +11,14 @@ export type FieldType   =
   | 'TEXT' | 'TEXTAREA' | 'NUMBER' | 'EMAIL' | 'DATE'
   | 'DROPDOWN' | 'RADIO' | 'CHECKBOX' | 'MULTI_CHECKBOX' | 'FILE';
 
+// ── NEW: two-level types
+export type AuditLevel = 'LEVEL_1' | 'LEVEL_2';
+export type AuditPhase =
+  | 'DRAFT_L1' | 'L1_SUBMITTED' | 'ROUTED' | 'QUOTE_ACCEPTED'
+  | 'DRAFT_L2' | 'L2_SUBMITTED' | 'ASSIGNED' | 'IN_PROGRESS'
+  | 'COMPLETED' | 'LEGACY';
+export type Pathway = 'PATHWAY_1' | 'PATHWAY_2' | 'PATHWAY_3' | 'PATHWAY_4';
+
 export interface AuditFormFieldOption {
   id:           number;
   label:        string;
@@ -27,6 +35,19 @@ export interface AuditFormField {
   required:       boolean;
   multipleFiles?: boolean;
   options:        AuditFormFieldOption[];
+  // ── NEW: two-level metadata (all optional, backward compatible)
+  fieldKey?:           string;
+  optionSourceKey?:    string;
+  visibilityRule?:     string;
+  routingTags?:        string;
+  ricsClause?:         string;
+  module?:             string;
+  category?:           string;
+  applicabilityTrigger?: string;
+  evidenceDepth?:      string;
+  priority?:           string;
+  expectedEvidence?:   string;
+  rationale?:          string;
 }
 
 export interface AuditFormStep {
@@ -46,6 +67,9 @@ export interface AuditFormTemplate {
   createdAt:    Date;
   steps:        AuditFormStep[];
   processSteps?: AuditProcessStep[];  // ADD — populated when fetched with process steps
+  // ── NEW: two-level metadata
+  level?:           AuditLevel;
+  templateVersion?: number;
 }
 
 // ── NEW: audit process steps defined by admin on the template
@@ -86,6 +110,7 @@ export interface AuditRequestAnswerFile {
 export interface AuditRequestAnswer {
   id:           number;
   fieldId:      number;
+  fieldKey?:    string;
   fieldLabel:   string;
   answerValue?: string;
   fileMedia?:   MediaModel;
@@ -105,6 +130,82 @@ export interface AuditRequest {
   completedAt?:     Date;
   rejectionReason?: string;
   answers:          AuditRequestAnswer[];
+  // ── NEW: two-level fields
+  phase?:            AuditPhase;
+  level1TemplateId?: number;
+  level2TemplateId?: number;
+  routingProfile?:   RoutingProfile;
+}
+
+// ── NEW two-level shapes ─────────────────────────────────────────────
+
+export interface OptionListItem {
+  value: string;
+  label: string;
+}
+
+export interface OptionList {
+  key:   string;
+  label: string;
+  items: OptionListItem[];
+}
+
+export interface IndicativePrice {
+  min:      number;
+  max:      number;
+  currency: string;   // e.g. "GBP"
+  status:   string;   // e.g. "INDICATIVE"
+}
+
+export interface RoutingProfile {
+  id:                   number;
+  pathway:              Pathway;
+  recommendedPackage?:  string;
+  activeModules?:       string;     // comma-separated
+  evidenceDepth?:       string;
+  indicativePriceMin?:  number;
+  indicativePriceMax?:  number;
+  priceCurrency?:       string;
+  priceStatus?:         string;
+  rationale?:           string;
+  firmSizeCategory?:    string;
+  sectorCategory?:      string;
+  aiAdoptionCategory?:  string;
+  aiImpactCategory?:    string;
+  dataSensitivityCategory?:    string;
+  regulatoryExposureCategory?: string;
+  computedAt?:          string;
+  confirmedAt?:         string;
+}
+
+export interface SubmitTwoLevelAnswer {
+  fieldId?:    number;
+  fieldKey?:   string;
+  fieldLabel?: string;
+  answerValue?: string;
+}
+
+export interface SubmitTwoLevelPayload {
+  auditType?: AuditType;
+  answers:    SubmitTwoLevelAnswer[];
+}
+
+export interface ScoreAnswerPayload {
+  auditorScore:           number;        // 0-5
+  auditorNotes?:          string;
+  evidenceProvidedStatus?: string;
+  evidenceReference?:     string;
+}
+
+export interface AuditAnswerScoring {
+  id:                      number;
+  auditorScore:            number;
+  auditorNotes?:           string;
+  evidenceProvidedStatus?: string;
+  evidenceReference?:      string;
+  scoredAt?:               string;
+  scoredBy?:               User;
+  answer?:                 AuditRequestAnswer;
 }
 
 // ── Request payloads — all unchanged

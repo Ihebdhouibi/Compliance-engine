@@ -1,6 +1,7 @@
 package com.devteam.aiauditserver.models.project.AuditForm;
 
 
+import com.devteam.aiauditserver.enums.Project.AuditLevel;
 import com.devteam.aiauditserver.enums.Project.AuditType;
 import com.devteam.aiauditserver.models.project.AuditRequest.AuditProcessStep;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -10,7 +11,10 @@ import javax.persistence.*;
 import java.util.*;
 
 @Entity
-@Table(name = "audit_form_templates")
+@Table(name = "audit_form_templates",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_template_type_level_version",
+                columnNames = {"audit_type", "level", "template_version"}))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class AuditFormTemplate {
 
@@ -19,8 +23,21 @@ public class AuditFormTemplate {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "audit_type", nullable = false, unique = true)
+    @Column(name = "audit_type", nullable = false)
     private AuditType auditType;
+
+    /**
+     * LEVEL_1 (firm profile) or LEVEL_2 (full RICS audit).
+     * Schema-nullable so Hibernate can add the column to pre-existing rows;
+     * SchemaUpgrader back-fills legacy templates as LEVEL_2 on startup.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "level")
+    private AuditLevel level = AuditLevel.LEVEL_2;
+
+    /** Version number per (auditType, level). Allows in-place re-seeding. */
+    @Column(name = "template_version")
+    private Integer templateVersion = 1;
 
     @Column(name = "title", nullable = false)
     private String title;
@@ -57,6 +74,12 @@ public class AuditFormTemplate {
 
     public AuditType getAuditType() { return auditType; }
     public void setAuditType(AuditType auditType) { this.auditType = auditType; }
+
+    public AuditLevel getLevel() { return level; }
+    public void setLevel(AuditLevel level) { this.level = level; }
+
+    public Integer getTemplateVersion() { return templateVersion; }
+    public void setTemplateVersion(Integer templateVersion) { this.templateVersion = templateVersion; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }

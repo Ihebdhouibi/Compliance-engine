@@ -5,7 +5,9 @@ import { environment } from '../environments/environment';
 import {
   AuditRequest, AuditStatus, AuditType,
   AuditFormTemplate, SubmitAuditPayload,
-  AssignAuditPayload, AuditRequestAnswer
+  AssignAuditPayload, AuditRequestAnswer,
+  OptionList, RoutingProfile, SubmitTwoLevelPayload,
+  ScoreAnswerPayload, AuditAnswerScoring
 } from '../models/audit.model';
 import { PageResponse } from '../models/user.model';
 import { TokenService } from '../shared/token.service';
@@ -16,6 +18,7 @@ export class AuditRequestService {
   private adminBase   = `${environment.apiUrl}/admin/audits`;
   private auditorBase = `${environment.apiUrl}/auditor/audits`;
   private userBase    = `${environment.apiUrl}/user/audits`;
+  private twoLevelBase = `${environment.apiUrl}/two-level`;
   readonly serverBase = environment.serverBaseUrl;
 
   constructor(
@@ -179,4 +182,48 @@ export class AuditRequestService {
   const base = isAuditor ? this.auditorBase : this.adminBase;
   return this.http.get<any[]>(`${base}/process-steps/${auditType}`);
 }
+
+  // ── TWO-LEVEL FLOW ─────────────────────────────────────────────────
+
+  getOptionList(key: string): Observable<OptionList> {
+    return this.http.get<OptionList>(`${this.twoLevelBase}/option-lists/${key}`);
+  }
+
+  getLevel1Form(): Observable<AuditFormTemplate> {
+    return this.http.get<AuditFormTemplate>(`${this.twoLevelBase}/level1/form`);
+  }
+
+  submitLevel1(payload: SubmitTwoLevelPayload): Observable<AuditRequest> {
+    return this.http.post<AuditRequest>(`${this.twoLevelBase}/level1/submit`, payload);
+  }
+
+  getRoutingProfile(requestId: number): Observable<RoutingProfile> {
+    return this.http.get<RoutingProfile>(
+      `${this.twoLevelBase}/requests/${requestId}/routing-profile`);
+  }
+
+  confirmQuote(requestId: number): Observable<AuditRequest> {
+    return this.http.patch<AuditRequest>(
+      `${this.twoLevelBase}/requests/${requestId}/confirm-quote`, null);
+  }
+
+  getLevel2Form(requestId: number): Observable<AuditFormTemplate> {
+    return this.http.get<AuditFormTemplate>(
+      `${this.twoLevelBase}/requests/${requestId}/level2/form`);
+  }
+
+  submitLevel2(requestId: number, payload: SubmitTwoLevelPayload): Observable<AuditRequest> {
+    return this.http.post<AuditRequest>(
+      `${this.twoLevelBase}/requests/${requestId}/level2/submit`, payload);
+  }
+
+  scoreAnswer(answerId: number, payload: ScoreAnswerPayload): Observable<AuditAnswerScoring> {
+    return this.http.put<AuditAnswerScoring>(
+      `${this.twoLevelBase}/answers/${answerId}/score`, payload);
+  }
+
+  getScorings(requestId: number): Observable<AuditAnswerScoring[]> {
+    return this.http.get<AuditAnswerScoring[]>(
+      `${this.twoLevelBase}/requests/${requestId}/scorings`);
+  }
 }

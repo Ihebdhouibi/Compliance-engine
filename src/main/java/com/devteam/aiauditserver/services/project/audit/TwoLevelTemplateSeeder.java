@@ -1,0 +1,229 @@
+package com.devteam.aiauditserver.services.project.audit;
+
+import com.devteam.aiauditserver.enums.Project.AuditLevel;
+import com.devteam.aiauditserver.enums.Project.AuditType;
+import com.devteam.aiauditserver.enums.Project.FieldType;
+import com.devteam.aiauditserver.models.project.AuditForm.AuditFormField;
+import com.devteam.aiauditserver.models.project.AuditForm.AuditFormFieldOption;
+import com.devteam.aiauditserver.models.project.AuditForm.AuditFormOptionList;
+import com.devteam.aiauditserver.models.project.AuditForm.AuditFormStep;
+import com.devteam.aiauditserver.models.project.AuditForm.AuditFormTemplate;
+import com.devteam.aiauditserver.repositories.project.AuditFormOptionListRepository;
+import com.devteam.aiauditserver.repositories.project.AuditFormTemplateRepository;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.core.annotation.Order;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
+import java.util.Iterator;
+
+/**
+ * Idempotent seeder for the Level-1 firm-profile template, the Level-2 RICS
+ * template, and the shared option lists. Driven entirely by JSON resources
+ * under {@code knowledge_base/} — re-runs are no-ops once the templates
+ * exist at the expected version.
+ */
+@Component
+@Order(10)
+public class TwoLevelTemplateSeeder implements CommandLineRunner {
+
+    private static final Logger logger = LoggerFactory.getLogger(TwoLevelTemplateSeeder.class);
+
+    private static final String OPTION_LISTS_PATH = "knowledge_base/level1_option_lists.v1.json";
+    private static final String L1_PATH           = "knowledge_base/level1_questionnaire.v1.json";
+    private static final String L2_PATH           = "knowledge_base/level2_rics_questions.v1.json";
+
+    private final AuditFormTemplateRepository templateRepo;
+    private final AuditFormOptionListRepository optionListRepo;
+    private final ObjectMapper mapper = new ObjectMapper();
+
+    public TwoLevelTemplateSeeder(AuditFormTemplateRepository templateRepo,
+                                  AuditFormOptionListRepository optionListRepo) {
+        this.templateRepo = templateRepo;
+        this.optionListRepo = optionListRepo;
+    }
+
+    @Override
+    @Transactional
+    public void run(String... args) {
+        try {
+            seedOptionLists();
+            seedTemplate(L1_PATH);
+            seedTemplate(L2_PATH);
+        } catch (Exception ex) {
+            logger.error("TwoLevelTemplateSeeder failed", ex);
+        }
+    }
+
+    // ── option lists ────────────────────────────────────────────────────
+
+    private void seedOptionLists() throws IOException {
+        JsonNode root = loadJson(OPTION_LISTS_PATH);
+        for (JsonNode list : root.path("lists")) {
+            String key = list.path("key").asText();
+            if (key.isEmpty()) continue;
+            String itemsJson = mapper.writeValueAsString(list.path("items"));
+            AuditFormOptionList existing = optionListRepo.findByListKey(key).orElse(null);
+            if (existing == null) {
+                AuditFormOptionList created = new AuditFormOptionList();
+                created.setListKey(key);
+                created.setLabel(key);
+                created.setItemsJson(itemsJson);
+                optionListRepo.save(created);
+                logger.info("Seeded option list '{}' ({} items)", key, list.path("items").size());
+            } else if (!itemsJson.equals(existing.getItemsJson())) {
+                existing.setItemsJson(itemsJson);
+                existing.setUpdatedAt(new Date());
+                optionListRepo.save(existing);
+                logger.info("Updated option list '{}'", key);
+            }
+        }
+    }
+
+    // ── template (L1 or L2) ─────────────────────────────────────────────
+
+    private void seedTemplate(String resourcePath) throws IOException {
+        JsonNode root = loadJson(resourcePath);
+        AuditType type = AuditType.valueOf(root.path("auditType").asText());
+        AuditLevel level = AuditLevel.valueOf(root.path("level").asText());
+        int version = root.path("version").asInt(1);
+
+        AuditFormTemplate existing = templateRepo.findByAuditTypeAndLevel(type, level).orElse(null);
+        if (existing != null
+                && existing.getTemplateVersion() != null
+                && existing.getTemplateVersion() >= version) {
+            logger.info("Template {}/{} already at version {} — skipping seed",
+                    type, level, existing.getTemplateVersion());
+            return;
+        }
+        if (existing != null) {
+            // Soft-replace: keep old template (so historical answers still link)
+            // but mark inactive and bump version.
+            existing.setActive(false);
+            templateRepo.save(existing);
+            logger.info("Deactivated template id={} (v{}) before seeding v{}",
+                    existing.getId(), existing.getTemplateVersion(), version);
+        }
+
+        AuditFormTemplate template = new AuditFormTemplate();
+        template.setAuditType(type);
+        template.setLevel(level);
+        template.setTemplateVersion(version);
+        template.setTitle(root.path("title").asText());
+        template.setDescription(root.path("description").asText(""));
+        template.setActive(true);
+
+        // Build the level-2 shared response options inline if present.
+        JsonNode l2Options = root.path("responseOptions");
+        if (l2Options.isArray() && l2Options.size() > 0
+                && !optionListRepo.existsByListKey("L2_Response")) {
+            AuditFormOptionList l2Opts = new AuditFormOptionList();
+            l2Opts.setListKey("L2_Response");
+            l2Opts.setLabel("L2_Response");
+            l2Opts.setItemsJson(mapper.writeValueAsString(l2Options));
+            optionListRepo.save(l2Opts);
+            logger.info("Seeded option list 'L2_Response' ({} items)", l2Options.size());
+        }
+
+        for (JsonNode stepNode : root.path("steps")) {
+            AuditFormStep step = new AuditFormStep();
+            step.setTemplate(template);
+            step.setStepOrder(stepNode.path("stepOrder").asInt());
+            step.setTitle(stepNode.path("title").asText());
+            step.setDescription(stepNode.path("description").asText(""));
+
+            for (JsonNode fieldNode : stepNode.path("fields")) {
+                AuditFormField field = buildField(step, fieldNode);
+                step.getFields().add(field);
+            }
+            template.getSteps().add(step);
+        }
+
+        AuditFormTemplate saved = templateRepo.save(template);
+        logger.info("Seeded template {}/{} v{} id={} with {} steps",
+                type, level, version, saved.getId(), saved.getSteps().size());
+    }
+
+    private AuditFormField buildField(AuditFormStep step, JsonNode node) {
+        AuditFormField f = new AuditFormField();
+        f.setStep(step);
+        f.setFieldOrder(node.path("fieldOrder").asInt());
+        f.setLabel(node.path("label").asText());
+        f.setPlaceholder(textOrNull(node, "placeholder"));
+        f.setFieldType(FieldType.valueOf(node.path("fieldType").asText("TEXT")));
+        f.setRequired(node.path("required").asBoolean(false));
+        f.setMultipleFiles(node.path("multipleFiles").asBoolean(false));
+        f.setFieldKey(textOrNull(node, "fieldKey"));
+        f.setOptionSourceKey(textOrNull(node, "optionSourceKey"));
+
+        f.setVisibilityRule(jsonOrNull(node, "visibilityRule"));
+        f.setRoutingTags(jsonOrNull(node, "routingTags"));
+
+        f.setRicsClause(textOrNull(node, "ricsClause"));
+        f.setModule(textOrNull(node, "module"));
+        f.setCategory(textOrNull(node, "category"));
+        f.setApplicabilityTrigger(textOrNull(node, "applicabilityTrigger"));
+        f.setEvidenceDepth(textOrNull(node, "evidenceDepth"));
+        f.setPriority(textOrNull(node, "priority"));
+        f.setExpectedEvidence(textOrNull(node, "expectedEvidence"));
+        f.setRationale(textOrNull(node, "rationale"));
+
+        // For RADIO/DROPDOWN/MULTI_CHECKBOX, materialise options from the
+        // shared list (so the existing UI keeps working without extra calls).
+        String optKey = f.getOptionSourceKey();
+        if (optKey != null && !optKey.isEmpty()) {
+            try {
+                AuditFormOptionList list = optionListRepo.findByListKey(optKey).orElse(null);
+                if (list != null) {
+                    JsonNode items = mapper.readTree(list.getItemsJson());
+                    int idx = 0;
+                    for (JsonNode it : items) {
+                        AuditFormFieldOption opt = new AuditFormFieldOption();
+                        opt.setField(f);
+                        opt.setLabel(it.path("label").asText());
+                        opt.setValue(it.path("value").asText());
+                        opt.setOptionOrder(idx++);
+                        f.getOptions().add(opt);
+                    }
+                }
+            } catch (IOException ignored) {}
+        }
+        return f;
+    }
+
+    // ── helpers ─────────────────────────────────────────────────────────
+
+    private JsonNode loadJson(String path) throws IOException {
+        try (InputStream in = new ClassPathResource(path).getInputStream()) {
+            return mapper.readTree(in);
+        }
+    }
+
+    private static String textOrNull(JsonNode node, String field) {
+        JsonNode n = node.get(field);
+        if (n == null || n.isNull()) return null;
+        String s = n.isTextual() ? n.asText() : n.toString();
+        return s.isEmpty() ? null : s;
+    }
+
+    private String jsonOrNull(JsonNode node, String field) {
+        JsonNode n = node.get(field);
+        if (n == null || n.isNull()) return null;
+        if (n.isTextual()) return n.asText();
+        try { return mapper.writeValueAsString(n); }
+        catch (Exception e) { return null; }
+    }
+
+    @SuppressWarnings("unused")
+    private static <T> Iterable<T> iter(Iterator<T> it) {
+        return () -> it;
+    }
+}

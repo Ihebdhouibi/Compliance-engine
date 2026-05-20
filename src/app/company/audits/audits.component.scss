@@ -20,7 +20,14 @@
   transition: transform .2s, box-shadow .2s;
   &:hover { transform: translateY(-2px);
     box-shadow: 0 8px 24px color-mix(in srgb, var(--color-btn-add,rgb(var(--accent-rgb))) 40%, transparent); }
+  &--secondary {
+    background: transparent;
+    color: var(--color-btn-add, rgb(var(--accent-rgb)));
+    border: 1px solid color-mix(in srgb, var(--color-btn-add,rgb(var(--accent-rgb))) 55%, transparent);
+  }
 }
+
+.header-actions { display: inline-flex; gap: 10px; flex-wrap: wrap; }
 
 .alert {
   display: flex; align-items: center; gap: 9px; padding: 11px 15px;
@@ -634,6 +641,77 @@ table { width: 100%; border-collapse: collapse;
 
 .submit-success h3 { font-family: t.$font-display; font-size: 1.1rem; font-weight: 800; color: rgb(var(--fg-strong-rgb)); }
 .submit-success p  { font-size: .85rem; color: rgb(var(--fg-rgb) / .5); max-width: 280px; line-height: 1.5; }
+
+// ── Two-level phase indicator ─────────────────────────────────────────────
+.two-level-phases {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  padding: 14px 20px; margin: 0 0 8px;
+  border-bottom: 1px solid rgb(var(--fg-rgb) / .08);
+
+  .tlp-step {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: .8rem; color: rgb(var(--fg-rgb) / .5); font-weight: 600;
+
+    .tlp-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: .72rem; font-weight: 700;
+      background: rgb(var(--fg-rgb) / .08); color: rgb(var(--fg-rgb) / .6);
+      border: 1px solid rgb(var(--fg-rgb) / .12);
+    }
+
+    &.active {
+      color: rgb(var(--fg-strong-rgb));
+      .tlp-num { background: rgb(var(--accent-rgb)); color: #fff; border-color: rgb(var(--accent-rgb)); }
+    }
+    &.done {
+      color: rgb(var(--success-rgb));
+      .tlp-num { background: rgb(var(--success-rgb) / .15); color: rgb(var(--success-rgb)); border-color: rgb(var(--success-rgb) / .35); }
+    }
+  }
+
+  .tlp-sep { width: 28px; height: 1px; background: rgb(var(--fg-rgb) / .15); }
+}
+
+// ── Quote card ────────────────────────────────────────────────────────────
+.quote-card {
+  margin: 16px 22px; padding: 22px 24px;
+  border: 1px solid rgb(var(--fg-rgb) / .1); border-radius: 14px;
+  background: rgb(var(--surface-rgb));
+  animation: fadeUp .35s ease both;
+
+  .quote-pathway {
+    display: inline-block; padding: 4px 10px; border-radius: 999px;
+    font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    background: rgb(var(--accent-rgb) / .12); color: rgb(var(--accent-rgb));
+    margin-bottom: 10px;
+  }
+  .quote-package {
+    margin: 0 0 6px; font-family: t.$font-display; font-size: 1.15rem; font-weight: 800;
+    color: rgb(var(--fg-strong-rgb));
+  }
+  .quote-rationale {
+    margin: 0 0 16px; font-size: .85rem; line-height: 1.5; color: rgb(var(--fg-rgb) / .75);
+  }
+  .quote-meta {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px 22px;
+    margin: 0 0 18px; padding: 14px 0; border-top: 1px solid rgb(var(--fg-rgb) / .08);
+    border-bottom: 1px solid rgb(var(--fg-rgb) / .08);
+    > div { display: flex; flex-direction: column; gap: 2px; }
+    dt { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: rgb(var(--fg-rgb) / .5); margin: 0; }
+    dd { margin: 0; font-size: .85rem; color: rgb(var(--fg-strong-rgb)); font-weight: 600; }
+  }
+  .quote-price {
+    display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px;
+    .qp-amount { font-family: t.$font-display; font-size: 1.4rem; font-weight: 800; color: rgb(var(--accent-rgb)); }
+    .qp-status {
+      font-size: .65rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 6px;
+      background: rgb(var(--fg-rgb) / .08); color: rgb(var(--fg-rgb) / .6);
+    }
+  }
+  .quote-disclaimer { margin: 0; font-size: .75rem; color: rgb(var(--fg-rgb) / .55); line-height: 1.5; }
+}
 
 // â”€â”€ Also add .btn-add sm variant
 .btn-add {

@@ -1,0 +1,1330 @@
+{
+  "version": 1,
+  "lists": [
+    {
+      "key": "Yes_No_NotSure",
+      "items": [
+        {
+          "value": "Yes",
+          "label": "Yes"
+        },
+        {
+          "value": "No",
+          "label": "No"
+        },
+        {
+          "value": "Not sure",
+          "label": "Not sure"
+        }
+      ]
+    },
+    {
+      "key": "Yes_No_Partially",
+      "items": [
+        {
+          "value": "Yes",
+          "label": "Yes"
+        },
+        {
+          "value": "No",
+          "label": "No"
+        },
+        {
+          "value": "Partially",
+          "label": "Partially"
+        }
+      ]
+    },
+    {
+      "key": "Firm_Size",
+      "items": [
+        {
+          "value": "1-9",
+          "label": "1-9"
+        },
+        {
+          "value": "10-49",
+          "label": "10-49"
+        },
+        {
+          "value": "50-249",
+          "label": "50-249"
+        },
+        {
+          "value": "250-999",
+          "label": "250-999"
+        },
+        {
+          "value": "1,000-4,999",
+          "label": "1,000-4,999"
+        },
+        {
+          "value": "5,000+",
+          "label": "5,000+"
+        }
+      ]
+    },
+    {
+      "key": "Turnover",
+      "items": [
+        {
+          "value": "Under £500k",
+          "label": "Under £500k"
+        },
+        {
+          "value": "£500k-£2m",
+          "label": "£500k-£2m"
+        },
+        {
+          "value": "£2m-£10m",
+          "label": "£2m-£10m"
+        },
+        {
+          "value": "£10m-£50m",
+          "label": "£10m-£50m"
+        },
+        {
+          "value": "£50m-£250m",
+          "label": "£50m-£250m"
+        },
+        {
+          "value": "£250m+",
+          "label": "£250m+"
+        },
+        {
+          "value": "Prefer not to say",
+          "label": "Prefer not to say"
+        }
+      ]
+    },
+    {
+      "key": "Client_Type",
+      "items": [
+        {
+          "value": "B2B",
+          "label": "B2B"
+        },
+        {
+          "value": "B2C",
+          "label": "B2C"
+        },
+        {
+          "value": "B2G / Public sector",
+          "label": "B2G / Public sector"
+        },
+        {
+          "value": "Mixed",
+          "label": "Mixed"
+        },
+        {
+          "value": "Not sure",
+          "label": "Not sure"
+        }
+      ]
+    },
+    {
+      "key": "Primary_Industry",
+      "items": [
+        {
+          "value": "Quantity surveying / cost consultancy",
+          "label": "Quantity surveying / cost consultancy"
+        },
+        {
+          "value": "Construction",
+          "label": "Construction"
+        },
+        {
+          "value": "Facilities management",
+          "label": "Facilities management"
+        },
+        {
+          "value": "Real estate",
+          "label": "Real estate"
+        },
+        {
+          "value": "Architecture",
+          "label": "Architecture"
+        },
+        {
+          "value": "Engineering consultancy",
+          "label": "Engineering consultancy"
+        },
+        {
+          "value": "Project management",
+          "label": "Project management"
+        },
+        {
+          "value": "Infrastructure",
+          "label": "Infrastructure"
+        },
+        {
+          "value": "Surveying / valuation",
+          "label": "Surveying / valuation"
+        },
+        {
+          "value": "Legal services",
+          "label": "Legal services"
+        },
+        {
+          "value": "Financial services",
+          "label": "Financial services"
+        },
+        {
+          "value": "Insurance",
+          "label": "Insurance"
+        },
+        {
+          "value": "Technology / software",
+          "label": "Technology / software"
+        },
+        {
+          "value": "Public sector",
+          "label": "Public sector"
+        },
+        {
+          "value": "Education / training",
+          "label": "Education / training"
+        },
+        {
+          "value": "Healthcare",
+          "label": "Healthcare"
+        },
+        {
+          "value": "Manufacturing",
+          "label": "Manufacturing"
+        },
+        {
+          "value": "Energy / utilities",
+          "label": "Energy / utilities"
+        },
+        {
+          "value": "Transport / logistics",
+          "label": "Transport / logistics"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "key": "Built_Env_Services",
+      "items": [
+        {
+          "value": "Quantity surveying",
+          "label": "Quantity surveying"
+        },
+        {
+          "value": "Cost consultancy",
+          "label": "Cost consultancy"
+        },
+        {
+          "value": "Commercial management",
+          "label": "Commercial management"
+        },
+        {
+          "value": "Contract administration",
+          "label": "Contract administration"
+        },
+        {
+          "value": "Claims / dispute support",
+          "label": "Claims / dispute support"
+        },
+        {
+          "value": "Project management",
+          "label": "Project management"
+        },
+        {
+          "value": "Programme management",
+          "label": "Programme management"
+        },
+        {
+          "value": "Building surveying",
+          "label": "Building surveying"
+        },
+        {
+          "value": "Valuation",
+          "label": "Valuation"
+        },
+        {
+          "value": "Facilities management",
+          "label": "Facilities management"
+        },
+        {
+          "value": "Asset management",
+          "label": "Asset management"
+        },
+        {
+          "value": "Design / engineering",
+          "label": "Design / engineering"
+        },
+        {
+          "value": "Architecture",
+          "label": "Architecture"
+        },
+        {
+          "value": "Planning",
+          "label": "Planning"
+        },
+        {
+          "value": "Procurement",
+          "label": "Procurement"
+        },
+        {
+          "value": "Compliance / building safety",
+          "label": "Compliance / building safety"
+        },
+        {
+          "value": "Sustainability / ESG",
+          "label": "Sustainability / ESG"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "key": "Project_Stages",
+      "items": [
+        {
+          "value": "Feasibility",
+          "label": "Feasibility"
+        },
+        {
+          "value": "Design",
+          "label": "Design"
+        },
+        {
+          "value": "Procurement",
+          "label": "Procurement"
+        },
+        {
+          "value": "Construction",
+          "label": "Construction"
+        },
+        {
+          "value": "Handover",
+          "label": "Handover"
+        },
+        {
+          "value": "Operation / maintenance",
+          "label": "Operation / maintenance"
+        },
+        {
+          "value": "Refurbishment",
+          "label": "Refurbishment"
+        },
+        {
+          "value": "Disposal",
+          "label": "Disposal"
+        },
+        {
+          "value": "Whole lifecycle",
+          "label": "Whole lifecycle"
+        }
+      ]
+    },
+    {
+      "key": "Contract_Types",
+      "items": [
+        {
+          "value": "NEC",
+          "label": "NEC"
+        },
+        {
+          "value": "JCT",
+          "label": "JCT"
+        },
+        {
+          "value": "FIDIC",
+          "label": "FIDIC"
+        },
+        {
+          "value": "PPC",
+          "label": "PPC"
+        },
+        {
+          "value": "Bespoke contracts",
+          "label": "Bespoke contracts"
+        },
+        {
+          "value": "Framework agreements",
+          "label": "Framework agreements"
+        },
+        {
+          "value": "Service contracts",
+          "label": "Service contracts"
+        },
+        {
+          "value": "Outsourcing agreements",
+          "label": "Outsourcing agreements"
+        },
+        {
+          "value": "Not applicable",
+          "label": "Not applicable"
+        },
+        {
+          "value": "Not sure",
+          "label": "Not sure"
+        }
+      ]
+    },
+    {
+      "key": "Project_Value",
+      "items": [
+        {
+          "value": "Under £100k",
+          "label": "Under £100k"
+        },
+        {
+          "value": "£100k-£1m",
+          "label": "£100k-£1m"
+        },
+        {
+          "value": "£1m-£10m",
+          "label": "£1m-£10m"
+        },
+        {
+          "value": "£10m-£50m",
+          "label": "£10m-£50m"
+        },
+        {
+          "value": "£50m-£250m",
+          "label": "£50m-£250m"
+        },
+        {
+          "value": "£250m+",
+          "label": "£250m+"
+        }
+      ]
+    },
+    {
+      "key": "Geographic_Market",
+      "items": [
+        {
+          "value": "Local / regional",
+          "label": "Local / regional"
+        },
+        {
+          "value": "UK-wide",
+          "label": "UK-wide"
+        },
+        {
+          "value": "EU-wide",
+          "label": "EU-wide"
+        },
+        {
+          "value": "UK and EU",
+          "label": "UK and EU"
+        },
+        {
+          "value": "Global",
+          "label": "Global"
+        },
+        {
+          "value": "Not sure",
+          "label": "Not sure"
+        }
+      ]
+    },
+    {
+      "key": "Professional_Bodies",
+      "items": [
+        {
+          "value": "RICS",
+          "label": "RICS"
+        },
+        {
+          "value": "CIOB",
+          "label": "CIOB"
+        },
+        {
+          "value": "ICE",
+          "label": "ICE"
+        },
+        {
+          "value": "RIBA",
+          "label": "RIBA"
+        },
+        {
+          "value": "CIBSE",
+          "label": "CIBSE"
+        },
+        {
+          "value": "APM",
+          "label": "APM"
+        },
+        {
+          "value": "CIArb",
+          "label": "CIArb"
+        },
+        {
+          "value": "IStructE",
+          "label": "IStructE"
+        },
+        {
+          "value": "IET",
+          "label": "IET"
+        },
+        {
+          "value": "Law Society / SRA",
+          "label": "Law Society / SRA"
+        },
+        {
+          "value": "ICAEW / ACCA",
+          "label": "ICAEW / ACCA"
+        },
+        {
+          "value": "IAPP",
+          "label": "IAPP"
+        },
+        {
+          "value": "BCS",
+          "label": "BCS"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "key": "Certifications",
+      "items": [
+        {
+          "value": "ISO 9001",
+          "label": "ISO 9001"
+        },
+        {
+          "value": "ISO 14001",
+          "label": "ISO 14001"
+        },
+        {
+          "value": "ISO 45001",
+          "label": "ISO 45001"
+        },
+        {
+          "value": "ISO 19650",
+          "label": "ISO 19650"
+        },
+        {
+          "value": "ISO 27001",
+          "label": "ISO 27001"
+        },
+        {
+          "value": "ISO/IEC 42001",
+          "label": "ISO/IEC 42001"
+        },
+        {
+          "value": "Cyber Essentials",
+          "label": "Cyber Essentials"
+        },
+        {
+          "value": "Cyber Essentials Plus",
+          "label": "Cyber Essentials Plus"
+        },
+        {
+          "value": "SOC 2",
+          "label": "SOC 2"
+        },
+        {
+          "value": "None",
+          "label": "None"
+        },
+        {
+          "value": "Not sure",
+          "label": "Not sure"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "key": "Digital_Maturity",
+      "items": [
+        {
+          "value": "Very low - mostly manual processes",
+          "label": "Very low - mostly manual processes"
+        },
+        {
+          "value": "Low - some digital tools, limited integration",
+          "label": "Low - some digital tools, limited integration"
+        },
+        {
+          "value": "Moderate - core systems in place",
+          "label": "Moderate - core systems in place"
+        },
+        {
+          "value": "High - integrated systems and data-driven processes",
+          "label": "High - integrated systems and data-driven processes"
+        },
+        {
+          "value": "Advanced - automation, analytics and AI-enabled workflows",
+          "label": "Advanced - automation, analytics and AI-enabled workflows"
+        },
+        {
+          "value": "Not sure",
+          "label": "Not sure"
+        }
+      ]
+    },
+    {
+      "key": "Systems",
+      "items": [
+        {
+          "value": "Microsoft 365",
+          "label": "Microsoft 365"
+        },
+        {
+          "value": "Google Workspace",
+          "label": "Google Workspace"
+        },
+        {
+          "value": "SharePoint",
+          "label": "SharePoint"
+        },
+        {
+          "value": "Teams",
+          "label": "Teams"
+        },
+        {
+          "value": "Slack",
+          "label": "Slack"
+        },
+        {
+          "value": "Dropbox",
+          "label": "Dropbox"
+        },
+        {
+          "value": "OneDrive",
+          "label": "OneDrive"
+        },
+        {
+          "value": "Salesforce",
+          "label": "Salesforce"
+        },
+        {
+          "value": "HubSpot",
+          "label": "HubSpot"
+        },
+        {
+          "value": "Power BI",
+          "label": "Power BI"
+        },
+        {
+          "value": "Tableau",
+          "label": "Tableau"
+        },
+        {
+          "value": "Monday.com",
+          "label": "Monday.com"
+        },
+        {
+          "value": "Asana",
+          "label": "Asana"
+        },
+        {
+          "value": "Notion",
+          "label": "Notion"
+        },
+        {
+          "value": "Jira",
+          "label": "Jira"
+        },
+        {
+          "value": "Procore",
+          "label": "Procore"
+        },
+        {
+          "value": "Autodesk Construction Cloud",
+          "label": "Autodesk Construction Cloud"
+        },
+        {
+          "value": "Revit",
+          "label": "Revit"
+        },
+        {
+          "value": "CostX",
+          "label": "CostX"
+        },
+        {
+          "value": "CEMAR",
+          "label": "CEMAR"
+        },
+        {
+          "value": "Aconex",
+          "label": "Aconex"
+        },
+        {
+          "value": "Oracle Primavera",
+          "label": "Oracle Primavera"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "key": "AI_Adoption_Stage",
+      "items": [
+        {
+          "value": "No known AI use",
+          "label": "No known AI use"
+        },
+        {
+          "value": "Exploring AI",
+          "label": "Exploring AI"
+        },
+        {
+          "value": "Individual experimentation",
+          "label": "Individual experimentation"
+        },
+        {
+          "value": "Team-level experimentation",
+          "label": "Team-level experimentation"
+        },
+        {
+          "value": "Selected business use",
+          "label": "Selected business use"
+        },
+        {
+          "value": "Widespread internal use",
+          "label": "Widespread internal use"
+        },
+        {
+          "value": "AI embedded in service delivery",
+          "label": "AI embedded in service delivery"
+        },
+        {
+          "value": "AI products/services offered to clients",
+          "label": "AI products/services offered to clients"
+        }
+      ]
+    },
+    {
+      "key": "AI_Tool_Categories",
+      "items": [
+        {
+          "value": "Generative text tools",
+          "label": "Generative text tools"
+        },
+        {
+          "value": "Document review tools",
+          "label": "Document review tools"
+        },
+        {
+          "value": "Meeting transcription tools",
+          "label": "Meeting transcription tools"
+        },
+        {
+          "value": "Image generation tools",
+          "label": "Image generation tools"
+        },
+        {
+          "value": "Data analytics tools",
+          "label": "Data analytics tools"
+        },
+        {
+          "value": "Business intelligence tools",
+          "label": "Business intelligence tools"
+        },
+        {
+          "value": "Coding/software tools",
+          "label": "Coding/software tools"
+        },
+        {
+          "value": "Design/BIM tools",
+          "label": "Design/BIM tools"
+        },
+        {
+          "value": "Estimating/cost tools",
+          "label": "Estimating/cost tools"
+        },
+        {
+          "value": "Customer service/chatbot tools",
+          "label": "Customer service/chatbot tools"
+        },
+        {
+          "value": "HR/recruitment tools",
+          "label": "HR/recruitment tools"
+        },
+        {
+          "value": "Automation agents/workflow tools",
+          "label": "Automation agents/workflow tools"
+        },
+        {
+          "value": "Custom internal tools",
+          "label": "Custom internal tools"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "key": "AI_Functions",
+      "items": [
+        {
+          "value": "Executive / strategy",
+          "label": "Executive / strategy"
+        },
+        {
+          "value": "Commercial / QS",
+          "label": "Commercial / QS"
+        },
+        {
+          "value": "Project management",
+          "label": "Project management"
+        },
+        {
+          "value": "Design / engineering",
+          "label": "Design / engineering"
+        },
+        {
+          "value": "Operations",
+          "label": "Operations"
+        },
+        {
+          "value": "Finance",
+          "label": "Finance"
+        },
+        {
+          "value": "HR",
+          "label": "HR"
+        },
+        {
+          "value": "Marketing",
+          "label": "Marketing"
+        },
+        {
+          "value": "Business development",
+          "label": "Business development"
+        },
+        {
+          "value": "Legal / contracts",
+          "label": "Legal / contracts"
+        },
+        {
+          "value": "Compliance",
+          "label": "Compliance"
+        },
+        {
+          "value": "IT",
+          "label": "IT"
+        },
+        {
+          "value": "Customer service",
+          "label": "Customer service"
+        },
+        {
+          "value": "Research",
+          "label": "Research"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "key": "AI_Drivers",
+      "items": [
+        {
+          "value": "Productivity",
+          "label": "Productivity"
+        },
+        {
+          "value": "Cost reduction",
+          "label": "Cost reduction"
+        },
+        {
+          "value": "Better reporting",
+          "label": "Better reporting"
+        },
+        {
+          "value": "Faster document review",
+          "label": "Faster document review"
+        },
+        {
+          "value": "Improved client service",
+          "label": "Improved client service"
+        },
+        {
+          "value": "Competitive advantage",
+          "label": "Competitive advantage"
+        },
+        {
+          "value": "Better risk management",
+          "label": "Better risk management"
+        },
+        {
+          "value": "Innovation",
+          "label": "Innovation"
+        },
+        {
+          "value": "Staff capability",
+          "label": "Staff capability"
+        },
+        {
+          "value": "Automation of repetitive tasks",
+          "label": "Automation of repetitive tasks"
+        },
+        {
+          "value": "New revenue streams",
+          "label": "New revenue streams"
+        },
+        {
+          "value": "Client demand",
+          "label": "Client demand"
+        },
+        {
+          "value": "Regulatory/professional pressure",
+          "label": "Regulatory/professional pressure"
+        }
+      ]
+    },
+    {
+      "key": "AI_Concerns",
+      "items": [
+        {
+          "value": "Data confidentiality",
+          "label": "Data confidentiality"
+        },
+        {
+          "value": "Accuracy / hallucinations",
+          "label": "Accuracy / hallucinations"
+        },
+        {
+          "value": "Professional liability",
+          "label": "Professional liability"
+        },
+        {
+          "value": "Staff misuse",
+          "label": "Staff misuse"
+        },
+        {
+          "value": "Lack of governance",
+          "label": "Lack of governance"
+        },
+        {
+          "value": "Client acceptance",
+          "label": "Client acceptance"
+        },
+        {
+          "value": "Regulatory uncertainty",
+          "label": "Regulatory uncertainty"
+        },
+        {
+          "value": "Cost of implementation",
+          "label": "Cost of implementation"
+        },
+        {
+          "value": "Cybersecurity",
+          "label": "Cybersecurity"
+        },
+        {
+          "value": "Bias / unfairness",
+          "label": "Bias / unfairness"
+        },
+        {
+          "value": "Loss of human judgement",
+          "label": "Loss of human judgement"
+        },
+        {
+          "value": "Reputation risk",
+          "label": "Reputation risk"
+        },
+        {
+          "value": "Insurance implications",
+          "label": "Insurance implications"
+        },
+        {
+          "value": "Lack of internal expertise",
+          "label": "Lack of internal expertise"
+        }
+      ]
+    },
+    {
+      "key": "Support_Options",
+      "items": [
+        {
+          "value": "AI readiness review",
+          "label": "AI readiness review"
+        },
+        {
+          "value": "AI governance training",
+          "label": "AI governance training"
+        },
+        {
+          "value": "Responsible AI policy development",
+          "label": "Responsible AI policy development"
+        },
+        {
+          "value": "Board briefing",
+          "label": "Board briefing"
+        },
+        {
+          "value": "Staff training",
+          "label": "Staff training"
+        },
+        {
+          "value": "AI tool register setup",
+          "label": "AI tool register setup"
+        },
+        {
+          "value": "AI risk framework",
+          "label": "AI risk framework"
+        },
+        {
+          "value": "RICS Responsible AI support",
+          "label": "RICS Responsible AI support"
+        },
+        {
+          "value": "EU AI Act readiness support",
+          "label": "EU AI Act readiness support"
+        },
+        {
+          "value": "ISO/IEC 42001 readiness support",
+          "label": "ISO/IEC 42001 readiness support"
+        },
+        {
+          "value": "Supplier review",
+          "label": "Supplier review"
+        },
+        {
+          "value": "Ongoing assurance",
+          "label": "Ongoing assurance"
+        },
+        {
+          "value": "Not sure yet",
+          "label": "Not sure yet"
+        }
+      ]
+    },
+    {
+      "key": "Pricing_Package",
+      "items": [
+        {
+          "value": "Starter - AI Readiness Snapshot",
+          "label": "Starter - AI Readiness Snapshot"
+        },
+        {
+          "value": "Core - Internal AI Governance Review",
+          "label": "Core - Internal AI Governance Review"
+        },
+        {
+          "value": "Professional - Responsible AI Assurance Review",
+          "label": "Professional - Responsible AI Assurance Review"
+        },
+        {
+          "value": "Enterprise / Provider - AI Management System & High-Risk Review",
+          "label": "Enterprise / Provider - AI Management System & High-Risk Review"
+        },
+        {
+          "value": "Continuous Assurance",
+          "label": "Continuous Assurance"
+        }
+      ]
+    },
+    {
+      "key": "Price_Status",
+      "items": [
+        {
+          "value": "Fixed",
+          "label": "Fixed"
+        },
+        {
+          "value": "Indicative range",
+          "label": "Indicative range"
+        },
+        {
+          "value": "Custom quote required",
+          "label": "Custom quote required"
+        }
+      ]
+    },
+    {
+      "key": "Usage_Frequency",
+      "items": [
+        {
+          "value": "Rarely",
+          "label": "Rarely"
+        },
+        {
+          "value": "Monthly",
+          "label": "Monthly"
+        },
+        {
+          "value": "Weekly",
+          "label": "Weekly"
+        },
+        {
+          "value": "Daily",
+          "label": "Daily"
+        },
+        {
+          "value": "Multiple times per day",
+          "label": "Multiple times per day"
+        },
+        {
+          "value": "Not sure",
+          "label": "Not sure"
+        }
+      ]
+    },
+    {
+      "key": "Business_Priorities",
+      "items": [
+        {
+          "value": "Growth",
+          "label": "Growth"
+        },
+        {
+          "value": "Profitability",
+          "label": "Profitability"
+        },
+        {
+          "value": "Operational efficiency",
+          "label": "Operational efficiency"
+        },
+        {
+          "value": "Client retention",
+          "label": "Client retention"
+        },
+        {
+          "value": "New services",
+          "label": "New services"
+        },
+        {
+          "value": "Digital transformation",
+          "label": "Digital transformation"
+        },
+        {
+          "value": "Risk reduction",
+          "label": "Risk reduction"
+        },
+        {
+          "value": "Compliance",
+          "label": "Compliance"
+        },
+        {
+          "value": "Staff development",
+          "label": "Staff development"
+        },
+        {
+          "value": "International expansion",
+          "label": "International expansion"
+        },
+        {
+          "value": "Tender competitiveness",
+          "label": "Tender competitiveness"
+        },
+        {
+          "value": "Innovation",
+          "label": "Innovation"
+        },
+        {
+          "value": "Cost control",
+          "label": "Cost control"
+        }
+      ]
+    },
+    {
+      "key": "Technology_Priorities",
+      "items": [
+        {
+          "value": "AI adoption",
+          "label": "AI adoption"
+        },
+        {
+          "value": "Data management",
+          "label": "Data management"
+        },
+        {
+          "value": "Automation",
+          "label": "Automation"
+        },
+        {
+          "value": "Cybersecurity",
+          "label": "Cybersecurity"
+        },
+        {
+          "value": "Document management",
+          "label": "Document management"
+        },
+        {
+          "value": "Project controls",
+          "label": "Project controls"
+        },
+        {
+          "value": "CRM improvement",
+          "label": "CRM improvement"
+        },
+        {
+          "value": "Business intelligence",
+          "label": "Business intelligence"
+        },
+        {
+          "value": "Workflow integration",
+          "label": "Workflow integration"
+        },
+        {
+          "value": "Cloud migration",
+          "label": "Cloud migration"
+        },
+        {
+          "value": "Digital training",
+          "label": "Digital training"
+        },
+        {
+          "value": "System consolidation",
+          "label": "System consolidation"
+        }
+      ]
+    },
+    {
+      "key": "Risk_Priorities",
+      "items": [
+        {
+          "value": "AI governance",
+          "label": "AI governance"
+        },
+        {
+          "value": "Data protection",
+          "label": "Data protection"
+        },
+        {
+          "value": "Cybersecurity",
+          "label": "Cybersecurity"
+        },
+        {
+          "value": "Professional liability",
+          "label": "Professional liability"
+        },
+        {
+          "value": "Quality management",
+          "label": "Quality management"
+        },
+        {
+          "value": "Regulatory compliance",
+          "label": "Regulatory compliance"
+        },
+        {
+          "value": "Client confidentiality",
+          "label": "Client confidentiality"
+        },
+        {
+          "value": "Supply chain risk",
+          "label": "Supply chain risk"
+        },
+        {
+          "value": "Insurance readiness",
+          "label": "Insurance readiness"
+        },
+        {
+          "value": "Internal controls",
+          "label": "Internal controls"
+        },
+        {
+          "value": "Reputation management",
+          "label": "Reputation management"
+        }
+      ]
+    },
+    {
+      "key": "Completion_Reason",
+      "items": [
+        {
+          "value": "Understand AI readiness",
+          "label": "Understand AI readiness"
+        },
+        {
+          "value": "Compare against peers",
+          "label": "Compare against peers"
+        },
+        {
+          "value": "Prepare for client questions",
+          "label": "Prepare for client questions"
+        },
+        {
+          "value": "Prepare for RICS expectations",
+          "label": "Prepare for RICS expectations"
+        },
+        {
+          "value": "Prepare for EU AI Act exposure",
+          "label": "Prepare for EU AI Act exposure"
+        },
+        {
+          "value": "Explore ISO 42001 readiness",
+          "label": "Explore ISO 42001 readiness"
+        },
+        {
+          "value": "Interested in audit package",
+          "label": "Interested in audit package"
+        },
+        {
+          "value": "Not sure",
+          "label": "Not sure"
+        }
+      ]
+    },
+    {
+      "key": "Country list",
+      "items": [
+        {
+          "value": "United Kingdom",
+          "label": "United Kingdom"
+        },
+        {
+          "value": "Ireland",
+          "label": "Ireland"
+        },
+        {
+          "value": "France",
+          "label": "France"
+        },
+        {
+          "value": "Germany",
+          "label": "Germany"
+        },
+        {
+          "value": "Netherlands",
+          "label": "Netherlands"
+        },
+        {
+          "value": "Spain",
+          "label": "Spain"
+        },
+        {
+          "value": "Italy",
+          "label": "Italy"
+        },
+        {
+          "value": "Belgium",
+          "label": "Belgium"
+        },
+        {
+          "value": "United States",
+          "label": "United States"
+        },
+        {
+          "value": "Canada",
+          "label": "Canada"
+        },
+        {
+          "value": "Australia",
+          "label": "Australia"
+        },
+        {
+          "value": "Other",
+          "label": "Other"
+        }
+      ]
+    }
+  ]
+}

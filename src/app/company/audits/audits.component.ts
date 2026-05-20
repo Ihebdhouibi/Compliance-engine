@@ -11,7 +11,8 @@ import { AuditStepResultService, AuditStepResult } from '../../services/audit-st
 import {
   AuditRequest, AuditStatus, AuditFormTemplate,
   AuditFormField, AuditFormStep,
-  SubmitAuditPayload, AuditType
+  SubmitAuditPayload, AuditType,
+  RoutingProfile, SubmitTwoLevelPayload, SubmitTwoLevelAnswer
 } from '../../models/audit.model';
 import { TokenService } from '../../shared/token.service';
 
@@ -67,6 +68,16 @@ export class AuditsComponent implements OnInit {
 
   successMsg = '';
   errorMsg   = '';
+
+  // ── Two-level wizard state ────────────────────────────────────────
+  // phase 'L1'    → firm-profile questionnaire (stepper bound to auditForm)
+  // phase 'QUOTE' → routing profile / indicative pricing card
+  // phase 'L2'    → RICS questionnaire     (stepper bound to auditForm)
+  twoLevelPhase: 'L1' | 'QUOTE' | 'L2' = 'L1';
+  routingProfile: RoutingProfile | null = null;
+  currentTwoLevelRequest: AuditRequest | null = null;
+  isLoadingQuote = false;
+  quoteError = '';
 
   readonly auditTypes: { value: AuditType; label: string }[] = [
     { value: 'AI_READINESS_REVIEW',     label: 'AI Readiness Review' },
@@ -226,12 +237,45 @@ export class AuditsComponent implements OnInit {
     this.formLoadError    = '';
     this.submitSuccess    = false;
     this.validationErrors = {};
+    this.twoLevelPhase    = 'L1';
+    this.routingProfile   = null;
+    this.currentTwoLevelRequest = null;
+    this.quoteError       = '';
+    this.errorMsg         = '';
     this.renderer.setStyle(document.body, 'overflow', 'hidden');
+    this.loadLevel1Form();
+  }
+
+  /** Loads the Level-1 firm-profile template into the existing stepper. */
+  private loadLevel1Form(): void {
+    this.isLoadingForm = true;
+    this.formLoadError = '';
+    this.svc.getLevel1Form().subscribe({
+      next: form => {
+        this.auditForm        = form;
+        this.isLoadingForm    = false;
+        this.currentStepIdx   = 0;
+        this.formState        = {};
+        this.fileMap          = {};
+        this.submitSuccess    = false;
+        this.validationErrors = {};
+        this.prefillDefaults(form);
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.isLoadingForm = false;
+        this.formLoadError = err?.error?.message || 'Failed to load Level 1 form. Please try again.';
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   closeNewAudit(): void {
     this.showNewAudit = false;
     this.auditForm    = null;
+    this.twoLevelPhase = 'L1';
+    this.routingProfile = null;
+    this.currentTwoLevelRequest = null;
     this.renderer.removeStyle(document.body, 'overflow');
   }
 
@@ -395,6 +439,11 @@ export class AuditsComponent implements OnInit {
     if (!this.auditForm) return;
     if (!this.validateCurrentStep()) return;
 
+    // Phase-aware dispatcher for the two-level flow.
+    if (this.twoLevelPhase === 'L1') { this.submitLevel1(); return; }
+    if (this.twoLevelPhase === 'L2') { this.submitLevel2(); return; }
+
+    // (Legacy single-level path — currently unreachable from the UI.)
     this.isSubmitting = true;
     this.errorMsg     = '';
 
@@ -446,6 +495,150 @@ export class AuditsComponent implements OnInit {
         this.isSubmitting = false;
         this.errorMsg     = typeof err.error === 'string'
           ? err.error : 'Failed to submit. Please try again.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  // ── Two-level: L1 submit → routing profile (quote) ─────────────────
+  private buildAnswers(): SubmitTwoLevelAnswer[] {
+    const out: SubmitTwoLevelAnswer[] = [];
+    if (!this.auditForm) return out;
+    for (const step of this.auditForm.steps) {
+      for (const field of step.fields) {
+        if (field.fieldType === 'FILE') continue;
+        const v = this.formState[field.id];
+        if (v === undefined || v === null || v === '') continue;
+        out.push({
+          fieldId:     field.id,
+          fieldKey:    field.fieldKey,
+          fieldLabel:  field.label,
+          answerValue: Array.isArray(v) ? v.join(',') : v
+        });
+      }
+    }
+    return out;
+  }
+
+  private submitLevel1(): void {
+    this.isSubmitting = true;
+    this.errorMsg     = '';
+    const payload: SubmitTwoLevelPayload = { answers: this.buildAnswers() };
+    this.svc.submitLevel1(payload).subscribe({
+      next: req => {
+        this.currentTwoLevelRequest = req;
+        this.isSubmitting = false;
+        this.loadRoutingProfile(req.id);
+      },
+      error: err => {
+        this.isSubmitting = false;
+        const status = err?.status ? ` (HTTP ${err.status})` : '';
+        this.errorMsg = `${err?.error?.message || err?.message || 'Failed to submit Level 1'}${status}`;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private loadRoutingProfile(requestId: number): void {
+    this.isLoadingQuote = true;
+    this.quoteError = '';
+    this.twoLevelPhase = 'QUOTE';
+    this.cdr.detectChanges();
+    this.svc.getRoutingProfile(requestId).subscribe({
+      next: profile => {
+        this.routingProfile = profile;
+        this.isLoadingQuote = false;
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.isLoadingQuote = false;
+        const status = err?.status ? ` (HTTP ${err.status})` : '';
+        this.quoteError = `${err?.error?.message || err?.message || 'Failed to load quote'}${status}`;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  confirmQuoteAndStartL2(): void {
+    if (!this.currentTwoLevelRequest) return;
+    this.isSubmitting = true;
+    this.errorMsg = '';
+    this.svc.confirmQuote(this.currentTwoLevelRequest.id).subscribe({
+      next: req => {
+        this.currentTwoLevelRequest = req;
+        this.isSubmitting = false;
+        this.loadLevel2Form(req.id);
+      },
+      error: err => {
+        this.isSubmitting = false;
+        const status = err?.status ? ` (HTTP ${err.status})` : '';
+        this.errorMsg = `${err?.error?.message || err?.message || 'Failed to confirm quote'}${status}`;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private loadLevel2Form(requestId: number): void {
+    this.isLoadingForm = true;
+    this.formLoadError = '';
+    this.twoLevelPhase = 'L2';
+    this.auditForm = null;
+    this.cdr.detectChanges();
+    this.svc.getLevel2Form(requestId).subscribe({
+      next: form => {
+        this.auditForm        = form;
+        this.isLoadingForm    = false;
+        this.currentStepIdx   = 0;
+        this.formState        = {};
+        this.fileMap          = {};
+        this.validationErrors = {};
+        this.prefillDefaults(form);
+        this.cdr.detectChanges();
+      },
+      error: err => {
+        this.isLoadingForm = false;
+        this.formLoadError = err?.error?.message || 'Failed to load Level 2 form. Please try again.';
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private submitLevel2(): void {
+    if (!this.currentTwoLevelRequest) return;
+    this.isSubmitting = true;
+    this.errorMsg     = '';
+    const payload: SubmitTwoLevelPayload = { answers: this.buildAnswers() };
+    this.svc.submitLevel2(this.currentTwoLevelRequest.id, payload).subscribe({
+      next: async () => {
+        // Upload any L2 file answers, same as the single-level flow.
+        const requestId = this.currentTwoLevelRequest!.id;
+        const fileFieldIds = Object.keys(this.fileMap).map(Number);
+        for (const fieldId of fileFieldIds) {
+          const files = this.fileMap[fieldId];
+          if (!files || files.length === 0) continue;
+          this.uploadingFieldId = fieldId;
+          try {
+            const field = this.findFieldById(fieldId);
+            if (field?.multipleFiles) {
+              await this.svc.uploadAnswerFiles(requestId, fieldId, files).toPromise();
+            } else {
+              await this.svc.uploadAnswerFile(requestId, fieldId, files[0]).toPromise();
+            }
+          } catch {}
+        }
+        this.uploadingFieldId = null;
+        this.isSubmitting     = false;
+        this.submitSuccess    = true;
+        this.cdr.detectChanges();
+        setTimeout(() => {
+          this.closeNewAudit();
+          this.loadRequests();
+        }, 2500);
+      },
+      error: err => {
+        this.isSubmitting = false;
+        const status = err?.status ? ` (HTTP ${err.status})` : '';
+        this.errorMsg = `${err?.error?.message || err?.message || 'Failed to submit Level 2'}${status}`;
         this.cdr.detectChanges();
       }
     });
