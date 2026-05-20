@@ -333,7 +333,10 @@
                     <div class="step-track">
                         <div class="step-fill" [style.width.%]="((currentStepIdx + 1) / totalSteps) * 100"></div>
                     </div>
-                    <div class="step-indicators">
+                    <!-- Dot indicators: only when manageable. For long questionnaires
+                         (>12 steps) we replace dots with a compact "X / Y" pill so the
+                         header doesn't overflow with hundreds of dots. -->
+                    <div class="step-indicators" *ngIf="totalSteps <= 12">
                         <div class="step-dot" *ngFor="let s of auditForm.steps; let i = index"
                             [class.done]="i < currentStepIdx" [class.active]="i === currentStepIdx">
                             <svg *ngIf="i < currentStepIdx" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -342,6 +345,9 @@
                             </svg>
                             <span *ngIf="i >= currentStepIdx">{{ i+1 }}</span>
                         </div>
+                    </div>
+                    <div class="step-indicators step-indicators--compact" *ngIf="totalSteps > 12">
+                        <span class="step-pill">{{ currentStepIdx + 1 }} / {{ totalSteps }}</span>
                     </div>
                     <span class="step-counter">
                         Step {{ currentStepIdx + 1 }} of {{ totalSteps }} — {{ currentStep?.title }}

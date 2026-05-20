@@ -462,7 +462,23 @@ table { width: 100%; border-collapse: collapse;
   transition: width .4s cubic-bezier(.4,0,.2,1);
 }
 
-.step-indicators { display: flex; gap: 8px; margin-bottom: 8px; }
+.step-indicators { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+
+.step-indicators--compact {
+  // Used when totalSteps > 12: dots are replaced by a single pill so the
+  // modal header doesn't overflow with hundreds of indicators.
+  flex-wrap: nowrap;
+}
+
+.step-pill {
+  display: inline-flex; align-items: center;
+  padding: 4px 12px; border-radius: 999px;
+  background: rgb(var(--accent-rgb) / .12);
+  border: 1px solid rgb(var(--accent-rgb) / .25);
+  color: var(--color-accent,rgb(var(--accent-rgb)));
+  font-family: t.$font-mono; font-size: .72rem; font-weight: 600;
+  letter-spacing: .04em;
+}
 
 .step-dot {
   width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
