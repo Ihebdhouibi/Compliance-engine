@@ -52,14 +52,13 @@
       },
       "recommendedPackage": "RICS_PROVIDER_DEEP_AUDIT",
       "activeModules": [
-        "Governance",
-        "DataPrivacy",
-        "ModelLifecycle",
-        "Procurement",
-        "RiskBiasFairness",
-        "HumanOversight",
-        "ClientCommunication",
-        "ContinuousImprovement"
+        "M1 AI Use & Inventory",
+        "M2 Governance & Accountability",
+        "M3 Risk, Data & Confidentiality",
+        "M4 People, Training & Human Oversight",
+        "M5 Supplier & Technology Assurance",
+        "M6 Client, Professional & RICS Responsibilities",
+        "M8 Monitoring, Incidents & Improvement"
       ],
       "evidenceDepth": "HIGH",
       "indicativePrice": { "min": 12000, "max": 35000, "currency": "GBP", "status": "INDICATIVE" }
@@ -74,12 +73,12 @@
       },
       "recommendedPackage": "RICS_MATERIAL_AUDIT",
       "activeModules": [
-        "Governance",
-        "DataPrivacy",
-        "RiskBiasFairness",
-        "HumanOversight",
-        "ClientCommunication",
-        "ContinuousImprovement"
+        "M1 AI Use & Inventory",
+        "M2 Governance & Accountability",
+        "M3 Risk, Data & Confidentiality",
+        "M4 People, Training & Human Oversight",
+        "M6 Client, Professional & RICS Responsibilities",
+        "M8 Monitoring, Incidents & Improvement"
       ],
       "evidenceDepth": "MEDIUM",
       "indicativePrice": { "min": 6500, "max": 18000, "currency": "GBP", "status": "INDICATIVE" }
@@ -99,10 +98,11 @@
       },
       "recommendedPackage": "RICS_INTERNAL_AUDIT",
       "activeModules": [
-        "Governance",
-        "DataPrivacy",
-        "HumanOversight",
-        "ContinuousImprovement"
+        "M1 AI Use & Inventory",
+        "M2 Governance & Accountability",
+        "M3 Risk, Data & Confidentiality",
+        "M4 People, Training & Human Oversight",
+        "M8 Monitoring, Incidents & Improvement"
       ],
       "evidenceDepth": "MEDIUM",
       "indicativePrice": { "min": 3500, "max": 9500, "currency": "GBP", "status": "INDICATIVE" }
@@ -113,8 +113,8 @@
       "match": { "all": [] },
       "recommendedPackage": "RICS_AWARENESS_BASELINE",
       "activeModules": [
-        "Governance",
-        "ContinuousImprovement"
+        "M2 Governance & Accountability",
+        "M8 Monitoring, Incidents & Improvement"
       ],
       "evidenceDepth": "LOW",
       "indicativePrice": { "min": 1500, "max": 4500, "currency": "GBP", "status": "INDICATIVE" }
