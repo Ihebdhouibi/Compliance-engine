@@ -15,6 +15,7 @@ import { TokenService } from '../../shared/token.service';
 import { AuditBotComponent } from '../../layout/audit-bot/audit-bot.component';
 import { AuditRequest } from '../../models/audit.model';
 import { environment } from '../../environments/environment';
+import { RicsSearchService, RicsRuleResult } from '../../services/rics-search.service';
 
 /**
  * Unified step model used by the workspace stepper.
@@ -35,10 +36,18 @@ export type Verdict = 'compliant' | 'observation' | 'non-conformity' | 'na';
 /** Step-level roll-up derived from per-question verdicts. */
 export type StepRollup = 'pending' | 'compliant' | 'partial' | 'non-compliant';
 
+export interface RicsClauseRef {
+  ruleId:        string;
+  section?:      string;
+  shortTitle?:   string;
+  requirement?:  string;   // short snippet for tooltip / context
+}
+
 export interface Finding {
   id:          string;
   severity:    'low' | 'medium' | 'high' | 'critical';
   description: string;
+  clauses?:    RicsClauseRef[];
 }
 
 export interface Recommendation {
@@ -120,6 +129,16 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   drawerBlobUrl:   SafeResourceUrl | null = null;
   private drawerObjectUrl: string | null = null;
 
+  // ── Phase 4: RICS clause picker (per-finding) ──────────────────────
+  pickerOpenFor: string | null = null;     // finding.id currently picking
+  pickerQuery   = '';
+  pickerLoading = false;
+  pickerResults: RicsRuleResult[] = [];
+  private pickerDebounce: any = null;
+
+  // ── Phase 5: dismissed AI suggestions (per-step, session-only) ─────
+  dismissedSuggestions: Record<number, Set<string>> = {};
+
   isAuditorMode = false;
 
   readonly serverBase = environment.serverBaseUrl;
@@ -134,6 +153,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   private http      = inject(HttpClient);
   private tokenSvc  = inject(TokenService);
   private cdr       = inject(ChangeDetectorRef);
+  private ricsSvc   = inject(RicsSearchService);
 
   ngOnInit(): void {
     this.isAuditorMode = this.router.url.includes('/auditor/');
@@ -696,6 +716,117 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     }
     this.flash('Finding seeded from evidence.');
     this.cdr.detectChanges();
+  }
+
+  // ── Phase 4: RICS clause picker ──────────────────────────────────
+  openClausePicker(findingId: string): void {
+    if (this.request?.status === 'COMPLETED') return;
+    this.pickerOpenFor = findingId;
+    this.pickerQuery   = '';
+    this.pickerResults = [];
+    // Pre-seed with the finding's own description or the step name for context.
+    const stepId = this.currentStep?.id;
+    if (stepId != null) {
+      const f = (this.findings[stepId] ?? []).find(x => x.id === findingId);
+      const seed = (f?.description || this.currentStep?.name || '').slice(0, 200);
+      if (seed.trim().length >= 3) {
+        this.pickerQuery = seed;
+        this.runClauseSearch();
+      }
+    }
+  }
+
+  closeClausePicker(): void {
+    this.pickerOpenFor = null;
+    this.pickerQuery   = '';
+    this.pickerResults = [];
+    if (this.pickerDebounce) { clearTimeout(this.pickerDebounce); this.pickerDebounce = null; }
+  }
+
+  onPickerQueryChange(): void {
+    if (this.pickerDebounce) clearTimeout(this.pickerDebounce);
+    this.pickerDebounce = setTimeout(() => this.runClauseSearch(), 280);
+  }
+
+  runClauseSearch(): void {
+    const q = this.pickerQuery.trim();
+    if (q.length < 3) { this.pickerResults = []; return; }
+    this.pickerLoading = true;
+    this.ricsSvc.search(q, 8).subscribe({
+      next: res => {
+        this.pickerResults = res?.results ?? [];
+        this.pickerLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.pickerResults = [];
+        this.pickerLoading = false;
+        this.flash('RICS search unavailable.', true);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  attachClause(findingId: string, hit: RicsRuleResult): void {
+    const stepId = this.currentStep?.id;
+    if (stepId == null) return;
+    const f = (this.findings[stepId] ?? []).find(x => x.id === findingId);
+    if (!f) return;
+    if (!f.clauses) f.clauses = [];
+    if (f.clauses.some(c => c.ruleId === hit.rule_id)) return; // dedupe
+    f.clauses.push({
+      ruleId:      hit.rule_id,
+      section:     hit.payload?.section,
+      shortTitle:  hit.payload?.short_title,
+      requirement: (hit.payload?.requirement_text || '').slice(0, 200),
+    });
+    this.cdr.detectChanges();
+  }
+
+  detachClause(findingId: string, ruleId: string): void {
+    const stepId = this.currentStep?.id;
+    if (stepId == null) return;
+    const f = (this.findings[stepId] ?? []).find(x => x.id === findingId);
+    if (!f?.clauses) return;
+    f.clauses = f.clauses.filter(c => c.ruleId !== ruleId);
+    this.cdr.detectChanges();
+  }
+
+  // ── Phase 5: AI suggestion actions ────────────────────────────────
+  suggestionToFinding(text: string): void {
+    if (!this.currentStep || this.request?.status === 'COMPLETED') return;
+    this.addFinding();
+    const list = this.findings[this.currentStep.id] ?? [];
+    const last = list[list.length - 1];
+    if (last) last.description = text;
+    this.dismissSuggestion(text);
+    this.flash('Suggestion converted to finding.');
+    this.cdr.detectChanges();
+  }
+
+  suggestionToRecommendation(text: string): void {
+    if (!this.currentStep || this.request?.status === 'COMPLETED') return;
+    this.addRecommendation();
+    const list = this.recommendations[this.currentStep.id] ?? [];
+    const last = list[list.length - 1];
+    if (last) last.description = text;
+    this.dismissSuggestion(text);
+    this.flash('Suggestion converted to recommendation.');
+    this.cdr.detectChanges();
+  }
+
+  dismissSuggestion(text: string): void {
+    const id = this.currentStep?.id;
+    if (id == null) return;
+    if (!this.dismissedSuggestions[id]) this.dismissedSuggestions[id] = new Set();
+    this.dismissedSuggestions[id].add(text);
+    this.cdr.detectChanges();
+  }
+
+  isDismissed(text: string): boolean {
+    const id = this.currentStep?.id;
+    if (id == null) return false;
+    return !!this.dismissedSuggestions[id]?.has(text);
   }
 
   getFileUrl(url: string): string {

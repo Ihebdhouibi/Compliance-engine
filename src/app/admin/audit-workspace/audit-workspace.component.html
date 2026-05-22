@@ -143,8 +143,20 @@
           </svg>
           AI Suggestions ({{ currentSuggestions.length }})
         </summary>
-        <ul>
-          <li *ngFor="let s of currentSuggestions">{{ s }}</li>
+        <ul class="ai-suggest-list">
+          <ng-container *ngFor="let s of currentSuggestions">
+            <li *ngIf="!isDismissed(s)" class="ai-suggest-item">
+              <span class="ai-suggest-item__text">{{ s }}</span>
+              <div class="ai-suggest-item__actions" *ngIf="request?.status !== 'COMPLETED'">
+                <button class="ai-suggest-btn ai-suggest-btn--find"
+                        (click)="suggestionToFinding(s)" title="Convert to finding">→ Finding</button>
+                <button class="ai-suggest-btn ai-suggest-btn--rec"
+                        (click)="suggestionToRecommendation(s)" title="Convert to recommendation">→ Rec</button>
+                <button class="ai-suggest-btn ai-suggest-btn--dismiss"
+                        (click)="dismissSuggestion(s)" title="Dismiss">×</button>
+              </div>
+            </li>
+          </ng-container>
         </ul>
       </details>
 
@@ -266,6 +278,52 @@
                     [disabled]="request?.status === 'COMPLETED'"
                     placeholder="Describe the finding, clause reference, and evidence cited…"
                     rows="2"></textarea>
+
+          <!-- Phase 4: RICS clauses attached to this finding -->
+          <div class="clause-row">
+            <span class="clause-chip" *ngFor="let c of (f.clauses || [])"
+                  [title]="c.requirement || c.ruleId">
+              <strong>{{ c.ruleId }}</strong>
+              <span class="clause-chip__title" *ngIf="c.shortTitle"> · {{ c.shortTitle }}</span>
+              <button class="clause-chip__del" *ngIf="request?.status !== 'COMPLETED'"
+                      (click)="detachClause(f.id, c.ruleId)" title="Remove">×</button>
+            </span>
+            <button class="clause-add-btn" *ngIf="request?.status !== 'COMPLETED'"
+                    (click)="openClausePicker(f.id)">+ Clause</button>
+          </div>
+
+          <!-- Phase 4: inline picker popover -->
+          <div class="clause-picker" *ngIf="pickerOpenFor === f.id">
+            <div class="clause-picker__head">
+              <input type="text" class="clause-picker__input"
+                     [(ngModel)]="pickerQuery"
+                     (input)="onPickerQueryChange()"
+                     placeholder="Search RICS clauses (e.g. governance, transparency, oversight)…"
+                     autofocus/>
+              <button class="clause-picker__close" (click)="closeClausePicker()" title="Close">×</button>
+            </div>
+            <div class="clause-picker__body">
+              <div class="clause-picker__loading" *ngIf="pickerLoading">Searching…</div>
+              <div class="clause-picker__empty"
+                   *ngIf="!pickerLoading && pickerQuery.trim().length >= 3 && pickerResults.length === 0">
+                No matching clauses.
+              </div>
+              <div class="clause-picker__empty"
+                   *ngIf="!pickerLoading && pickerQuery.trim().length < 3">
+                Type at least 3 characters.
+              </div>
+              <button class="clause-result" *ngFor="let r of pickerResults"
+                      (click)="attachClause(f.id, r); closeClausePicker()">
+                <div class="clause-result__head">
+                  <strong>{{ r.rule_id }}</strong>
+                  <span class="clause-result__section" *ngIf="r.payload.section">§{{ r.payload.section }}</span>
+                  <span class="clause-result__score">{{ (r.score * 100).toFixed(0) }}%</span>
+                </div>
+                <div class="clause-result__title" *ngIf="r.payload.short_title">{{ r.payload.short_title }}</div>
+                <div class="clause-result__req" *ngIf="r.payload.requirement_text">{{ r.payload.requirement_text }}</div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
