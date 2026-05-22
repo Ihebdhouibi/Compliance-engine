@@ -89,6 +89,10 @@ button { font-family: inherit; cursor: pointer; }
 ::selection      { background: rgb(var(--accent-rgb) / .25); color: rgb(var(--fg-strong-rgb)); }
 :focus-visible   { outline: 2px solid rgb(var(--accent-rgb)); outline-offset: 2px; border-radius: 4px; }
 
+// Native form controls — keep accent in the green family
+input, select, textarea, progress { accent-color: var(--color-btn-add, #059669); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--color-btn-add, #059669); }
+
 ::-webkit-scrollbar       { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: rgb(var(--bg-deep-rgb)); }
 ::-webkit-scrollbar-thumb {
