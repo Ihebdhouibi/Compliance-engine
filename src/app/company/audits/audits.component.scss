@@ -207,7 +207,7 @@ table { width: 100%; border-collapse: collapse;
 .mb-title {
   display: flex; align-items: center; gap: 9px;
   font-family: t.$font-display; font-size: .96rem; font-weight: 700; color: rgb(var(--fg-strong-rgb));
-  svg { color: var(--color-accent,rgb(var(--accent-rgb))); }
+  svg { color: var(--color-btn-add, #059669); }
 }
 
 .x-btn {
@@ -458,7 +458,7 @@ table { width: 100%; border-collapse: collapse;
 }
 
 .step-fill {
-  height: 100%; background: var(--color-accent,rgb(var(--accent-rgb))); border-radius: 2px;
+  height: 100%; background: var(--color-btn-add, #059669); border-radius: 2px;
   transition: width .4s cubic-bezier(.4,0,.2,1);
 }
 
@@ -473,9 +473,9 @@ table { width: 100%; border-collapse: collapse;
 .step-pill {
   display: inline-flex; align-items: center;
   padding: 4px 12px; border-radius: 999px;
-  background: rgb(var(--accent-rgb) / .12);
-  border: 1px solid rgb(var(--accent-rgb) / .25);
-  color: var(--color-accent,rgb(var(--accent-rgb)));
+  background: color-mix(in srgb, var(--color-btn-add, #059669) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-btn-add, #059669) 28%, transparent);
+  color: var(--color-btn-add, #059669);
   font-family: t.$font-mono; font-size: .72rem; font-weight: 600;
   letter-spacing: .04em;
 }
@@ -488,8 +488,8 @@ table { width: 100%; border-collapse: collapse;
   transition: all .3s;
 
   &.active {
-    background: var(--color-accent,rgb(var(--accent-rgb))); border-color: var(--color-accent,rgb(var(--accent-rgb)));
-    color: rgb(var(--bg-app-rgb)); font-weight: 700;
+    background: var(--color-btn-add, #059669); border-color: var(--color-btn-add, #059669);
+    color: #fff; font-weight: 700;
   }
   &.done {
     background: rgb(var(--success-rgb) / .15); border-color: rgb(var(--success-rgb) / .4); color: rgb(var(--success-rgb));
