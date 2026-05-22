@@ -112,6 +112,14 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   viewingOcr:   OcrResult | null = null;
   private ocrPollHandle: any = null;
 
+  // ── Phase 3: unified Evidence Drawer ───────────────────────────────
+  showDrawer       = false;
+  drawerMedia:     { id: number; url: string; name: string } | null = null;
+  drawerTab:       'preview' | 'ocr' = 'preview';
+  drawerLoading    = false;
+  drawerBlobUrl:   SafeResourceUrl | null = null;
+  private drawerObjectUrl: string | null = null;
+
   isAuditorMode = false;
 
   readonly serverBase = environment.serverBaseUrl;
@@ -138,6 +146,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
       clearTimeout(this.ocrPollHandle);
       this.ocrPollHandle = null;
     }
+    this.releaseDrawerBlob();
   }
 
   loadRequest(id: number): void {
@@ -610,6 +619,83 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   /** True when the badge should act as a Retry button (failed or stuck). */
   isRetryable(r: OcrResult | null): boolean {
     return !!r && r.status === 'FAILED';
+  }
+
+  // ── Phase 3: Evidence Drawer ──────────────────────────────────────
+  /**
+   * Open the unified evidence drawer for a file: shows preview (image / PDF /
+   * generic) + OCR text + one-click "Link to finding". Replaces the older
+   * separate file viewer + OCR modal flows for evidence chips.
+   */
+  openEvidence(media: { id: number; url: string; name: string },
+               tab: 'preview' | 'ocr' = 'preview'): void {
+    this.releaseDrawerBlob();
+    this.drawerMedia   = media;
+    this.drawerTab     = tab;
+    this.showDrawer    = true;
+    this.drawerLoading = true;
+    this.drawerBlobUrl = null;
+
+    const token   = this.tokenSvc.getToken();
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    const full    = this.getFileUrl(media.url);
+
+    this.http.get(full, { headers, responseType: 'blob' }).subscribe({
+      next: blob => {
+        const obj = URL.createObjectURL(blob);
+        this.drawerObjectUrl = obj;
+        this.drawerBlobUrl   = this.sanitizer.bypassSecurityTrustResourceUrl(obj);
+        this.drawerLoading   = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.drawerBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(full);
+        this.drawerLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  closeDrawer(): void {
+    this.showDrawer = false;
+    this.drawerMedia = null;
+    this.drawerBlobUrl = null;
+    this.releaseDrawerBlob();
+  }
+
+  setDrawerTab(t: 'preview' | 'ocr'): void {
+    this.drawerTab = t;
+  }
+
+  private releaseDrawerBlob(): void {
+    if (this.drawerObjectUrl) {
+      try { URL.revokeObjectURL(this.drawerObjectUrl); } catch { /* noop */ }
+      this.drawerObjectUrl = null;
+    }
+  }
+
+  drawerOcr(): OcrResult | null {
+    return this.drawerMedia ? this.ocrFor(this.drawerMedia.id) : null;
+  }
+
+  /** Seed a new Finding on the current step pre-filled with evidence + OCR snippet. */
+  linkEvidenceToFinding(): void {
+    if (!this.drawerMedia || !this.currentStep) return;
+    if (this.request?.status === 'COMPLETED') return;
+
+    const ocr     = this.drawerOcr();
+    const snippet = (ocr?.rawText || '').trim().slice(0, 280);
+    const tail    = snippet && (ocr?.rawText || '').length > 280 ? '…' : '';
+
+    this.addFinding();
+    const list = this.findings[this.currentStep.id] ?? [];
+    const last = list[list.length - 1];
+    if (last) {
+      last.description = `Evidence: ${this.drawerMedia.name}` +
+        (snippet ? `\n\nOCR excerpt:\n${snippet}${tail}` : '');
+    }
+    this.flash('Finding seeded from evidence.');
+    this.cdr.detectChanges();
   }
 
   getFileUrl(url: string): string {

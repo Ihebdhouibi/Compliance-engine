@@ -171,31 +171,31 @@
           <!-- Evidence chips -->
           <div class="qcard__evidence" *ngIf="a.fileMedia || (a.files && a.files.length)">
             <ng-container *ngIf="a.fileMedia as fm">
-              <div class="evidence-chip">
+              <div class="evidence-chip"
+                   (click)="openEvidence({id: fm.id, url: fm.url, name: fm.name})"
+                   role="button" tabindex="0"
+                   (keyup.enter)="openEvidence({id: fm.id, url: fm.url, name: fm.name})">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
                 <span class="evidence-chip__name" [title]="fm.name">{{ fm.name }}</span>
                 <span [class]="ocrClass(ocrFor(fm.id))">{{ ocrLabel(ocrFor(fm.id)) }}</span>
-                <button class="evidence-chip__btn" (click)="openFileViewer(getFileUrl(fm.url), fm.name)">Open</button>
-                <button class="evidence-chip__btn" *ngIf="ocrFor(fm.id)?.status === 'DONE'"
-                        (click)="openOcrViewer(fm.id)">OCR</button>
                 <button class="evidence-chip__btn evidence-chip__btn--retry"
                         *ngIf="isRetryable(ocrFor(fm.id))" (click)="retryOcr(fm.id, $event)">Retry</button>
               </div>
             </ng-container>
             <ng-container *ngFor="let f of (a.files || [])">
-              <div class="evidence-chip">
+              <div class="evidence-chip"
+                   (click)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name})"
+                   role="button" tabindex="0"
+                   (keyup.enter)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name})">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
                 <span class="evidence-chip__name" [title]="f.media.name">{{ f.media.name }}</span>
                 <span [class]="ocrClass(ocrFor(f.media.id))">{{ ocrLabel(ocrFor(f.media.id)) }}</span>
-                <button class="evidence-chip__btn" (click)="openFileViewer(getFileUrl(f.media.url), f.media.name)">Open</button>
-                <button class="evidence-chip__btn" *ngIf="ocrFor(f.media.id)?.status === 'DONE'"
-                        (click)="openOcrViewer(f.media.id)">OCR</button>
                 <button class="evidence-chip__btn evidence-chip__btn--retry"
                         *ngIf="isRetryable(ocrFor(f.media.id))" (click)="retryOcr(f.media.id, $event)">Retry</button>
               </div>
@@ -341,60 +341,80 @@
 
 </div>
 
-<!-- File viewer overlay -->
-<ng-container *ngIf="showFileViewer">
-  <div class="ws-file-backdrop" (click)="closeFileViewer()"></div>
-  <div class="ws-file-modal">
-    <div class="ws-file-head">
-      <span class="ws-file-name">{{ viewingFileName }}</span>
-      <button class="ws-file-close" (click)="closeFileViewer()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" width="14" height="14" style="display:block;">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
+<!-- ══ Phase 3: Evidence Drawer (preview + OCR + link to finding) ══ -->
+<ng-container *ngIf="showDrawer && drawerMedia">
+  <div class="ws-drawer-backdrop" (click)="closeDrawer()"></div>
+  <aside class="ws-drawer" role="dialog" aria-label="Evidence drawer">
+    <header class="ws-drawer__head">
+      <div class="ws-drawer__title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        <span class="ws-drawer__name" [title]="drawerMedia.name">{{ drawerMedia.name }}</span>
+      </div>
+      <button class="ws-drawer__close" (click)="closeDrawer()" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </button>
-    </div>
-    <div class="ws-file-body">
-      <div class="file-loading" *ngIf="isLoadingFile">
-        <div class="loader"></div><span>Loading…</span>
-      </div>
-      <img *ngIf="!isLoadingFile && viewingFileUrl && isImage(viewingFileName || '')"
-           [src]="viewingFileUrl" [alt]="viewingFileName" class="file-preview-img"/>
-      <iframe *ngIf="!isLoadingFile && viewingFileUrl && !isImage(viewingFileName || '')"
-              [src]="viewingFileUrl" class="file-preview-iframe"></iframe>
-    </div>
-  </div>
-</ng-container>
+    </header>
 
-<!-- OCR extracted-text viewer -->
-<ng-container *ngIf="showOcrViewer && viewingOcr">
-  <div class="ws-file-backdrop" (click)="closeOcrViewer()"></div>
-  <div class="ws-file-modal ws-ocr-modal">
-    <div class="ws-file-head">
-      <span class="ws-file-name">
-        OCR · {{ viewingOcr.fileName || ('Media #' + viewingOcr.mediaId) }}
-      </span>
-      <button class="ws-file-close" (click)="closeOcrViewer()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" width="14" height="14" style="display:block;">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
+    <nav class="ws-drawer__tabs">
+      <button class="ws-drawer__tab"
+              [class.ws-drawer__tab--on]="drawerTab === 'preview'"
+              (click)="setDrawerTab('preview')">Preview</button>
+      <button class="ws-drawer__tab"
+              [class.ws-drawer__tab--on]="drawerTab === 'ocr'"
+              (click)="setDrawerTab('ocr')">
+        OCR
+        <span class="ws-drawer__tab-badge" *ngIf="drawerOcr() as o" [class]="ocrClass(o)">{{ o.status }}</span>
       </button>
+    </nav>
+
+    <div class="ws-drawer__body">
+      <!-- Preview tab -->
+      <ng-container *ngIf="drawerTab === 'preview'">
+        <div class="file-loading" *ngIf="drawerLoading">
+          <div class="loader"></div><span>Loading…</span>
+        </div>
+        <img *ngIf="!drawerLoading && drawerBlobUrl && isImage(drawerMedia.name)"
+             [src]="drawerBlobUrl" [alt]="drawerMedia.name" class="ws-drawer__img"/>
+        <iframe *ngIf="!drawerLoading && drawerBlobUrl && !isImage(drawerMedia.name)"
+                [src]="drawerBlobUrl" class="ws-drawer__iframe"></iframe>
+      </ng-container>
+
+      <!-- OCR tab -->
+      <ng-container *ngIf="drawerTab === 'ocr'">
+        <ng-container *ngIf="drawerOcr() as o; else noOcr">
+          <div class="ws-drawer__ocr-meta">
+            <span><strong>Status:</strong> {{ o.status }}</span>
+            <span *ngIf="o.pageCount != null"><strong>Pages:</strong> {{ o.pageCount }}</span>
+            <span *ngIf="o.engine"><strong>Engine:</strong> {{ o.engine }}</span>
+            <span *ngIf="o.elapsedMs != null"><strong>Elapsed:</strong> {{ o.elapsedMs }} ms</span>
+            <button class="evidence-chip__btn evidence-chip__btn--retry"
+                    *ngIf="isRetryable(o)" (click)="retryOcr(o.mediaId, $event)">Retry OCR</button>
+          </div>
+          <div *ngIf="o.error" class="ws-drawer__ocr-error">{{ o.error }}</div>
+          <pre class="ws-drawer__ocr-text" *ngIf="o.rawText">{{ o.rawText }}</pre>
+          <div *ngIf="!o.rawText && !o.error" class="ws-drawer__ocr-empty">
+            No text was extracted yet.
+          </div>
+        </ng-container>
+        <ng-template #noOcr>
+          <div class="ws-drawer__ocr-empty">OCR has not been queued for this file.</div>
+        </ng-template>
+      </ng-container>
     </div>
-    <div class="ws-ocr-meta">
-      <span><strong>Status:</strong> {{ viewingOcr.status }}</span>
-      <span *ngIf="viewingOcr.pageCount != null"><strong>Pages:</strong> {{ viewingOcr.pageCount }}</span>
-      <span *ngIf="viewingOcr.engine"><strong>Engine:</strong> {{ viewingOcr.engine }}</span>
-      <span *ngIf="viewingOcr.elapsedMs != null"><strong>Elapsed:</strong> {{ viewingOcr.elapsedMs }} ms</span>
-    </div>
-    <div class="ws-file-body ws-ocr-body">
-      <div *ngIf="viewingOcr.error" class="ws-ocr-error">{{ viewingOcr.error }}</div>
-      <pre class="ws-ocr-text" *ngIf="viewingOcr.rawText">{{ viewingOcr.rawText }}</pre>
-      <div *ngIf="!viewingOcr.rawText && !viewingOcr.error" class="ws-ocr-empty">
-        No text was extracted.
-      </div>
-    </div>
-  </div>
+
+    <footer class="ws-drawer__foot" *ngIf="request?.status !== 'COMPLETED'">
+      <button class="ws-drawer__link" (click)="linkEvidenceToFinding()" [disabled]="!currentStep">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+        </svg>
+        Link to finding
+      </button>
+    </footer>
+  </aside>
 </ng-container>

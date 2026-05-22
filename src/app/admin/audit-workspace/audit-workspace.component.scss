@@ -1123,3 +1123,153 @@
 }
 .rec { flex-direction: row; align-items: flex-start; gap: 4px; }
 .rec__text { flex: 1; }
+
+/* ══ Phase 3: Evidence Drawer ══ */
+.ws-drawer-backdrop {
+  position: fixed; inset: 0; background: rgb(0 0 0 / .35);
+  z-index: 1900; animation: ws-drawer-fade .18s ease-out;
+}
+.ws-drawer {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: min(560px, 96vw);
+  background: rgb(var(--bg-card-rgb));
+  border-left: 1px solid rgb(var(--accent-rgb) / .25);
+  box-shadow: -16px 0 40px -12px rgb(0 0 0 / .25);
+  display: flex; flex-direction: column;
+  z-index: 1901;
+  animation: ws-drawer-slide .22s cubic-bezier(.2, .8, .2, 1);
+}
+@keyframes ws-drawer-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes ws-drawer-slide {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.ws-drawer__head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgb(var(--accent-rgb) / .15);
+  background: linear-gradient(180deg,
+              rgb(var(--accent-rgb) / .06),
+              transparent);
+}
+.ws-drawer__title {
+  display: flex; align-items: center; gap: 8px;
+  flex: 1; min-width: 0;
+  color: rgb(var(--fg-strong-rgb));
+  font: 600 .9rem t.$font-display;
+}
+.ws-drawer__name {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.ws-drawer__close {
+  background: transparent; border: none; cursor: pointer;
+  color: rgb(var(--fg-rgb) / .6);
+  padding: 6px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  &:hover { background: rgb(var(--accent-rgb) / .1); color: rgb(var(--danger-rgb)); }
+}
+
+.ws-drawer__tabs {
+  display: flex; gap: 4px;
+  padding: 8px 12px 0;
+  border-bottom: 1px solid rgb(var(--accent-rgb) / .12);
+}
+.ws-drawer__tab {
+  background: transparent; border: none; cursor: pointer;
+  padding: 8px 14px; border-radius: 6px 6px 0 0;
+  font: 600 .75rem t.$font-mono;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: rgb(var(--fg-rgb) / .6);
+  display: inline-flex; align-items: center; gap: 6px;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  &:hover { color: rgb(var(--fg-strong-rgb)); }
+  &--on {
+    color: var(--color-btn-add, #059669);
+    border-bottom-color: var(--color-btn-add, #059669);
+    background: rgb(var(--accent-rgb) / .05);
+  }
+}
+.ws-drawer__tab-badge {
+  font-size: .58rem; padding: 1px 6px; border-radius: 999px;
+  font-weight: 700; letter-spacing: .04em;
+}
+
+.ws-drawer__body {
+  flex: 1; min-height: 0; overflow: auto;
+  padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+  background: rgb(var(--bg-rgb));
+}
+.ws-drawer__img {
+  max-width: 100%; height: auto; display: block; margin: 0 auto;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px -6px rgb(0 0 0 / .2);
+}
+.ws-drawer__iframe {
+  flex: 1; width: 100%; min-height: 480px; border: none; background: #fff;
+  border-radius: 6px;
+}
+.ws-drawer__ocr-meta {
+  display: flex; flex-wrap: wrap; gap: 12px;
+  padding: 8px 10px; border-radius: 6px;
+  background: rgb(var(--accent-rgb) / .06);
+  font: 500 .72rem t.$font-mono;
+  color: rgb(var(--fg-rgb) / .8);
+  strong { color: rgb(var(--fg-strong-rgb)); font-weight: 600; }
+}
+.ws-drawer__ocr-text {
+  flex: 1; margin: 0; padding: 12px;
+  background: rgb(var(--bg-card-rgb));
+  border: 1px solid rgb(var(--accent-rgb) / .15);
+  border-radius: 6px;
+  font: 400 .78rem t.$font-mono;
+  color: rgb(var(--fg-strong-rgb));
+  white-space: pre-wrap; word-break: break-word;
+  overflow: auto;
+}
+.ws-drawer__ocr-empty {
+  padding: 24px; text-align: center;
+  font: 400 .8rem t.$font-body;
+  color: rgb(var(--fg-rgb) / .55);
+  font-style: italic;
+}
+.ws-drawer__ocr-error {
+  padding: 10px 12px; border-radius: 6px;
+  background: rgb(var(--danger-rgb) / .08);
+  border: 1px solid rgb(var(--danger-rgb) / .25);
+  color: rgb(var(--danger-rgb));
+  font: 500 .78rem t.$font-mono;
+}
+
+.ws-drawer__foot {
+  padding: 12px 16px;
+  border-top: 1px solid rgb(var(--accent-rgb) / .15);
+  background: rgb(var(--bg-card-rgb));
+}
+.ws-drawer__link {
+  width: 100%;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 14px; border-radius: 8px;
+  background: var(--color-btn-add, #059669); color: #fff; border: none;
+  font: 600 .82rem t.$font-display;
+  cursor: pointer;
+  transition: background .15s, transform .05s;
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-btn-add, #059669) 88%, #000);
+  }
+  &:active:not(:disabled) { transform: translateY(1px); }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+
+/* Evidence chip itself is now clickable */
+.evidence-chip {
+  cursor: pointer;
+  transition: background .12s, border-color .12s, transform .05s;
+  &:hover {
+    background: rgb(var(--accent-rgb) / .08);
+    border-color: var(--color-btn-add, #059669);
+  }
+  &:active { transform: translateY(1px); }
+}
