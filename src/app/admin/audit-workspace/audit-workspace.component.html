@@ -1,6 +1,6 @@
-﻿<div class="workspace">
+<div class="workspace">
 
-  <!-- â•â• TOP BAR â•â• -->
+  <!-- ══ TOP BAR ══ -->
   <div class="ws-topbar">
     <button class="ws-back" (click)="goBack()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -32,9 +32,9 @@
         <span class="ws-roll__bar"><span class="ws-roll__fill" [style.width.%]="overallProgress"></span></span>
         <span class="ws-roll__txt">{{ overallProgress }}%</span>
         <span class="ws-roll__stat ws-roll__stat--find" *ngIf="totalFindings"
-              [title]="totalFindings + ' findings'">âš  {{ totalFindings }}</span>
+              [title]="totalFindings + ' findings'">⚠ {{ totalFindings }}</span>
         <span class="ws-roll__stat ws-roll__stat--rec"  *ngIf="totalRecommendations"
-              [title]="totalRecommendations + ' recommendations'">â†’ {{ totalRecommendations }}</span>
+              [title]="totalRecommendations + ' recommendations'">→ {{ totalRecommendations }}</span>
       </div>
 
       <ng-container *ngIf="request?.status !== 'COMPLETED'">
@@ -48,20 +48,20 @@
                 (click)="submitAudit()"
                 [disabled]="isCompleting">
           <span class="mini-spin" *ngIf="isCompleting"></span>
-          {{ isCompleting ? 'Submittingâ€¦' : 'Submit Audit' }}
+          {{ isCompleting ? 'Submitting…' : 'Submit Audit' }}
         </button>
       </ng-container>
 
       <div class="ws-completed-badge" *ngIf="request?.status === 'COMPLETED'">
-        âœ“ Audit Completed
+        ✓ Audit Completed
       </div>
     </div>
   </div>
 
-  <!-- â•â• 3-PANE COCKPIT â•â• -->
+  <!-- ══ 3-PANE COCKPIT ══ -->
   <div class="ws-cockpit" *ngIf="steps.length > 0">
 
-    <!-- â•žâ•â• LEFT: vertical step rail â•â•â•¡ -->
+    <!-- ╞══ LEFT: vertical step rail ══╡ -->
     <aside class="ws-rail">
       <div class="rail-head">
         <span class="rail-head__title">Audit Steps</span>
@@ -101,19 +101,19 @@
           <span class="rail-item__body">
             <span class="rail-item__name">{{ s.name }}</span>
             <span class="rail-item__sub">
-              <ng-container *ngIf="stepRollup(s) === 'compliant'">âœ“ Compliant</ng-container>
-              <ng-container *ngIf="stepRollup(s) === 'partial'">âš  Partial</ng-container>
-              <ng-container *ngIf="stepRollup(s) === 'non-compliant'">âœ— Non-compliant</ng-container>
-              <ng-container *ngIf="stepRollup(s) === 'pending'">â—‹ Pending</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'compliant'">✓ Compliant</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'partial'">⚠ Partial</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'non-compliant'">✗ Non-compliant</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'pending'">○ Pending</ng-container>
               <span class="rail-item__dot" *ngIf="(findings[s.id]?.length || 0) > 0"
-                    [title]="findings[s.id].length + ' findings'">Â· {{ findings[s.id].length }}f</span>
+                    [title]="findings[s.id].length + ' findings'">· {{ findings[s.id].length }}f</span>
             </span>
           </span>
         </li>
       </ol>
     </aside>
 
-    <!-- â•žâ•â• CENTER: per-question cards â•â•â•¡ -->
+    <!-- ╞══ CENTER: per-question cards ══╡ -->
     <section class="ws-center" *ngIf="currentStep">
       <div class="center-head">
         <div class="center-head__top">
@@ -165,7 +165,7 @@
 
           <div class="qcard__answer">
             <span class="qcard__answer-lbl">Customer answer</span>
-            <div class="qcard__answer-val">{{ a.answerValue || 'â€”' }}</div>
+            <div class="qcard__answer-val">{{ a.answerValue || '—' }}</div>
           </div>
 
           <!-- Evidence chips -->
@@ -207,13 +207,13 @@
             <span class="verdict-row__lbl">Verdict</span>
             <button type="button" class="vchip vchip--compliant"
                     [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'compliant'"
-                    (click)="setVerdict(currentStep.id, a.fieldId, 'compliant')">âœ“ Compliant</button>
+                    (click)="setVerdict(currentStep.id, a.fieldId, 'compliant')">✓ Compliant</button>
             <button type="button" class="vchip vchip--observation"
                     [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'observation'"
-                    (click)="setVerdict(currentStep.id, a.fieldId, 'observation')">âš  Observation</button>
+                    (click)="setVerdict(currentStep.id, a.fieldId, 'observation')">⚠ Observation</button>
             <button type="button" class="vchip vchip--nc"
                     [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'non-conformity'"
-                    (click)="setVerdict(currentStep.id, a.fieldId, 'non-conformity')">âœ— Non-conformity</button>
+                    (click)="setVerdict(currentStep.id, a.fieldId, 'non-conformity')">✗ Non-conformity</button>
             <button type="button" class="vchip vchip--na"
                     [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'na'"
                     (click)="setVerdict(currentStep.id, a.fieldId, 'na')">N/A</button>
@@ -227,13 +227,13 @@
 
       <!-- Step nav -->
       <div class="center-nav">
-        <button class="ef-btn" (click)="goToStep(activeStep - 1)" [disabled]="activeStep === 0">â† Prev</button>
+        <button class="ef-btn" (click)="goToStep(activeStep - 1)" [disabled]="activeStep === 0">← Prev</button>
         <button class="ef-btn ef-btn--next" (click)="goToStep(activeStep + 1)"
-                [disabled]="activeStep >= steps.length - 1">Next â†’</button>
+                [disabled]="activeStep >= steps.length - 1">Next →</button>
       </div>
     </section>
 
-    <!-- â•žâ•â• RIGHT: auditor deck â•â•â•¡ -->
+    <!-- ╞══ RIGHT: auditor deck ══╡ -->
     <aside class="ws-deck" *ngIf="currentStep">
       <!-- Findings -->
       <div class="deck-section">
@@ -258,13 +258,13 @@
             <span class="finding__sev-dot" [ngClass]="'finding__sev-dot--' + f.severity"></span>
             <button class="finding__del" (click)="removeFinding(f.id)"
                     [disabled]="request?.status === 'COMPLETED'"
-                    title="Remove">Ã—</button>
+                    title="Remove">×</button>
           </div>
           <textarea class="finding__text"
                     [value]="f.description"
                     (input)="updateFindingText(f.id, $any($event.target).value)"
                     [disabled]="request?.status === 'COMPLETED'"
-                    placeholder="Describe the finding, clause reference, and evidence citedâ€¦"
+                    placeholder="Describe the finding, clause reference, and evidence cited…"
                     rows="2"></textarea>
         </div>
       </div>
@@ -284,11 +284,11 @@
                     [value]="r.description"
                     (input)="updateRecText(r.id, $any($event.target).value)"
                     [disabled]="request?.status === 'COMPLETED'"
-                    placeholder="Recommend a corrective action, owner and timeframeâ€¦"
+                    placeholder="Recommend a corrective action, owner and timeframe…"
                     rows="2"></textarea>
           <button class="rec__del" (click)="removeRecommendation(r.id)"
                   [disabled]="request?.status === 'COMPLETED'"
-                  title="Remove">Ã—</button>
+                  title="Remove">×</button>
         </div>
       </div>
 
@@ -305,14 +305,14 @@
                   [value]="currentDraft"
                   (input)="setDraft($any($event.target).value)"
                   [disabled]="request?.status === 'COMPLETED'"
-                  placeholder="Overall observations and conclusion for this stepâ€¦"
+                  placeholder="Overall observations and conclusion for this step…"
                   rows="5"></textarea>
       </div>
     </aside>
 
   </div>
 
-  <!-- â•â• FLOATING CHAT (panel + FAB) â•â• -->
+  <!-- ══ FLOATING CHAT (panel + FAB) ══ -->
   <div class="ws-chat" [class.ws-chat--open]="botOpen">
     <div class="ws-chat__panel" *ngIf="botOpen">
       <app-audit-bot
@@ -357,7 +357,7 @@
     </div>
     <div class="ws-file-body">
       <div class="file-loading" *ngIf="isLoadingFile">
-        <div class="loader"></div><span>Loadingâ€¦</span>
+        <div class="loader"></div><span>Loading…</span>
       </div>
       <img *ngIf="!isLoadingFile && viewingFileUrl && isImage(viewingFileName || '')"
            [src]="viewingFileUrl" [alt]="viewingFileName" class="file-preview-img"/>
@@ -373,7 +373,7 @@
   <div class="ws-file-modal ws-ocr-modal">
     <div class="ws-file-head">
       <span class="ws-file-name">
-        OCR Â· {{ viewingOcr.fileName || ('Media #' + viewingOcr.mediaId) }}
+        OCR · {{ viewingOcr.fileName || ('Media #' + viewingOcr.mediaId) }}
       </span>
       <button class="ws-file-close" (click)="closeOcrViewer()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
