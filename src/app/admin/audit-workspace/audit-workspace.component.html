@@ -1,6 +1,6 @@
-<div class="workspace">
+﻿<div class="workspace">
 
-  <!-- ══ TOP BAR ══ -->
+  <!-- â•â• TOP BAR â•â• -->
   <div class="ws-topbar">
     <button class="ws-back" (click)="goBack()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -27,10 +27,20 @@
       <span class="ws-msg ws-msg--ok"  *ngIf="saveMsg">{{ saveMsg }}</span>
       <span class="ws-msg ws-msg--err" *ngIf="saveError">{{ saveError }}</span>
 
+      <!-- Live risk roll-up -->
+      <div class="ws-roll" *ngIf="steps.length && request?.status !== 'COMPLETED'">
+        <span class="ws-roll__bar"><span class="ws-roll__fill" [style.width.%]="overallProgress"></span></span>
+        <span class="ws-roll__txt">{{ overallProgress }}%</span>
+        <span class="ws-roll__stat ws-roll__stat--find" *ngIf="totalFindings"
+              [title]="totalFindings + ' findings'">âš  {{ totalFindings }}</span>
+        <span class="ws-roll__stat ws-roll__stat--rec"  *ngIf="totalRecommendations"
+              [title]="totalRecommendations + ' recommendations'">â†’ {{ totalRecommendations }}</span>
+      </div>
+
       <ng-container *ngIf="request?.status !== 'COMPLETED'">
         <button class="ws-btn ws-btn--draft"
                 (click)="saveDraft()"
-                [disabled]="isSaving || !currentDraft.trim()">
+                [disabled]="isSaving || !currentStep || !hasCurrentContent()">
           <span class="mini-spin" *ngIf="isSaving"></span>
           Save Draft
         </button>
@@ -38,274 +48,271 @@
                 (click)="submitAudit()"
                 [disabled]="isCompleting">
           <span class="mini-spin" *ngIf="isCompleting"></span>
-          {{ isCompleting ? 'Submitting…' : 'Submit Audit' }}
+          {{ isCompleting ? 'Submittingâ€¦' : 'Submit Audit' }}
         </button>
       </ng-container>
 
       <div class="ws-completed-badge" *ngIf="request?.status === 'COMPLETED'">
-        ✓ Audit Completed
+        âœ“ Audit Completed
       </div>
     </div>
   </div>
 
-  <!-- ══ STEPPER ══ -->
-  <div class="ws-stepper" *ngIf="steps.length > 0">
-    <div class="ws-stepper__track">
-      <ng-container *ngFor="let s of steps; let i = index; let last = last">
-        <button type="button"
-                class="step-node"
-                [class.step-node--done]="stepStatus(s) === 'done'"
-                [class.step-node--draft]="stepStatus(s) === 'draft'"
-                [class.step-node--active]="i === activeStep"
-                [title]="s.name"
-                (click)="goToStep(i)">
-          <span class="step-dot">
-            <svg *ngIf="stepStatus(s) === 'done'" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="3" width="11" height="11">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
-            <svg *ngIf="stepStatus(s) === 'draft'" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2" width="8" height="8">
-              <circle cx="12" cy="12" r="4" fill="currentColor"/>
-            </svg>
-            <span *ngIf="stepStatus(s) === 'active' || stepStatus(s) === 'pending'">
-              {{ i + 1 }}
-            </span>
-          </span>
-          <span class="step-label-inline">{{ s.name }}</span>
-        </button>
-        <div *ngIf="!last" class="step-connector"
-             [class.step-connector--done]="stepStatus(s) === 'done'"></div>
-      </ng-container>
-    </div>
-    <div class="ws-stepper__counter">
-      Step {{ activeStep + 1 }} <span>/ {{ steps.length }}</span>
-    </div>
-  </div>
+  <!-- â•â• 3-PANE COCKPIT â•â• -->
+  <div class="ws-cockpit" *ngIf="steps.length > 0">
 
-  <!-- ══ TWO COLUMN BODY ══ -->
-  <div class="ws-body">
-
-    <!-- LEFT: Evidence & Insights -->
-    <aside class="ws-col ws-col--data">
-      <div class="col-head">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" width="13" height="13" style="display:block;">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-        </svg>
-        Evidence &amp; Insights
+    <!-- â•žâ•â• LEFT: vertical step rail â•â•â•¡ -->
+    <aside class="ws-rail">
+      <div class="rail-head">
+        <span class="rail-head__title">Audit Steps</span>
+        <span class="rail-head__count">{{ activeStep + 1 }}/{{ steps.length }}</span>
       </div>
-      <div class="panel-scroll" *ngIf="request">
-        <div class="data-meta">
-          <div class="data-meta__row">
-            <span class="data-meta__lbl">Submitted</span>
-            <span class="data-meta__val">{{ request.submittedAt | date:'MMM d, y' }}</span>
-          </div>
-          <div class="data-meta__row">
-            <span class="data-meta__lbl">Company</span>
-            <span class="data-meta__val">
-              {{ request.submittedBy.companyInfo?.companyName || '—' }}
-            </span>
-          </div>
-          <div class="data-meta__row">
-            <span class="data-meta__lbl">Email</span>
-            <span class="data-meta__val">{{ request.submittedBy.email }}</span>
-          </div>
-          <div class="data-meta__row" *ngIf="request.dueDate">
-            <span class="data-meta__lbl">Due</span>
-            <span class="data-meta__val">{{ request.dueDate | date:'MMM d, y' }}</span>
-          </div>
-          <div class="data-meta__row" *ngIf="request.assignedTo">
-            <span class="data-meta__lbl">Auditor</span>
-            <span class="data-meta__val">
-              {{ request.assignedTo.firstName }} {{ request.assignedTo.lastName }}
-            </span>
-          </div>
-          <div class="data-meta__row">
-            <span class="data-meta__lbl">Evidence</span>
-            <span class="data-meta__val">
-              {{ evidenceFileCount }} file{{ evidenceFileCount === 1 ? '' : 's' }}
-            </span>
-          </div>
-        </div>
 
-        <!-- AI Suggestions for current step -->
-        <div class="ai-suggest" *ngIf="currentStep && currentSuggestions.length">
-          <div class="ai-suggest__head">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" width="12" height="12" style="display:block;">
-              <circle cx="12" cy="12" r="9"/>
-              <path d="M12 8v4M12 16h.01"/>
-            </svg>
-            AI Suggestions — {{ currentStep.name }}
-          </div>
-          <ul class="ai-suggest__list">
-            <li *ngFor="let s of currentSuggestions">{{ s }}</li>
-          </ul>
-        </div>
-
-        <div class="data-section-lbl">
-          Submitted Answers
-          <span class="data-section-hint" *ngIf="currentStep">for {{ currentStep.name }}</span>
-        </div>
-
-        <div class="data-empty" *ngIf="currentStepAnswers.length === 0">
-          No answers mapped to this step.
-        </div>
-
-        <div class="data-item" *ngFor="let a of currentStepAnswers">
-          <span class="data-label">{{ a.fieldLabel }}</span>
-          <div *ngIf="a.fileMedia" class="data-file">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" width="12" height="12"
-                 style="flex-shrink:0;color:var(--color-accent)">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
-            <span class="data-file__name" [title]="a.fileMedia.name">
-              {{ a.fileMedia.name }}
-            </span>
-            <span [class]="ocrClass(ocrFor(a.fileMedia.id))"
-                  [title]="ocrFor(a.fileMedia.id)?.error || ocrLabel(ocrFor(a.fileMedia.id))">
-              {{ ocrLabel(ocrFor(a.fileMedia.id)) }}
-            </span>
-            <button class="data-file__btn data-file__btn--ocr"
-                    *ngIf="ocrFor(a.fileMedia.id)?.status === 'DONE'"
-                    (click)="openOcrViewer(a.fileMedia.id)">
-              Preview evidence
-            </button>
-            <button class="data-file__btn data-file__btn--retry"
-                    *ngIf="isRetryable(ocrFor(a.fileMedia.id))"
-                    (click)="retryOcr(a.fileMedia.id, $event)"
-                    title="Re-run OCR on this file">
-              Retry
-            </button>
-            <button class="data-file__btn"
-                    (click)="openFileViewer(getFileUrl(a.fileMedia.url), a.fileMedia.name)">
-              Open
-            </button>
-          </div>
-
-          <div *ngIf="a.files && a.files.length > 0" class="data-files">
-            <div *ngFor="let f of a.files" class="data-file">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="2" width="12" height="12"
-                   style="flex-shrink:0;color:var(--color-accent)">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-              </svg>
-              <span class="data-file__name" [title]="f.media.name">
-                {{ f.media.name }}
-              </span>
-              <span [class]="ocrClass(ocrFor(f.media.id))"
-                    [title]="ocrFor(f.media.id)?.error || ocrLabel(ocrFor(f.media.id))">
-                {{ ocrLabel(ocrFor(f.media.id)) }}
-              </span>
-              <button class="data-file__btn data-file__btn--ocr"
-                      *ngIf="ocrFor(f.media.id)?.status === 'DONE'"
-                      (click)="openOcrViewer(f.media.id)">
-                Preview evidence
-              </button>
-              <button class="data-file__btn data-file__btn--retry"
-                      *ngIf="isRetryable(ocrFor(f.media.id))"
-                      (click)="retryOcr(f.media.id, $event)"
-                      title="Re-run OCR on this file">
-                Retry
-              </button>
-              <button class="data-file__btn"
-                      (click)="openFileViewer(getFileUrl(f.media.url), f.media.name)">
-                Open
-              </button>
-            </div>
-          </div>
-
-          <span *ngIf="!a.fileMedia && (!a.files || a.files.length === 0)" class="data-value">
-            {{ a.answerValue || '—' }}
+      <div class="rail-meta" *ngIf="request">
+        <div class="rail-meta__row">
+          <span class="rail-meta__lbl">Company</span>
+          <span class="rail-meta__val">
+            {{ request.submittedBy.companyInfo?.companyName ||
+               (request.submittedBy.firstName + ' ' + request.submittedBy.lastName) }}
           </span>
         </div>
+        <div class="rail-meta__row" *ngIf="request.assignedTo">
+          <span class="rail-meta__lbl">Auditor</span>
+          <span class="rail-meta__val">
+            {{ request.assignedTo.firstName }} {{ request.assignedTo.lastName }}
+          </span>
+        </div>
+        <div class="rail-meta__row">
+          <span class="rail-meta__lbl">Evidence</span>
+          <span class="rail-meta__val">{{ evidenceFileCount }} file{{ evidenceFileCount === 1 ? '' : 's' }}</span>
+        </div>
       </div>
+
+      <ol class="rail-list">
+        <li *ngFor="let s of steps; let i = index"
+            class="rail-item"
+            [class.rail-item--active]="i === activeStep"
+            [class.rail-item--rollup-compliant]="stepRollup(s) === 'compliant'"
+            [class.rail-item--rollup-partial]="stepRollup(s) === 'partial'"
+            [class.rail-item--rollup-nc]="stepRollup(s) === 'non-compliant'"
+            [class.rail-item--rollup-pending]="stepRollup(s) === 'pending'"
+            (click)="goToStep(i)">
+          <span class="rail-item__num">{{ i + 1 }}</span>
+          <span class="rail-item__body">
+            <span class="rail-item__name">{{ s.name }}</span>
+            <span class="rail-item__sub">
+              <ng-container *ngIf="stepRollup(s) === 'compliant'">âœ“ Compliant</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'partial'">âš  Partial</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'non-compliant'">âœ— Non-compliant</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'pending'">â—‹ Pending</ng-container>
+              <span class="rail-item__dot" *ngIf="(findings[s.id]?.length || 0) > 0"
+                    [title]="findings[s.id].length + ' findings'">Â· {{ findings[s.id].length }}f</span>
+            </span>
+          </span>
+        </li>
+      </ol>
     </aside>
 
-    <!-- CENTER: Auditor workspace card -->
-    <section class="ws-col ws-col--editor">
-      <div class="editor-card">
-        <div class="editor-card__head" *ngIf="currentStep">
-          <div class="ech-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                 stroke-width="2" width="14" height="14" style="display:block;">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-            <span class="ech-label">Decision —</span>
-            <strong class="ech-step">{{ currentStep.name }}</strong>
-          </div>
-          <div class="ech-right">
-            <span class="col-badge col-badge--saved"
-                  *ngIf="currentResult?.status === 'SAVED'">Saved</span>
-            <span class="col-badge col-badge--draft"
-                  *ngIf="currentResult?.status === 'DRAFT'">Draft</span>
-            <span class="col-badge col-badge--empty"
-                  *ngIf="!currentResult">Not started</span>
-          </div>
+    <!-- â•žâ•â• CENTER: per-question cards â•â•â•¡ -->
+    <section class="ws-center" *ngIf="currentStep">
+      <div class="center-head">
+        <div class="center-head__top">
+          <span class="center-head__pill">STEP {{ activeStep + 1 }} / {{ steps.length }}</span>
+          <span class="rollup-badge"
+                [class.rollup-badge--compliant]="stepRollup(currentStep) === 'compliant'"
+                [class.rollup-badge--partial]="stepRollup(currentStep) === 'partial'"
+                [class.rollup-badge--nc]="stepRollup(currentStep) === 'non-compliant'"
+                [class.rollup-badge--pending]="stepRollup(currentStep) === 'pending'">
+            <ng-container *ngIf="stepRollup(currentStep) === 'compliant'">Compliant</ng-container>
+            <ng-container *ngIf="stepRollup(currentStep) === 'partial'">Partial</ng-container>
+            <ng-container *ngIf="stepRollup(currentStep) === 'non-compliant'">Non-compliant</ng-container>
+            <ng-container *ngIf="stepRollup(currentStep) === 'pending'">Pending review</ng-container>
+          </span>
+          <span class="center-head__progress" *ngIf="currentStepAnswers.length">
+            {{ stepVerdictedCount(currentStep) }} / {{ currentStepAnswers.length }} verdicted
+          </span>
+        </div>
+        <h2 class="center-head__title">{{ currentStep.name }}</h2>
+      </div>
+
+      <!-- AI suggestions (collapsible) -->
+      <details class="ai-suggest-box" *ngIf="currentSuggestions.length">
+        <summary>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+            <circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>
+          </svg>
+          AI Suggestions ({{ currentSuggestions.length }})
+        </summary>
+        <ul>
+          <li *ngFor="let s of currentSuggestions">{{ s }}</li>
+        </ul>
+      </details>
+
+      <div class="qcards">
+        <div class="qcard-empty" *ngIf="currentStepAnswers.length === 0">
+          No customer answers mapped to this step.
         </div>
 
-        <div class="editor-chips" *ngIf="request?.status !== 'COMPLETED'">
-          <button type="button" class="chip chip--ok"
-                  (click)="insertSnippet('Compliance OK')">✓ Compliance OK</button>
-          <button type="button" class="chip chip--warn"
-                  (click)="insertSnippet('Risk identified')">⚠ Risk identified</button>
-          <button type="button" class="chip chip--info"
-                  (click)="insertSnippet('Needs more evidence')">✱ Needs more evidence</button>
-          <button type="button" class="chip chip--accent"
-                  (click)="insertSnippet('Recommendation')">→ Recommendation</button>
-        </div>
+        <article class="qcard" *ngFor="let a of currentStepAnswers; let i = index"
+                 [class.qcard--compliant]="verdictFor(currentStep.id, a.fieldId) === 'compliant'"
+                 [class.qcard--observation]="verdictFor(currentStep.id, a.fieldId) === 'observation'"
+                 [class.qcard--nc]="verdictFor(currentStep.id, a.fieldId) === 'non-conformity'"
+                 [class.qcard--na]="verdictFor(currentStep.id, a.fieldId) === 'na'">
+          <header class="qcard__head">
+            <span class="qcard__idx">Q{{ i + 1 }}</span>
+            <span class="qcard__label">{{ a.fieldLabel }}</span>
+          </header>
 
-        <textarea class="ws-textarea"
-                  [value]="currentDraft"
-                  (input)="setDraft($any($event.target).value)"
-                  [disabled]="request?.status === 'COMPLETED'"
-                  placeholder="Write your audit findings, observations and decision for this step…
-
-- Compliance assessment
-- Risk analysis
-- Evidence reviewed
-- Recommendations
-- Final conclusion">
-        </textarea>
-
-        <div class="editor-footer">
-          <div class="ef-left">
-            <span class="ef-status ef-status--saved"
-                  *ngIf="currentResult?.status === 'SAVED'">✓ Saved</span>
-            <span class="ef-status ef-status--draft"
-                  *ngIf="currentResult?.status === 'DRAFT'">◎ Draft</span>
-            <button class="ef-del"
-                    *ngIf="currentResult && request?.status !== 'COMPLETED'"
-                    (click)="deleteCurrentResult()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="2" width="11" height="11" style="display:block;">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/>
-              </svg>
-              Delete
-            </button>
+          <div class="qcard__answer">
+            <span class="qcard__answer-lbl">Customer answer</span>
+            <div class="qcard__answer-val">{{ a.answerValue || 'â€”' }}</div>
           </div>
-          <div class="ef-nav">
-            <button class="ef-btn"
-                    (click)="goToStep(activeStep - 1)"
-                    [disabled]="activeStep === 0">← Prev</button>
-            <button class="ef-btn ef-btn--next"
-                    (click)="goToStep(activeStep + 1)"
-                    [disabled]="activeStep >= steps.length - 1">Next →</button>
+
+          <!-- Evidence chips -->
+          <div class="qcard__evidence" *ngIf="a.fileMedia || (a.files && a.files.length)">
+            <ng-container *ngIf="a.fileMedia as fm">
+              <div class="evidence-chip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span class="evidence-chip__name" [title]="fm.name">{{ fm.name }}</span>
+                <span [class]="ocrClass(ocrFor(fm.id))">{{ ocrLabel(ocrFor(fm.id)) }}</span>
+                <button class="evidence-chip__btn" (click)="openFileViewer(getFileUrl(fm.url), fm.name)">Open</button>
+                <button class="evidence-chip__btn" *ngIf="ocrFor(fm.id)?.status === 'DONE'"
+                        (click)="openOcrViewer(fm.id)">OCR</button>
+                <button class="evidence-chip__btn evidence-chip__btn--retry"
+                        *ngIf="isRetryable(ocrFor(fm.id))" (click)="retryOcr(fm.id, $event)">Retry</button>
+              </div>
+            </ng-container>
+            <ng-container *ngFor="let f of (a.files || [])">
+              <div class="evidence-chip">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+                <span class="evidence-chip__name" [title]="f.media.name">{{ f.media.name }}</span>
+                <span [class]="ocrClass(ocrFor(f.media.id))">{{ ocrLabel(ocrFor(f.media.id)) }}</span>
+                <button class="evidence-chip__btn" (click)="openFileViewer(getFileUrl(f.media.url), f.media.name)">Open</button>
+                <button class="evidence-chip__btn" *ngIf="ocrFor(f.media.id)?.status === 'DONE'"
+                        (click)="openOcrViewer(f.media.id)">OCR</button>
+                <button class="evidence-chip__btn evidence-chip__btn--retry"
+                        *ngIf="isRetryable(ocrFor(f.media.id))" (click)="retryOcr(f.media.id, $event)">Retry</button>
+              </div>
+            </ng-container>
           </div>
-        </div>
+
+          <!-- Per-question verdict -->
+          <div class="verdict-row" *ngIf="request?.status !== 'COMPLETED'">
+            <span class="verdict-row__lbl">Verdict</span>
+            <button type="button" class="vchip vchip--compliant"
+                    [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'compliant'"
+                    (click)="setVerdict(currentStep.id, a.fieldId, 'compliant')">âœ“ Compliant</button>
+            <button type="button" class="vchip vchip--observation"
+                    [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'observation'"
+                    (click)="setVerdict(currentStep.id, a.fieldId, 'observation')">âš  Observation</button>
+            <button type="button" class="vchip vchip--nc"
+                    [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'non-conformity'"
+                    (click)="setVerdict(currentStep.id, a.fieldId, 'non-conformity')">âœ— Non-conformity</button>
+            <button type="button" class="vchip vchip--na"
+                    [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'na'"
+                    (click)="setVerdict(currentStep.id, a.fieldId, 'na')">N/A</button>
+          </div>
+          <div class="verdict-row verdict-row--readonly" *ngIf="request?.status === 'COMPLETED' && verdictFor(currentStep.id, a.fieldId) as v">
+            <span class="verdict-row__lbl">Verdict</span>
+            <span class="vchip vchip--on" [ngClass]="'vchip--' + v">{{ v }}</span>
+          </div>
+        </article>
+      </div>
+
+      <!-- Step nav -->
+      <div class="center-nav">
+        <button class="ef-btn" (click)="goToStep(activeStep - 1)" [disabled]="activeStep === 0">â† Prev</button>
+        <button class="ef-btn ef-btn--next" (click)="goToStep(activeStep + 1)"
+                [disabled]="activeStep >= steps.length - 1">Next â†’</button>
       </div>
     </section>
 
+    <!-- â•žâ•â• RIGHT: auditor deck â•â•â•¡ -->
+    <aside class="ws-deck" *ngIf="currentStep">
+      <!-- Findings -->
+      <div class="deck-section">
+        <div class="deck-section__head">
+          <span class="deck-section__title">Findings</span>
+          <button class="deck-section__add" (click)="addFinding()"
+                  [disabled]="request?.status === 'COMPLETED'">+ Add</button>
+        </div>
+        <div class="deck-empty" *ngIf="currentFindings().length === 0">
+          No findings recorded for this step.
+        </div>
+        <div class="finding" *ngFor="let f of currentFindings()">
+          <div class="finding__head">
+            <select class="finding__sev" [value]="f.severity"
+                    (change)="updateFindingSeverity(f.id, $any($event.target).value)"
+                    [disabled]="request?.status === 'COMPLETED'">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+            <span class="finding__sev-dot" [ngClass]="'finding__sev-dot--' + f.severity"></span>
+            <button class="finding__del" (click)="removeFinding(f.id)"
+                    [disabled]="request?.status === 'COMPLETED'"
+                    title="Remove">Ã—</button>
+          </div>
+          <textarea class="finding__text"
+                    [value]="f.description"
+                    (input)="updateFindingText(f.id, $any($event.target).value)"
+                    [disabled]="request?.status === 'COMPLETED'"
+                    placeholder="Describe the finding, clause reference, and evidence citedâ€¦"
+                    rows="2"></textarea>
+        </div>
+      </div>
+
+      <!-- Recommendations -->
+      <div class="deck-section">
+        <div class="deck-section__head">
+          <span class="deck-section__title">Recommendations</span>
+          <button class="deck-section__add" (click)="addRecommendation()"
+                  [disabled]="request?.status === 'COMPLETED'">+ Add</button>
+        </div>
+        <div class="deck-empty" *ngIf="currentRecs().length === 0">
+          No recommendations yet.
+        </div>
+        <div class="rec" *ngFor="let r of currentRecs()">
+          <textarea class="rec__text"
+                    [value]="r.description"
+                    (input)="updateRecText(r.id, $any($event.target).value)"
+                    [disabled]="request?.status === 'COMPLETED'"
+                    placeholder="Recommend a corrective action, owner and timeframeâ€¦"
+                    rows="2"></textarea>
+          <button class="rec__del" (click)="removeRecommendation(r.id)"
+                  [disabled]="request?.status === 'COMPLETED'"
+                  title="Remove">Ã—</button>
+        </div>
+      </div>
+
+      <!-- Step note -->
+      <div class="deck-section">
+        <div class="deck-section__head">
+          <span class="deck-section__title">Step note</span>
+          <span class="deck-section__sub" *ngIf="currentResult">
+            <span class="col-badge col-badge--saved" *ngIf="currentResult.status === 'SAVED'">Saved</span>
+            <span class="col-badge col-badge--draft" *ngIf="currentResult.status === 'DRAFT'">Draft</span>
+          </span>
+        </div>
+        <textarea class="deck-note"
+                  [value]="currentDraft"
+                  (input)="setDraft($any($event.target).value)"
+                  [disabled]="request?.status === 'COMPLETED'"
+                  placeholder="Overall observations and conclusion for this stepâ€¦"
+                  rows="5"></textarea>
+      </div>
+    </aside>
+
   </div>
 
-  <!-- ══ FLOATING CHAT (panel + FAB) ══ -->
+  <!-- â•â• FLOATING CHAT (panel + FAB) â•â• -->
   <div class="ws-chat" [class.ws-chat--open]="botOpen">
     <div class="ws-chat__panel" *ngIf="botOpen">
       <app-audit-bot
@@ -350,7 +357,7 @@
     </div>
     <div class="ws-file-body">
       <div class="file-loading" *ngIf="isLoadingFile">
-        <div class="loader"></div><span>Loading…</span>
+        <div class="loader"></div><span>Loadingâ€¦</span>
       </div>
       <img *ngIf="!isLoadingFile && viewingFileUrl && isImage(viewingFileName || '')"
            [src]="viewingFileUrl" [alt]="viewingFileName" class="file-preview-img"/>
@@ -366,7 +373,7 @@
   <div class="ws-file-modal ws-ocr-modal">
     <div class="ws-file-head">
       <span class="ws-file-name">
-        OCR · {{ viewingOcr.fileName || ('Media #' + viewingOcr.mediaId) }}
+        OCR Â· {{ viewingOcr.fileName || ('Media #' + viewingOcr.mediaId) }}
       </span>
       <button class="ws-file-close" (click)="closeOcrViewer()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"

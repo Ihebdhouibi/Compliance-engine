@@ -29,6 +29,33 @@ interface WorkspaceStep {
   isDefault?: boolean;
 }
 
+/** Auditor's per-question verdict. */
+export type Verdict = 'compliant' | 'observation' | 'non-conformity' | 'na';
+
+/** Step-level roll-up derived from per-question verdicts. */
+export type StepRollup = 'pending' | 'compliant' | 'partial' | 'non-compliant';
+
+export interface Finding {
+  id:          string;
+  severity:    'low' | 'medium' | 'high' | 'critical';
+  description: string;
+}
+
+export interface Recommendation {
+  id:          string;
+  description: string;
+}
+
+/** Persisted alongside the step's description as a hidden HTML-comment block. */
+interface StepMeta {
+  verdicts:        Record<number, Verdict>;   // keyed by fieldId
+  findings:        Finding[];
+  recommendations: Recommendation[];
+}
+
+const META_OPEN  = '<!--AUDIT_META_V1:';
+const META_CLOSE = ':END-->';
+
 /** OCR row returned by GET /api/v1/audits/{id}/ocr. */
 interface OcrResult {
   id:             number;
@@ -67,6 +94,12 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   saveError    = '';
 
   drafts: Record<number, string> = {};
+
+  // ── Phase 2: per-question verdicts + findings/recs (per step) ──────
+  /** verdicts[stepId][fieldId] = verdict */
+  verdicts:        Record<number, Record<number, Verdict>> = {};
+  findings:        Record<number, Finding[]>        = {};
+  recommendations: Record<number, Recommendation[]> = {};
 
   showFileViewer   = false;
   viewingFileUrl:  SafeResourceUrl | null = null;
@@ -225,8 +258,175 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     if (!this.steps.length || !this.results.length) return;
     for (const r of this.results) {
       const matching = this.steps.find(s => s.name === r.stepName);
-      if (matching) this.drafts[matching.id] = r.description ?? '';
+      if (!matching) continue;
+      const { note, meta } = this.parseStepBody(r.description ?? '');
+      this.drafts[matching.id]         = note;
+      this.verdicts[matching.id]       = meta.verdicts;
+      this.findings[matching.id]       = meta.findings;
+      this.recommendations[matching.id] = meta.recommendations;
     }
+  }
+
+  // ── Meta (de)serialization ───────────────────────────────────────
+  private emptyMeta(): StepMeta {
+    return { verdicts: {}, findings: [], recommendations: [] };
+  }
+
+  /** Split a stored description into the visible note and the hidden meta block. */
+  private parseStepBody(body: string): { note: string; meta: StepMeta } {
+    const i = body.indexOf(META_OPEN);
+    if (i === -1) return { note: body, meta: this.emptyMeta() };
+    const j = body.indexOf(META_CLOSE, i + META_OPEN.length);
+    if (j === -1) return { note: body, meta: this.emptyMeta() };
+
+    const json = body.substring(i + META_OPEN.length, j);
+    let meta = this.emptyMeta();
+    try {
+      const parsed = JSON.parse(json) as Partial<StepMeta>;
+      meta = {
+        verdicts:        parsed.verdicts        ?? {},
+        findings:        parsed.findings        ?? [],
+        recommendations: parsed.recommendations ?? []
+      };
+    } catch { /* ignore malformed */ }
+    const note = (body.substring(0, i) + body.substring(j + META_CLOSE.length)).trim();
+    return { note, meta };
+  }
+
+  /** Re-build the description string from the step note + meta state. */
+  private composeStepBody(stepId: number): string {
+    const note = (this.drafts[stepId] ?? '').trim();
+    const meta: StepMeta = {
+      verdicts:        this.verdicts[stepId]        ?? {},
+      findings:        this.findings[stepId]        ?? [],
+      recommendations: this.recommendations[stepId] ?? []
+    };
+    const hasMeta =
+      Object.keys(meta.verdicts).length > 0 ||
+      meta.findings.length > 0 ||
+      meta.recommendations.length > 0;
+    if (!hasMeta) return note;
+    return `${META_OPEN}${JSON.stringify(meta)}${META_CLOSE}\n${note}`;
+  }
+
+  // ── Verdict helpers ──────────────────────────────────────────────
+  verdictFor(stepId: number, fieldId: number): Verdict | null {
+    return this.verdicts[stepId]?.[fieldId] ?? null;
+  }
+
+  setVerdict(stepId: number, fieldId: number, v: Verdict): void {
+    if (this.request?.status === 'COMPLETED') return;
+    if (!this.verdicts[stepId]) this.verdicts[stepId] = {};
+    if (this.verdicts[stepId][fieldId] === v) {
+      delete this.verdicts[stepId][fieldId]; // toggle off
+    } else {
+      this.verdicts[stepId][fieldId] = v;
+    }
+    this.cdr.detectChanges();
+  }
+
+  /** Roll-up of per-question verdicts into a step-level status. */
+  stepRollup(step: WorkspaceStep): StepRollup {
+    const map = this.verdicts[step.id] ?? {};
+    const vals = Object.values(map);
+    if (vals.length === 0) return 'pending';
+    if (vals.includes('non-conformity')) return 'non-compliant';
+    if (vals.includes('observation'))    return 'partial';
+    return 'compliant';
+  }
+
+  /** Number of questions in the step that have been verdicted. */
+  stepVerdictedCount(step: WorkspaceStep): number {
+    const map = this.verdicts[step.id] ?? {};
+    return Object.keys(map).length;
+  }
+
+  /** Overall progress across all steps (% of steps with any verdict). */
+  get overallProgress(): number {
+    if (!this.steps.length) return 0;
+    const touched = this.steps.filter(s => this.stepRollup(s) !== 'pending').length;
+    return Math.round((touched / this.steps.length) * 100);
+  }
+
+  /** Counts of findings across all steps. */
+  get totalFindings(): number {
+    return Object.values(this.findings).reduce((n, arr) => n + arr.length, 0);
+  }
+
+  get totalRecommendations(): number {
+    return Object.values(this.recommendations).reduce((n, arr) => n + arr.length, 0);
+  }
+
+  // ── Findings ─────────────────────────────────────────────────────
+  currentFindings(): Finding[] {
+    const id = this.currentStep?.id;
+    if (id == null) return [];
+    return this.findings[id] ?? [];
+  }
+
+  addFinding(): void {
+    if (!this.currentStep || this.request?.status === 'COMPLETED') return;
+    const id = this.currentStep.id;
+    if (!this.findings[id]) this.findings[id] = [];
+    this.findings[id].push({
+      id:          'f_' + Date.now().toString(36),
+      severity:    'medium',
+      description: ''
+    });
+    this.cdr.detectChanges();
+  }
+
+  removeFinding(findingId: string): void {
+    const id = this.currentStep?.id;
+    if (id == null) return;
+    this.findings[id] = (this.findings[id] ?? []).filter(f => f.id !== findingId);
+    this.cdr.detectChanges();
+  }
+
+  updateFindingSeverity(findingId: string, severity: Finding['severity']): void {
+    const id = this.currentStep?.id;
+    if (id == null) return;
+    const f = (this.findings[id] ?? []).find(x => x.id === findingId);
+    if (f) { f.severity = severity; this.cdr.detectChanges(); }
+  }
+
+  updateFindingText(findingId: string, text: string): void {
+    const id = this.currentStep?.id;
+    if (id == null) return;
+    const f = (this.findings[id] ?? []).find(x => x.id === findingId);
+    if (f) { f.description = text; }
+  }
+
+  // ── Recommendations ──────────────────────────────────────────────
+  currentRecs(): Recommendation[] {
+    const id = this.currentStep?.id;
+    if (id == null) return [];
+    return this.recommendations[id] ?? [];
+  }
+
+  addRecommendation(): void {
+    if (!this.currentStep || this.request?.status === 'COMPLETED') return;
+    const id = this.currentStep.id;
+    if (!this.recommendations[id]) this.recommendations[id] = [];
+    this.recommendations[id].push({
+      id:          'r_' + Date.now().toString(36),
+      description: ''
+    });
+    this.cdr.detectChanges();
+  }
+
+  removeRecommendation(recId: string): void {
+    const id = this.currentStep?.id;
+    if (id == null) return;
+    this.recommendations[id] = (this.recommendations[id] ?? []).filter(r => r.id !== recId);
+    this.cdr.detectChanges();
+  }
+
+  updateRecText(recId: string, text: string): void {
+    const id = this.currentStep?.id;
+    if (id == null) return;
+    const r = (this.recommendations[id] ?? []).find(x => x.id === recId);
+    if (r) { r.description = text; }
   }
 
   get currentStep(): WorkspaceStep | null {
@@ -245,6 +445,11 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   setDraft(val: string): void {
     if (this.currentStep) this.drafts[this.currentStep.id] = val;
+  }
+
+  /** Public helper for templates: true if current step has any saveable content. */
+  hasCurrentContent(): boolean {
+    return !!this.currentStep && this.hasStepContent(this.currentStep.id);
   }
 
   get allStepsSaved(): boolean {
@@ -545,22 +750,31 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.activeStep = idx;
     return;
   }
-  // Auto-save current step as DRAFT if there's content
-  if (this.currentDraft.trim() && this.currentStep) {
+  // Auto-save current step as DRAFT if there's any content or meta
+  if (this.currentStep && this.hasStepContent(this.currentStep.id)) {
     await this.persistAsync('DRAFT');
   }
   this.activeStep = idx;
   this.cdr.detectChanges();
 }
 
+/** True if the step has either a note or any verdict/finding/rec. */
+private hasStepContent(stepId: number): boolean {
+  if ((this.drafts[stepId] ?? '').trim()) return true;
+  if (Object.keys(this.verdicts[stepId] ?? {}).length) return true;
+  if ((this.findings[stepId] ?? []).length) return true;
+  if ((this.recommendations[stepId] ?? []).length) return true;
+  return false;
+}
+
 private persistAsync(status: 'DRAFT' | 'SAVED'): Promise<void> {
   return new Promise((resolve) => {
     if (!this.request || !this.currentStep) { resolve(); return; }
-    const desc     = this.currentDraft;
-    const existing = this.currentResult;
     const step     = this.currentStep;
+    const desc     = this.composeStepBody(step.id);
+    const existing = this.currentResult;
 
-    if (!desc.trim()) { resolve(); return; }
+    if (!this.hasStepContent(step.id)) { resolve(); return; }
 
     const payload = {
       processStepId: -1,
@@ -589,9 +803,9 @@ private persistAsync(status: 'DRAFT' | 'SAVED'): Promise<void> {
 private persist(status: 'DRAFT' | 'SAVED'): void {
   if (!this.request || !this.currentStep) return;
   this.isSaving = true;
-  const desc     = this.currentDraft;
-  const existing = this.currentResult;
   const step     = this.currentStep;
+  const desc     = this.composeStepBody(step.id);
+  const existing = this.currentResult;
 
   const payload = {
     processStepId: -1,
@@ -627,16 +841,13 @@ submitAudit(): void {
 
   // Save all steps that have content as SAVED
   const savePromises = this.steps
-    .filter(s => {
-      const draft = this.drafts[s.id]?.trim();
-      return draft && draft.length > 0;
-    })
+    .filter(s => this.hasStepContent(s.id))
     .map(s => new Promise<void>((resolve) => {
       const existing = this.results.find(r => r.stepName === s.name);
       const payload = {
         processStepId: -1,
         stepName:      s.name,
-        description:   this.drafts[s.id],
+        description:   this.composeStepBody(s.id),
         status:        'SAVED' as const
       };
       const obs = existing
