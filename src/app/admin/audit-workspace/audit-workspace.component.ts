@@ -714,7 +714,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
       last.description = `Evidence: ${this.drawerMedia.name}` +
         (snippet ? `\n\nOCR excerpt:\n${snippet}${tail}` : '');
     }
-    this.flash('Finding seeded from evidence.');
+    this.flash('Finding seeded from evidence.', false);
     this.cdr.detectChanges();
   }
 
@@ -800,7 +800,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     const last = list[list.length - 1];
     if (last) last.description = text;
     this.dismissSuggestion(text);
-    this.flash('Suggestion converted to finding.');
+    this.flash('Suggestion converted to finding.', false);
     this.cdr.detectChanges();
   }
 
@@ -811,7 +811,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     const last = list[list.length - 1];
     if (last) last.description = text;
     this.dismissSuggestion(text);
-    this.flash('Suggestion converted to recommendation.');
+    this.flash('Suggestion converted to recommendation.', false);
     this.cdr.detectChanges();
   }
 
