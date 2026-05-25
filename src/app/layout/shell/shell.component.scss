@@ -3,13 +3,12 @@
 
 $sb-full: 260px;
 $sb-icon: 64px;
-$trans:   .28s cubic-bezier(.4,0,.2,1);
+$trans: .28s cubic-bezier(.4,0,.2,1);
 
 .shell {
   display: flex;
   height: 100vh;
   background: var(--color-page-bg, t.$navy-950);
-  // NO overflow:hidden here
 }
 
 .shell__main {
@@ -19,7 +18,6 @@ $trans:   .28s cubic-bezier(.4,0,.2,1);
   min-width: 0;
   margin-left: $sb-full;
   transition: margin-left $trans;
-  // NO overflow:hidden — this was breaking position:fixed in children
   height: 100vh;
 
   &.main--collapsed {
@@ -34,12 +32,11 @@ $trans:   .28s cubic-bezier(.4,0,.2,1);
 app-topbar {
   flex-shrink: 0;
   display: block;
-  // topbar stays fixed at top because it's first in flex column
 }
 
 .shell__content {
   flex: 1;
-  overflow-y: auto;     // scroll at shell level for normal pages
+  overflow-y: auto;
   overflow-x: hidden;
   padding: 28px 32px;
   min-height: 0;

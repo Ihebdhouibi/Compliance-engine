@@ -38,50 +38,62 @@ export class SidebarComponent {
   }
 
   private all: NavItem[] = [
-  {
-    label:   'Dashboard',
-    route:   'dashboard',
-    iconKey: 'grid',
-    roles:   ['ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_USER'],
-    exact:   true
-  },
-  {
-    label:   'Auditors',
-    route:   'auditors',
-    iconKey: 'users',
-    roles:   ['ROLE_ADMIN']
-  },
-  {
-    label:   'Users',
-    route:   'users',
-    iconKey: 'user',
-    roles:   ['ROLE_ADMIN']
-  },
-  {
-    label:   'Audits',
-    route:   'audits',
-    iconKey: 'clipboard',
-    roles:   ['ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_USER']
-  },
-  {
-    label:   'Audit Builder',
-    route:   'audit-form-builder',
-    iconKey: 'builder',
-    roles:   ['ROLE_ADMIN']
-  },
-  {
-    label:   'Settings',
-    route:   'settings',
-    iconKey: 'settings',
-    roles:   ['ROLE_ADMIN']
-  },
-  {
-    label:   'Profile',
-    route:   'profile',
-    iconKey: 'profile',
-    roles:   ['ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_USER']
-  },
-];
+    {
+      label:   'Dashboard',
+      route:   'dashboard',
+      iconKey: 'grid',
+      roles:   ['ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_USER'],
+      exact:   true
+    },
+    {
+      label:   'Auditors',
+      route:   'auditors',
+      iconKey: 'users',
+      roles:   ['ROLE_ADMIN']
+    },
+    {
+      label:   'Users',
+      route:   'users',
+      iconKey: 'user',
+      roles:   ['ROLE_ADMIN']
+    },
+    {
+      label:   'Audits',
+      route:   'audits',
+      iconKey: 'clipboard',
+      roles:   ['ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_USER']
+    },
+    {
+      label:   'Assistant IA',
+      route:   'chat',
+      iconKey: 'robot',
+      roles:   ['ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_USER']
+    },
+    {
+      label:   'Recherche RICS',
+      route:   'search',
+      iconKey: 'search',
+      roles:   ['ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_USER']
+    },
+    {
+      label:   'Audit Builder',
+      route:   'audit-form-builder',
+      iconKey: 'builder',
+      roles:   ['ROLE_ADMIN']
+    },
+    {
+      label:   'Settings',
+      route:   'settings',
+      iconKey: 'settings',
+      roles:   ['ROLE_ADMIN']
+    },
+    {
+      label:   'Profile',
+      route:   'profile',
+      iconKey: 'profile',
+      roles:   ['ROLE_ADMIN', 'ROLE_AUDITOR', 'ROLE_USER']
+    },
+  ];
 
   navItems = computed(() => {
     const role = this.store.getRole();
@@ -96,6 +108,12 @@ export class SidebarComponent {
   }
 
   toggleCollapse(): void { this.collapsed.update(v => !v); }
-  toggleMobile():   void { this.mobileOpen.update(v => !v); }
+  toggleMobile(): void {
+    if (window.innerWidth > 1024) {
+      this.collapsed.update(v => !v);
+    } else {
+      this.mobileOpen.update(v => !v);
+    }
+  }
   closeAll():       void { this.mobileOpen.set(false); }
 }
