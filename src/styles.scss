@@ -1,154 +1,185 @@
-﻿@use 'styles/tokens' as t;
-@use 'styles/keyframes';
-
+﻿/* ============================================================
+   LIGHT THEME — GREEN ACCENTS (forced, no dark mode)
+   Modern, clean, professional
+   ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-// ============================================================
-// DESIGN TOKENS
-// Every component references colour via:
-//   rgb(var(--TOKEN-rgb) / alpha)
-// Light is default; body.dark-mode flips palette.
-// Logo palette: sage #7FAA9E + navy #0F1B26
-// ============================================================
-
+/* ---------- DESIGN TOKENS (light only) ---------- */
 :root {
-  --bg-app-rgb:         246 248 247;
+  /* Backgrounds */
+  --bg-app-rgb:         250 250 250;        /* très clair, doux */
   --bg-card-rgb:        255 255 255;
   --bg-card-strong-rgb: 255 255 255;
-  --bg-deep-rgb:        241 244 243;
+  --bg-deep-rgb:        245 245 245;
   --bg-elev-rgb:        255 255 255;
+  --color-page-bg:      rgb(var(--bg-app-rgb));
+  --color-sidebar-bg:   #ffffff;
+  --color-topbar-bg:    #ffffff;
 
-  --fg-rgb:             26 35 50;
-  --fg-strong-rgb:      17 24 39;
-  --fg-mute-rgb:        107 114 128;
+  /* Text */
+  --fg-rgb:             31 41 55;           /* gray-800 */
+  --fg-strong-rgb:      17 24 39;           /* gray-900 */
+  --fg-mute-rgb:        107 114 128;        /* gray-500 */
 
-  --accent-rgb:         90 143 127;
-  --accent-strong-rgb:  61 111 94;
-  --accent-soft-rgb:    230 240 236;
+  /* Green accents (primary) */
+  --accent-rgb:         34 197 94;          /* green-500 */
+  --accent-strong-rgb:  22 163 74;          /* green-600 */
+  --accent-soft-rgb:    220 252 231;        /* green-100 */
+  --color-accent:       rgb(var(--accent-rgb));
+  --color-btn-add:      #16a34a;
+  --color-btn-update:   #3b82f6;
+  --color-btn-delete:   #ef4444;
 
-  --border-rgb:         226 232 229;
+  /* Borders */
+  --border-rgb:         229 231 235;        /* gray-200 */
 
+  /* Status */
   --success-rgb:        16 130 96;
   --warning-rgb:        180 120 0;
   --danger-rgb:         185 28 28;
-
-  --color-sidebar-bg:   rgb(255 255 255);
-  --color-topbar-bg:    rgb(255 255 255);
-  --color-page-bg:      rgb(var(--bg-app-rgb));
-  --color-accent:       rgb(var(--accent-rgb));
-  --color-btn-add:      #059669;
-  --color-btn-update:   #2563eb;
-  --color-btn-delete:   #dc2626;
 }
 
+/* Force light mode only — disable any dark class */
 body.dark-mode {
-  --bg-app-rgb:         10 21 32;
-  --bg-card-rgb:        16 32 46;
-  --bg-card-strong-rgb: 21 40 54;
-  --bg-deep-rgb:        13 26 38;
-  --bg-elev-rgb:        21 40 54;
-
-  --fg-rgb:             232 238 240;
-  --fg-strong-rgb:      248 250 252;
-  --fg-mute-rgb:        168 181 188;
-
-  --accent-rgb:         127 170 158;
-  --accent-strong-rgb:  156 199 184;
-  --accent-soft-rgb:    30 50 44;
-
-  --border-rgb:         31 49 66;
-
-  --success-rgb:        0 229 160;
-  --warning-rgb:        245 184 0;
-  --danger-rgb:         255 77 106;
-
-  --color-sidebar-bg:   rgb(13 26 38);
-  --color-topbar-bg:    rgb(13 26 38);
-  --color-page-bg:      rgb(var(--bg-app-rgb));
-  --color-accent:       rgb(var(--accent-rgb));
+  /* Override dark mode variables to light ones */
+  --bg-app-rgb:         250 250 250;
+  --bg-card-rgb:        255 255 255;
+  --bg-card-strong-rgb: 255 255 255;
+  --bg-deep-rgb:        245 245 245;
+  --bg-elev-rgb:        255 255 255;
+  --fg-rgb:             31 41 55;
+  --fg-strong-rgb:      17 24 39;
+  --fg-mute-rgb:        107 114 128;
+  --accent-rgb:         34 197 94;
+  --accent-strong-rgb:  22 163 74;
+  --accent-soft-rgb:    220 252 231;
+  --border-rgb:         229 231 235;
+  --color-sidebar-bg:   #ffffff;
+  --color-topbar-bg:    #ffffff;
 }
 
-// ============================================================
-// BASE
-// ============================================================
+/* ---------- BASE ---------- */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { font-size: 16px; scroll-behavior: smooth; }
 body {
-  font-family: t.$font-body;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   background: rgb(var(--bg-app-rgb));
   color: rgb(var(--fg-rgb));
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   min-height: 100vh;
   line-height: 1.6;
 }
 a { color: inherit; text-decoration: none; }
 img, svg { display: block; max-width: 100%; }
 button { font-family: inherit; cursor: pointer; }
+::selection { background: rgb(var(--accent-rgb) / .25); color: rgb(var(--fg-strong-rgb)); }
+:focus-visible { outline: 2px solid rgb(var(--accent-rgb)); outline-offset: 2px; border-radius: 4px; }
 
-::selection      { background: rgb(var(--accent-rgb) / .25); color: rgb(var(--fg-strong-rgb)); }
-:focus-visible   { outline: 2px solid rgb(var(--accent-rgb)); outline-offset: 2px; border-radius: 4px; }
+/* Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: rgb(var(--bg-deep-rgb)); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgb(180 200 180); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(var(--accent-strong-rgb)); }
 
-// Native form controls — keep accent in the green family
-input, select, textarea, progress { accent-color: var(--color-btn-add, #059669); }
-input[type="checkbox"], input[type="radio"] { accent-color: var(--color-btn-add, #059669); }
+/* Form controls */
+input, select, textarea, progress { accent-color: var(--color-btn-add, #16a34a); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--color-btn-add, #16a34a); }
 
-::-webkit-scrollbar       { width: 10px; height: 10px; }
-::-webkit-scrollbar-track { background: rgb(var(--bg-deep-rgb)); }
-::-webkit-scrollbar-thumb {
-  background: rgb(var(--border-rgb));
-  border-radius: 5px;
-  &:hover { background: rgb(var(--fg-mute-rgb) / .5); }
+/* ---------- SIDEBAR (green accents) ---------- */
+.sidebar {
+  background: var(--color-sidebar-bg);
+  border-right: 1px solid rgb(var(--border-rgb));
+}
+.sidebar .nav-item {
+  transition: all 0.2s ease;
+}
+.sidebar .nav-item.active {
+  background: rgb(var(--accent-soft-rgb)) !important;
+  color: rgb(var(--accent-strong-rgb)) !important;
+  border-left: 3px solid rgb(var(--accent-rgb));
+}
+.sidebar .nav-item:hover:not(.active) {
+  background: rgba(var(--accent-rgb), 0.08);
+  color: rgb(var(--accent-strong-rgb));
 }
 
-input:-webkit-autofill,
-input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 1000px rgb(var(--bg-card-rgb)) inset !important;
-  -webkit-text-fill-color: rgb(var(--fg-rgb)) !important;
-  caret-color: rgb(var(--fg-rgb));
+/* ---------- TOPBAR ---------- */
+.topbar {
+  background: var(--color-topbar-bg);
+  border-bottom: 1px solid rgb(var(--border-rgb));
+}
+.topbar__tag .dot {
+  background: rgb(var(--accent-rgb));
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.3);
 }
 
-input[type="date"],
-input[type="datetime-local"],
-input[type="time"],
-input[type="month"] { color-scheme: light; }
-
-body.dark-mode input[type="date"],
-body.dark-mode input[type="datetime-local"],
-body.dark-mode input[type="time"],
-body.dark-mode input[type="month"] { color-scheme: dark; }
-
-input[type="date"]::-webkit-calendar-picker-indicator,
-input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-input[type="time"]::-webkit-calendar-picker-indicator {
-  cursor: pointer;
-  opacity: 0.6;
-  transition: opacity .2s;
-  &:hover { opacity: 1; }
+/* ---------- BUTTONS ---------- */
+.btn-primary, button[type="submit"], .action-btn--primary {
+  background: rgb(var(--accent-rgb));
+  border: none;
+  border-radius: 9999px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  color: white;
+  transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
 }
-body.dark-mode input[type="date"]::-webkit-calendar-picker-indicator,
-body.dark-mode input[type="datetime-local"]::-webkit-calendar-picker-indicator,
-body.dark-mode input[type="time"]::-webkit-calendar-picker-indicator {
-  filter: invert(.7) sepia(1) saturate(5) hue-rotate(120deg) brightness(.9);
+.btn-primary:hover, button[type="submit"]:hover {
+  background: rgb(var(--accent-strong-rgb));
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.3);
+}
+.btn-outline {
+  background: transparent;
+  border: 1px solid rgb(var(--border-rgb));
+  border-radius: 9999px;
+  padding: 0.5rem 1.25rem;
+  color: rgb(var(--fg-rgb));
+}
+.btn-outline:hover {
+  border-color: rgb(var(--accent-rgb));
+  color: rgb(var(--accent-strong-rgb));
 }
 
-// ============================================================
-// GLOBAL MODAL
-// ============================================================
+/* ---------- CARDS / STATS ---------- */
+.stat-card, .card {
+  background: rgb(var(--bg-card-rgb));
+  border-radius: 1.25rem;
+  border: 1px solid rgb(var(--border-rgb));
+  padding: 1.5rem;
+  transition: all 0.25s;
+}
+.stat-card:hover, .card:hover {
+  border-color: rgb(var(--accent-rgb) / 0.5);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 0.05);
+}
+.stat-card .stat-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: rgb(var(--accent-strong-rgb));
+  line-height: 1.2;
+}
+
+/* ---------- BADGES ---------- */
+.badge-success, .tag-success {
+  background: rgb(var(--accent-soft-rgb));
+  color: rgb(var(--accent-strong-rgb));
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ---------- MODALS (unchanged, keep from original) ---------- */
 .modal-backdrop {
-  position: fixed !important;
-  top: 0 !important; left: 0 !important;
+  position: fixed !important; top: 0 !important; left: 0 !important;
   width: 100vw !important; height: 100vh !important;
   background: rgb(var(--fg-strong-rgb) / .55) !important;
   backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
   z-index: 99998 !important;
   animation: fadeIn .18s ease both;
 }
-
 .modal-box {
-  position: fixed !important;
-  top: 50% !important; left: 50% !important;
+  position: fixed !important; top: 50% !important; left: 50% !important;
   transform: translate(-50%, -50%) !important;
   z-index: 99999 !important;
   width: calc(100vw - 40px) !important;
@@ -159,25 +190,32 @@ body.dark-mode input[type="time"]::-webkit-calendar-picker-indicator {
   background: rgb(var(--bg-card-strong-rgb));
   border: 1px solid rgb(var(--border-rgb));
   border-radius: 18px;
-  box-shadow:
-    0 24px 64px rgb(var(--fg-strong-rgb) / .18),
-    0 4px 12px rgb(var(--fg-strong-rgb) / .08);
+  box-shadow: 0 24px 64px rgb(var(--fg-strong-rgb) / .18), 0 4px 12px rgb(var(--fg-strong-rgb) / .08);
   animation: fadeUp .22s cubic-bezier(.4,0,.2,1) both;
-
-  &--wide { max-width: 580px !important; }
-  &--form { max-width: 620px !important; max-height: 90vh !important; }
-  &--file { max-width: 860px !important; max-height: 92vh !important; }
 }
-
+.modal-box--wide { max-width: 580px !important; }
+.modal-box--form { max-width: 620px !important; max-height: 90vh !important; }
+.modal-box--file { max-width: 860px !important; max-height: 92vh !important; }
 @media (max-width: 560px) {
-  .modal-box {
-    width: calc(100vw - 16px) !important;
-    max-height: 94vh;
-    border-radius: 14px;
-  }
+  .modal-box { width: calc(100vw - 16px) !important; max-height: 94vh; border-radius: 14px; }
 }
 
-// Workspace route
+/* ---------- ANIMATIONS ---------- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translate(-50%, -48%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+@keyframes pulse-green {
+  0% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0.5); }
+  70% { box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0); }
+  100% { box-shadow: 0 0 0 0 rgba(var(--accent-rgb), 0); }
+}
+
+/* ---------- HELPER ---------- */
 app-audit-workspace {
   display: flex;
   flex-direction: column;
@@ -186,4 +224,127 @@ app-audit-workspace {
 .shell__content:has(app-audit-workspace) {
   padding: 0 !important;
   overflow: hidden !important;
+}
+/* ============================================================
+   FORCE FULL LIGHT MODE — override any remaining dark styles
+   ============================================================ */
+
+/* 1. SIDEBAR (force light background + text) */
+.sidebar,
+app-sidebar,
+.sidebar__head,
+.sidebar__nav,
+.sidebar__footer {
+  background-color: #ffffff !important;
+  color: #1f2937 !important;
+  border-right-color: #e5e7eb !important;
+}
+
+/* Sidebar links */
+.sidebar .nav-item,
+app-sidebar .nav-item {
+  color: #4b5563 !important;
+}
+.sidebar .nav-item.active,
+app-sidebar .nav-item.active {
+  background: #dcfce7 !important;  /* vert très clair */
+  color: #16a34a !important;
+  border-left-color: #22c55e !important;
+}
+.sidebar .nav-item:hover:not(.active) {
+  background: #f3f4f6 !important;
+  color: #16a34a !important;
+}
+
+/* Sidebar brand & badge */
+.sidebar .brand-name,
+.sidebar .brand-tag,
+.sidebar__badge .badge-text {
+  color: #1f2937 !important;
+}
+.sidebar__badge {
+  background: #f0fdf4 !important;
+  border-color: #bbf7d0 !important;
+}
+
+/* 2. TOPBAR (light background) */
+.topbar,
+app-topbar,
+.topbar__left,
+.topbar__right {
+  background-color: #ffffff !important;
+  border-bottom-color: #e5e7eb !important;
+  color: #1f2937 !important;
+}
+
+.topbar__tag span,
+.topbar__user-info .u-name,
+.topbar__user-info .u-role {
+  color: #1f2937 !important;
+}
+
+/* 3. CARDS, MODALS, DROPDOWNS */
+.card,
+.modal-box,
+.dropdown-menu,
+.notif-panel {
+  background-color: #ffffff !important;
+  border: 1px solid #e5e7eb !important;
+  color: #1f2937 !important;
+}
+
+/* 4. BODY & APP BACKGROUND */
+body,
+.app-root,
+.shell {
+  background-color: #f8fafc !important;
+}
+
+/* 5. TEXT OVERRIDES */
+h1, h2, h3, h4, h5, h6,
+p, span, div, li, a:not(.btn) {
+  color: #1f2937 !important;
+}
+.text-muted, .text-secondary {
+  color: #6b7280 !important;
+}
+
+/* 6. BUTTONS (primary green stays, but ensure light context) */
+.btn-primary {
+  background-color: #16a34a !important;
+  color: white !important;
+}
+.btn-primary:hover {
+  background-color: #15803d !important;
+}
+
+/* 7. INPUTS, SELECTS, TEXTAREA */
+input, select, textarea {
+  background-color: #ffffff !important;
+  border: 1px solid #d1d5db !important;
+  color: #1f2937 !important;
+}
+
+/* 8. STAT CARDS */
+.stat-card {
+  background: white !important;
+  border: 1px solid #e5e7eb !important;
+}
+.stat-card .stat-value {
+  color: #16a34a !important;
+}
+
+/* 9. FOOTER / MISC */
+footer, .footer {
+  background: white !important;
+  color: #4b5563 !important;
+}
+
+/* 10. Remove any dark-mode class effect */
+body.dark-mode,
+body.dark-mode * {
+  /* force all dark-mode overrides to light values */
+  background-color: inherit !important;
+  color: inherit !important;
+  border-color: inherit !important;
 }
