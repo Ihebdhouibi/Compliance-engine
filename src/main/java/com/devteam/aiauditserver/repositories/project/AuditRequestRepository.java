@@ -34,6 +34,9 @@ public interface AuditRequestRepository extends JpaRepository<AuditRequest, Long
             "LOWER(r.submittedBy.companyInfo.companyName) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<AuditRequest> searchRequests(@Param("search") String search, Pageable pageable);
 
+    // Notifications: all submitted requests (no pagination)
+    List<AuditRequest> findByStatusOrderBySubmittedAtDesc(AuditStatus status);
+
     // Count by status for dashboard stats
     long countByStatus(AuditStatus status);
 
