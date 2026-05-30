@@ -1,4 +1,4 @@
-import { Injectable, signal } from "@angular/core";
+﻿import { Injectable, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { interval, Subscription } from "rxjs";
 import { switchMap, catchError } from "rxjs/operators";
@@ -40,7 +40,7 @@ export class NotificationService {
   private fetchNotifications() {
     if (this.userStore.getRole() !== "ROLE_ADMIN") return of([]);
     return this.http.get<AppNotification[]>(
-      environment.apiUrl + "/api/v1/admin/notifications"
+      environment.apiUrl + "/admin/notifications"
     ).pipe(catchError(() => of([])));
   }
 
@@ -75,3 +75,4 @@ export class NotificationService {
     return Math.floor(h / 24) + " day(s) ago";
   }
 }
+
