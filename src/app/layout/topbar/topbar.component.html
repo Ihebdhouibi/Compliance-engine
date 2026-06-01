@@ -29,7 +29,7 @@
         <div class="notif-panel__item"
              *ngFor="let n of notifService.notifications()"
              [class.unread]="!n.read"
-             (click)="notifService.markRead(n.id)">
+             (click)="goToAudit(n.id)">
           <div class="n-dot" [class.n-dot--read]="n.read"></div>
           <div class="n-body">
             <p>{{ n.message }}</p>
