@@ -2,6 +2,7 @@ import {
   Component, OnInit, OnDestroy, inject, ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChatComponent } from '../../features/chat/chat.component';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -86,7 +87,7 @@ interface OcrResult {
 @Component({
   selector: 'app-audit-workspace',
   standalone: true,
-  imports: [CommonModule, FormsModule, AuditBotComponent],
+  imports: [CommonModule, FormsModule, AuditBotComponent,ChatComponent],
   templateUrl: './audit-workspace.component.html',
   styleUrl: './audit-workspace.component.scss'
 })
@@ -103,7 +104,11 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   saveError    = '';
 
   drafts: Record<number, string> = {};
+  showChat = false;
 
+  toggleChat(): void {
+    this.showChat = !this.showChat;
+  }
   // ── Phase 2: per-question verdicts + findings/recs (per step) ──────
   /** verdicts[stepId][fieldId] = verdict */
   verdicts:        Record<number, Record<number, Verdict>> = {};
