@@ -10,28 +10,29 @@ import com.devteam.aiauditserver.repositories.project.EvidenceOcrResultRepositor
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Spring-side orchestrator: when an audit is submitted, walks the evidence
  * attachments and asks the FastAPI OCR service to process each one.
  *
- * Step-1 implementation:
- *  - persists a PENDING EvidenceOcrResult row per (auditId, mediaId)
- *  - POSTs to ${ocr.base-url}/ocr/jobs
- *  - stores the returned jobId on the row
- *  - actual extraction completes asynchronously and is delivered via the
- *    OcrCallbackController callback.
+ * Synchronous implementation:
+ *  - Sends the actual file content to ${ocr.base-url}/ocr/upload
+ *  - Receives extracted text immediately and stores it in the database.
+ *  - No callbacks, no polling required.
  */
 @Service
 public class OcrOrchestratorService {
@@ -44,8 +45,6 @@ public class OcrOrchestratorService {
     /**
      * Folder where uploaded evidence is written on disk. Defaults to the
      * `WebContent` folder used by the existing static-resource handler.
-     * The FastAPI worker must be able to read the same path; on a single
-     * host this is the same absolute filesystem path.
      */
     @Value("${ocr.upload-root:WebContent}")
     private String uploadRoot;
@@ -82,59 +81,101 @@ public class OcrOrchestratorService {
     /**
      * Public hook: enqueue OCR for a single freshly-uploaded media file.
      * Called from `AuditRequestService.uploadAnswerFile` once the file is
-     * persisted, which is the only point where evidence actually exists.
+     * persisted.
      */
     @Async
     public void enqueueMedia(Long auditId, MediaModel media) {
         enqueueOne(auditId, media);
     }
 
+    /**
+     * Synchronously sends a file to Python's /ocr/upload endpoint,
+     * receives the extracted text, and immediately updates the database.
+     */
     private void enqueueOne(Long auditId, MediaModel media) {
         if (media == null || media.getId() == null) return;
 
-        // Idempotency: skip if a row already exists (replays, retries, etc.)
-        if (ocrRepo.findByAuditRequestIdAndMediaId(auditId, media.getId()).isPresent()) {
+        // Idempotency: if already DONE, skip; if PENDING/FAILED, proceed.
+        EvidenceOcrResult row = ocrRepo.findByAuditRequestIdAndMediaId(auditId, media.getId())
+                .orElse(null);
+        if (row == null) {
+            row = new EvidenceOcrResult();
+            row.setAuditRequestId(auditId);
+            row.setMediaId(media.getId());
+            row.setFileName(media.getName());
+            row.setMimeType(media.getType());
+            row.setStatus(EvidenceOcrResult.OcrStatus.PENDING);
+            ocrRepo.save(row);
+        } else if (row.getStatus() == EvidenceOcrResult.OcrStatus.DONE) {
+            log.info("[OCR] already DONE for audit={} media={}", auditId, media.getId());
             return;
+        } else {
+            // Reset for retry or fresh processing
+            row.setStatus(EvidenceOcrResult.OcrStatus.PENDING);
+            row.setError(null);
+            row.setRawText(null);
+            row.setPageCount(null);
+            row.setElapsedMs(null);
+            ocrRepo.save(row);
         }
 
-        EvidenceOcrResult row = new EvidenceOcrResult();
-        row.setAuditRequestId(auditId);
-        row.setMediaId(media.getId());
-        row.setFileName(media.getName());
-        row.setMimeType(media.getType());
-        row.setStatus(EvidenceOcrResult.OcrStatus.PENDING);
-        ocrRepo.save(row);
-
         try {
+            // Get absolute file path from media URL
             String absPath = resolveAbsolutePath(media.getUrl());
-            Map<String, Object> body = new HashMap<>();
-            body.put("audit_id", auditId);
-            body.put("media_id", media.getId());
-            body.put("file_path", absPath);
-            body.put("mime", media.getType());
+            File file = new File(absPath);
+            if (!file.exists()) {
+                throw new RuntimeException("File not found: " + absPath);
+            }
+
+            // Build multipart request
+            MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+            body.add("file", new FileSystemResource(file));
 
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 
+            // Call Python's synchronous /upload endpoint
             @SuppressWarnings("unchecked")
-            Map<String, Object> resp = http.postForObject(
-                    ocrBaseUrl + "/ocr/jobs",
+            Map<String, Object> response = http.postForObject(
+                    ocrBaseUrl + "/ocr/upload",
                     new HttpEntity<>(body, headers),
                     Map.class
             );
-            if (resp != null && resp.get("id") != null) {
-                row.setJobId(resp.get("id").toString());
+
+            if (response != null && response.containsKey("text")) {
+                String extractedText = (String) response.get("text");
+                Integer pageCount = (Integer) response.get("page_count");
+                Integer elapsedMs = (Integer) response.get("elapsed_ms");
+
+                row.setRawText(extractedText);
+                row.setPageCount(pageCount != null ? pageCount : 0);
+                row.setElapsedMs(elapsedMs != null ? elapsedMs : 0);
+                row.setStatus(EvidenceOcrResult.OcrStatus.DONE);
                 ocrRepo.save(row);
+
+                log.info("[OCR] completed audit={} media={} pages={} elapsedMs={}",
+                        auditId, media.getId(), pageCount, elapsedMs);
+            } else {
+                throw new RuntimeException("Invalid response from OCR service");
             }
-            log.info("[OCR] enqueued audit={} media={} jobId={}",
-                    auditId, media.getId(), row.getJobId());
         } catch (Exception e) {
-            log.warn("[OCR] failed to enqueue audit={} media={}: {}",
-                    auditId, media.getId(), e.getMessage());
+            log.warn("[OCR] failed audit={} media={}: {}", auditId, media.getId(), e.getMessage());
             row.setStatus(EvidenceOcrResult.OcrStatus.FAILED);
-            row.setError("Enqueue failed: " + e.getMessage());
+            row.setError("OCR failed: " + e.getMessage());
             ocrRepo.save(row);
         }
+    }
+
+    /**
+     * Re-run OCR for a single (audit, media) pair. Resets the row to
+     * PENDING and processes synchronously.
+     */
+    public EvidenceOcrResult retry(Long auditId, Long mediaId) {
+        MediaModel media = mediaRepo.findById(mediaId)
+                .orElseThrow(() -> new RuntimeException("Media not found: " + mediaId));
+        enqueueOne(auditId, media);
+        return ocrRepo.findByAuditRequestIdAndMediaId(auditId, mediaId)
+                .orElseThrow(() -> new RuntimeException("OCR record not found after retry"));
     }
 
     private String resolveAbsolutePath(String relativeUrl) {
@@ -158,60 +199,5 @@ public class OcrOrchestratorService {
         }
         Path p = Paths.get(uploadRoot, cleaned).toAbsolutePath().normalize();
         return p.toString();
-    }
-
-    /**
-     * Re-run OCR for a single (audit, media) pair. Resets the row to
-     * PENDING and POSTs a fresh job to FastAPI. Used by the admin/auditor
-     * "Retry" button on a failed evidence file.
-     */
-    public EvidenceOcrResult retry(Long auditId, Long mediaId) {
-        EvidenceOcrResult row = ocrRepo
-                .findByAuditRequestIdAndMediaId(auditId, mediaId)
-                .orElseThrow(() -> new RuntimeException(
-                        "No OCR record for audit=" + auditId + " media=" + mediaId));
-
-        row.setStatus(EvidenceOcrResult.OcrStatus.PENDING);
-        row.setError(null);
-        row.setRawText(null);
-        row.setPageCount(null);
-        row.setElapsedMs(null);
-        row.setJobId(null);
-        ocrRepo.save(row);
-
-        try {
-            MediaModel media = mediaRepo.findById(mediaId).orElseThrow(
-                    () -> new RuntimeException("Media not found: " + mediaId));
-            String absPath = resolveAbsolutePath(media.getUrl());
-
-            Map<String, Object> body = new HashMap<>();
-            body.put("audit_id", auditId);
-            body.put("media_id", mediaId);
-            body.put("file_path", absPath);
-            body.put("mime", media.getType());
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            @SuppressWarnings("unchecked")
-            Map<String, Object> resp = http.postForObject(
-                    ocrBaseUrl + "/ocr/jobs",
-                    new HttpEntity<>(body, headers),
-                    Map.class
-            );
-            if (resp != null && resp.get("id") != null) {
-                row.setJobId(resp.get("id").toString());
-                ocrRepo.save(row);
-            }
-            log.info("[OCR] retried audit={} media={} jobId={}",
-                    auditId, mediaId, row.getJobId());
-        } catch (Exception e) {
-            log.warn("[OCR] retry failed audit={} media={}: {}",
-                    auditId, mediaId, e.getMessage());
-            row.setStatus(EvidenceOcrResult.OcrStatus.FAILED);
-            row.setError("Retry failed: " + e.getMessage());
-            ocrRepo.save(row);
-        }
-        return row;
     }
 }

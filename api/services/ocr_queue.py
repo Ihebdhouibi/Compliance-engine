@@ -139,6 +139,23 @@ class OcrQueue:
                 )
                 job.result = result
                 job.status = "DONE"
+
+                # --------------------------------------------
+                # PRINT OCR RESULT TO TERMINAL
+                # --------------------------------------------
+                print("\n" + "=" * 80)
+                print(f"📄 OCR RESULT for audit {job.audit_id} / media {job.media_id} ({os.path.basename(job.file_path)})")
+                print("=" * 80)
+                # Print first 2000 characters to avoid flooding the terminal
+                ocr_text = result.full_text
+                max_len = 2000
+                if len(ocr_text) > max_len:
+                    print(ocr_text[:max_len] + "\n... (truncated)")
+                else:
+                    print(ocr_text)
+                print("=" * 80 + "\n")
+                # --------------------------------------------
+
             except Exception as e:                       # noqa: BLE001
                 logger.exception("[OCR-WORKER-%d] job %s failed", idx, job.id)
                 job.status = "FAILED"

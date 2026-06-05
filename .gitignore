@@ -113,3 +113,8 @@ Thumbs.db
 
 # Runtime upload artifacts
 WebContent/
+venv_rapid/
+*.pyc
+__pycache__/
+fix_*.py
+ocr_result.json

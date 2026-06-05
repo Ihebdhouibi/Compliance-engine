@@ -439,7 +439,10 @@
         <img *ngIf="!drawerLoading && drawerBlobUrl && isImage(drawerMedia.name)"
              [src]="drawerBlobUrl" [alt]="drawerMedia.name" class="ws-drawer__img"/>
         <iframe *ngIf="!drawerLoading && drawerBlobUrl && !isImage(drawerMedia.name)"
-                [src]="drawerBlobUrl" class="ws-drawer__iframe"></iframe>
+                [src]="drawerBlobUrl" class="ws-drawer__iframe">
+                (load)="console.log('iframe loaded')"
+                (error)="console.log('iframe failed to load')">
+            <p>Your browser cannot display this file. <a [href]="drawerBlobUrl" target="_blank">Open in new tab</a></p></iframe>
       </ng-container>
 
       <!-- OCR tab -->

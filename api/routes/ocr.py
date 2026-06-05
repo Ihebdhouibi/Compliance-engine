@@ -1,10 +1,15 @@
 """OCR HTTP routes (Step 1)."""
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException
+import os
+import tempfile
+import uuid
+from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
 from api.services.ocr_queue import get_queue
+from api.services.ocr_engine import get_engine
 
 router = APIRouter(prefix="/ocr", tags=["OCR"])
 
@@ -62,3 +67,52 @@ def get_job(job_id: str):
 @router.get("/audits/{audit_id}/jobs", response_model=list[OcrJobStatus])
 def list_jobs_for_audit(audit_id: int):
     return [_to_status(j) for j in get_queue().list_for_audit(audit_id)]
+
+
+# ----------------------------------------------------------------------
+# NEW: Direct file upload endpoint (synchronous, prints result to terminal)
+# ----------------------------------------------------------------------
+@router.post("/upload")
+async def upload_and_ocr(file: UploadFile = File(...)):
+    """
+    Accept a file upload, run OCR synchronously, print the extracted text
+    to the server terminal, and return the text in the JSON response.
+    Useful for debugging and for Angular integration without the queue.
+    """
+    engine = get_engine()
+    engine.initialize()
+
+    # Save uploaded file to a temporary location
+    suffix = os.path.splitext(file.filename)[1]
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        content = await file.read()
+        tmp.write(content)
+        tmp_path = tmp.name
+
+    try:
+        # Run OCR
+        result = engine.recognize(tmp_path, mime=file.content_type)
+
+        # Print to terminal for immediate visibility
+        print("\n" + "=" * 60)
+        print(f"OCR RESULT for file: {file.filename}")
+        print("=" * 60)
+        print(result.full_text)
+        print("=" * 60 + "\n")
+
+        # Return the extracted text to the client
+        return {
+            "filename": file.filename,
+            "text": result.full_text,
+            "page_count": result.page_count,
+            "elapsed_ms": result.elapsed_ms,
+        }
+    except Exception as e:
+        print(f"OCR error for {file.filename}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        # Clean up temporary file
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass

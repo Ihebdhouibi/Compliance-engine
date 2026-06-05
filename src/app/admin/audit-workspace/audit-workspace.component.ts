@@ -87,7 +87,7 @@ interface OcrResult {
 @Component({
   selector: 'app-audit-workspace',
   standalone: true,
-  imports: [CommonModule, FormsModule, AuditBotComponent,ChatComponent],
+  imports: [CommonModule, FormsModule, AuditBotComponent],
   templateUrl: './audit-workspace.component.html',
   styleUrl: './audit-workspace.component.scss'
 })
@@ -662,11 +662,14 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.drawerBlobUrl = null;
 
     const token   = this.tokenSvc.getToken();
+    const token   = this.tokenSvc.getToken();
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     const full    = this.getFileUrl(media.url);
+    console.log('Fetching file:', full);
 
     this.http.get(full, { headers, responseType: 'blob' }).subscribe({
       next: blob => {
+        console.log('Blob received, type:', blob.type, 'size:', blob.size);
         const obj = URL.createObjectURL(blob);
         this.drawerObjectUrl = obj;
         this.drawerBlobUrl   = this.sanitizer.bypassSecurityTrustResourceUrl(obj);
@@ -674,6 +677,8 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       },
       error: () => {
+        console.error('Failed to fetch file:', Error);
+
         this.drawerBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(full);
         this.drawerLoading = false;
         this.cdr.detectChanges();
