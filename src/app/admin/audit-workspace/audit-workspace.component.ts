@@ -662,7 +662,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.drawerBlobUrl = null;
 
     const token   = this.tokenSvc.getToken();
-    const token   = this.tokenSvc.getToken();
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
     const full    = this.getFileUrl(media.url);
     console.log('Fetching file:', full);
