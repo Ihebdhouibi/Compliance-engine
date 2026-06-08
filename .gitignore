@@ -114,6 +114,7 @@ Thumbs.db
 # Runtime upload artifacts
 WebContent/
 venv_rapid/
+venv38/
 *.pyc
 __pycache__/
 fix_*.py
