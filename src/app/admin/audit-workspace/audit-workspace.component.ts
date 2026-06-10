@@ -16,7 +16,7 @@ import { TokenService } from '../../shared/token.service';
 import { AuditBotComponent } from '../../layout/audit-bot/audit-bot.component';
 import { AuditRequest , AuditRequestAnswer } from '../../models/audit.model';
 import { environment } from '../../environments/environment';
-import { RicsSearchService, RicsRuleResult } from '../../services/rics-search.service';
+import { RicsSearchService, RicsRuleResult, RicsEvidenceItem } from '../../services/rics-search.service';
 /**
  * Unified step model used by the workspace stepper.
  * Built from intake form steps (preferred — they carry the actual fields)
@@ -143,6 +143,11 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   // ── Phase 5: dismissed AI suggestions (per-step, session-only) ─────
   dismissedSuggestions: Record<number, Set<string>> = {};
 
+  // ── Grounded AI suggestions fetched from the RAG /rules/evidence-check ──
+  private aiSuggestions: Record<number, string[]> = {};
+  private aiSuggestRequested = new Set<number>();
+  aiSuggestLoading: Record<number, boolean> = {};
+
   isAuditorMode = false;
 
   readonly serverBase = environment.serverBaseUrl;
@@ -235,6 +240,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         });
         // Re-apply any results that loaded before steps were ready.
         this.applyResultsToDrafts();
+        this.ensureAiSuggestions(this.currentStep);
         this.cdr.detectChanges();
       },
       error: () => this.loadStepsByAuditType(auditType)
@@ -258,6 +264,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
             if (this.drafts[s.id] === undefined) this.drafts[s.id] = '';
           });
           this.applyResultsToDrafts();
+          this.ensureAiSuggestions(this.currentStep);
         } else {
           this.setDefaultStep();
         }
@@ -938,9 +945,59 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   // ── Step-aware AI suggestions (heuristic, client-side stub) ──
+  /**
+   * Suggestions shown in the "AI Suggestions" box. Prefers grounded hints
+   * fetched from the RAG knowledge base (RICS evidence-check, cited to clause
+   * IDs); falls back to lightweight heuristics while loading or if the RAG
+   * service is unreachable.
+   */
   get currentSuggestions(): string[] {
     const step = this.currentStep;
     if (!step) return [];
+    const fetched = this.aiSuggestions[step.id];
+    if (fetched && fetched.length) return fetched;
+    return this.heuristicSuggestions(step);
+  }
+
+  get suggestionsLoading(): boolean {
+    const step = this.currentStep;
+    return !!step && !!this.aiSuggestLoading[step.id] && !this.aiSuggestions[step.id]?.length;
+  }
+
+  /**
+   * Fetch grounded, clause-cited suggestions for a step from the RAG service.
+   * Idempotent per step; a failed/empty fetch silently keeps the heuristics.
+   */
+  private ensureAiSuggestions(step: WorkspaceStep | null): void {
+    if (!step || step.id == null || this.aiSuggestRequested.has(step.id)) return;
+    this.aiSuggestRequested.add(step.id);
+    this.aiSuggestLoading[step.id] = true;
+    this.ricsSvc.evidenceCheck(step.name, 4).subscribe({
+      next: res => {
+        const sugg = (res?.evidence ?? [])
+          .map(e => this.formatSuggestion(e))
+          .filter((s): s is string => !!s);
+        if (sugg.length) this.aiSuggestions[step.id] = sugg;
+        this.aiSuggestLoading[step.id] = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.aiSuggestLoading[step.id] = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private formatSuggestion(e: RicsEvidenceItem): string {
+    const what = (e.evidence_implied || e.requirement_text || '').trim();
+    if (!what) return '';
+    const cite = e.rule_id
+      ? ` (${e.rule_id}${e.section ? ' · §' + e.section : ''})`
+      : '';
+    return `${what}${cite}`;
+  }
+
+  private heuristicSuggestions(step: WorkspaceStep): string[] {
     const name = (step.name || '').toLowerCase();
     const ansCount = this.request?.answers?.length ?? 0;
     const fileCount = this.evidenceFileCount;
@@ -1112,6 +1169,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   async goToStep(idx: number): Promise<void> {
   if (!this.request || this.request?.status === 'COMPLETED') {
     this.activeStep = idx;
+    this.ensureAiSuggestions(this.currentStep);
     return;
   }
   // Auto-save current step as DRAFT if there's any content or meta
@@ -1119,6 +1177,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     await this.persistAsync('DRAFT');
   }
   this.activeStep = idx;
+  this.ensureAiSuggestions(this.currentStep);
   this.cdr.detectChanges();
 }
 

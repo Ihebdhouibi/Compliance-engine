@@ -142,6 +142,7 @@
             <circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>
           </svg>
           AI Suggestions ({{ currentSuggestions.length }})
+          <span class="ai-suggest-loading" *ngIf="suggestionsLoading">· grounding…</span>
         </summary>
         <ul class="ai-suggest-list">
           <ng-container *ngFor="let s of currentSuggestions">

@@ -964,6 +964,10 @@
     color: var(--color-btn-add, #059669); text-transform: uppercase;
     &::-webkit-details-marker { display: none; }
   }
+  .ai-suggest-loading {
+    font-weight: 600; text-transform: none; letter-spacing: 0;
+    color: rgb(var(--fg-rgb) / .4);
+  }
   ul { margin: 0; padding: 4px 16px 14px 32px; list-style: disc;
     color: rgb(var(--fg-rgb) / .8); font-size: .82rem; line-height: 1.5;
     li + li { margin-top: 4px; } }

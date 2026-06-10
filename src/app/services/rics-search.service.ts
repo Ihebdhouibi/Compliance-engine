@@ -30,6 +30,21 @@ export interface RicsSearchResponse {
   total:   number;
 }
 
+/** One evidence hint returned by /rules/evidence-check. */
+export interface RicsEvidenceItem {
+  rule_id:               string;
+  section:               string;
+  requirement_text:      string;
+  source_text_verbatim:  string;
+  evidence_implied:      string;
+  score:                 number;
+}
+
+export interface RicsEvidenceResponse {
+  query:    string;
+  evidence: RicsEvidenceItem[];
+}
+
 /**
  * Calls the FastAPI RAG service (port 8000) for semantic search over the
  * RICS knowledge base. Independent of the Spring backend (port 8080).
@@ -48,5 +63,10 @@ export class RicsSearchService {
       applies_to: null,
       entry_type: 'rule',
     });
+  }
+
+  /** Grounded evidence hints for a compliance area (e.g. an audit step name). */
+  evidenceCheck(query: string, limit = 5): Observable<RicsEvidenceResponse> {
+    return this.http.post<RicsEvidenceResponse>(`${this.base}/evidence-check`, { query, limit });
   }
 }
