@@ -17,7 +17,7 @@ def chat(req: ChatRequest):
         limit=req.limit,
         section=req.section,
     )
-    answer = llm_chat(user_message=req.message, rules=hits)
+    answer = llm_chat(user_message=req.message, rules=hits, audit_context=req.context)
     return ChatResponse(
         answer=answer,
         sources=[RuleResult(**h) for h in hits],

@@ -13,7 +13,8 @@ RULES:
 4. When listing evidence an auditor should look for, use the evidence_implied field.
 5. If the context does not contain enough information to answer, say so explicitly. Do not guess.
 6. Keep answers structured: use bullet points or numbered lists for clarity.
-7. Distinguish clearly between what the RICS standard requires (mandatory — "must") and any interpretation."""
+7. Distinguish clearly between what the RICS standard requires (mandatory — "must") and any interpretation.
+8. You may be given an AUDIT CONTEXT containing the firm's submitted answers and text extracted from their evidence documents (OCR). Use it to summarise the evidence, judge whether the firm's claims are supported, and help the auditor reach a verdict — but base every compliance determination and citation on the RICS rules above, never on the firm's own claims alone. If the audit context lacks the evidence needed to satisfy a rule, say what is missing."""
 
 
 def build_context_block(rules: list[dict]) -> str:
@@ -32,20 +33,30 @@ Related rules: {', '.join(p.get('related_rules', []))}"""
     return "\n\n".join(parts)
 
 
-def chat(user_message: str, rules: list[dict], model: str = "gpt-4o-mini") -> str:
-    """Send a grounded RAG query to GPT and return the response text."""
-    context = build_context_block(rules)
+def chat(
+    user_message: str,
+    rules: list[dict],
+    audit_context: str | None = None,
+    model: str = "gpt-4o-mini",
+) -> str:
+    """Send a grounded RAG query to GPT and return the response text.
+
+    ``audit_context`` — when provided by the workspace — carries the current
+    step's customer answers and OCR-extracted evidence text, letting the
+    assistant reason over the specific audit under review.
+    """
+    rules_block = build_context_block(rules)
+
+    sections = [f"CONTEXT (retrieved RICS rules):\n{rules_block}"]
+    if audit_context and audit_context.strip():
+        sections.append(
+            f"AUDIT CONTEXT (the firm's answers and evidence under review):\n{audit_context.strip()}"
+        )
+    sections.append(f"QUESTION:\n{user_message}")
 
     messages = [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {
-            "role": "user",
-            "content": f"""CONTEXT (retrieved RICS rules):
-{context}
-
-QUESTION:
-{user_message}""",
-        },
+        {"role": "user", "content": "\n\n".join(sections)},
     ]
 
     response = _client.chat.completions.create(

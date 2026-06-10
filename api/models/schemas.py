@@ -15,6 +15,12 @@ class ChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000, description="Auditor's question")
     limit: int = Field(5, ge=1, le=10, description="Number of rules to retrieve for context")
     section: str | None = Field(None, description="Optional section filter")
+    context: str | None = Field(
+        None,
+        max_length=24000,
+        description="Optional audit context (current step, customer answers, evidence/OCR text) "
+                    "to ground the assistant in the audit under review",
+    )
 
 
 class EvidenceCheckRequest(BaseModel):
