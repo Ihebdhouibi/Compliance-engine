@@ -858,6 +858,59 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   toggleBot(): void { this.botOpen = !this.botOpen; }
 
+  /**
+   * Assemble a compact, text-only snapshot of the audit under review for the
+   * AI assistant: the current step, its customer answers, and any
+   * OCR-extracted evidence text. Passed to <app-audit-bot> so the assistant
+   * can summarise evidence and reason about compliance for THIS audit rather
+   * than answering generically.
+   */
+  buildAiContext(): string {
+    const r = this.request;
+    const step = this.currentStep;
+    const lines: string[] = [];
+
+    if (r) {
+      const company =
+        r.submittedBy?.companyInfo?.companyName ||
+        [r.submittedBy?.firstName, r.submittedBy?.lastName].filter(Boolean).join(' ') ||
+        'Unknown company';
+      lines.push(`Audit #${r.id} — ${company} — type ${r.auditType ?? 'N/A'} — status ${r.status ?? 'N/A'}.`);
+    }
+    if (step) lines.push(`Current step under review: ${step.name}.`);
+
+    const answers = this.currentStepAnswers;
+    if (!answers.length) {
+      lines.push('No customer answers are mapped to this step.');
+      return lines.join('\n');
+    }
+
+    answers.forEach((a, i) => {
+      const q = (a.fieldLabel || `Question ${i + 1}`).trim();
+      const ans = (a.answerValue || '(no answer provided)').toString().trim();
+      lines.push(`\nQ${i + 1}. ${q}\nAnswer: ${ans}`);
+
+      const media = [a.fileMedia, ...(a.files ?? [])].filter(Boolean);
+      for (const m of media) {
+        const name = m?.name || m?.url || `file ${m?.id}`;
+        const ocr = this.ocrFor(m?.id);
+        if (ocr?.status === 'DONE' && ocr.rawText?.trim()) {
+          lines.push(`Evidence "${name}" — extracted text:\n${ocr.rawText.trim().slice(0, 3000)}`);
+        } else if (ocr) {
+          lines.push(`Evidence "${name}": OCR ${ocr.status.toLowerCase()}, no text available yet.`);
+        } else {
+          lines.push(`Evidence "${name}": attached (no extracted text).`);
+        }
+      }
+    });
+
+    const ctx = lines.join('\n');
+    return ctx.length > 20000 ? ctx.slice(0, 20000) + '\n…(truncated)' : ctx;
+  }
+
+  /** Bound provider handed to the assistant so it always reads fresh state. */
+  aiContextProvider = (): string => this.buildAiContext();
+
   // ── Step-aware AI suggestions (heuristic, client-side stub) ──
   get currentSuggestions(): string[] {
     const step = this.currentStep;

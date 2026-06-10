@@ -375,6 +375,7 @@
     <div class="ws-chat__panel" *ngIf="botOpen">
       <app-audit-bot
         [requestData]="request"
+        [contextProvider]="aiContextProvider"
         (closed)="botOpen = false">
       </app-audit-bot>
     </div>

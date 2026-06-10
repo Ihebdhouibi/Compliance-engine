@@ -22,6 +22,9 @@ interface BotMessage {
 })
 export class AuditBotComponent implements AfterViewChecked {
   @Input() requestData: any = null;
+  /** Provider returning a fresh text snapshot of the audit under review.
+   *  Called at send-time so the assistant always sees the current step/answers. */
+  @Input() contextProvider?: () => string;
   @Output() closed = new EventEmitter<void>();
 
   @ViewChild('messagesContainer')
@@ -62,9 +65,10 @@ export class AuditBotComponent implements AfterViewChecked {
     this.isThinking = true;
     this._needsScroll = true;
 
-    // Call FastAPI chat endpoint
+    // Call FastAPI chat endpoint, grounded in the current audit context.
     const url = `${environment.ragApiUrl}/chat/`;
-    const body = { message: text, limit: 5 };
+    const context = this.contextProvider?.()?.slice(0, 24000) || undefined;
+    const body = { message: text, limit: 5, context };
 
     this.http.post<{ answer: string; sources: any[] }>(url, body).subscribe({
       next: (res) => {
