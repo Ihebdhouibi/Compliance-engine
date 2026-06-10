@@ -59,6 +59,8 @@ export class AuditsComponent implements OnInit {
 
   currentStepIdx    = 0;
   formState:        FormState = {};
+  /** Fields still holding an auto-prefilled default — cleared on first focus. */
+  private prefilledFields = new Set<number>();
   fileMap:          { [fieldId: number]: File[] } = {};
   isSubmitting      = false;
   submitSuccess     = false;
@@ -209,8 +211,10 @@ export class AuditsComponent implements OnInit {
    */
   private prefillDefaults(form: AuditFormTemplate): void {
     const today = new Date().toISOString().slice(0, 10);
+    this.prefilledFields.clear();
     for (const step of form.steps ?? []) {
       for (const field of step.fields ?? []) {
+        if (field.fieldType !== 'FILE') this.prefilledFields.add(field.id);
         switch (field.fieldType) {
           case 'FILE':
             continue;
@@ -388,7 +392,19 @@ export class AuditsComponent implements OnInit {
 
   setFieldValue(fieldId: number, value: string): void {
     this.formState[fieldId] = value;
+    this.prefilledFields.delete(fieldId);
     delete this.validationErrors[fieldId];
+  }
+
+  /**
+   * Clear the auto-prefilled default the first time a free-text field gains
+   * focus, so the "Not applicable" placeholder-style value doesn't have to be
+   * manually deleted. Once the user has touched a field we leave it alone.
+   */
+  onFieldFocus(fieldId: number): void {
+    if (this.prefilledFields.delete(fieldId)) {
+      this.formState[fieldId] = '';
+    }
   }
 
   getCheckboxValues(fieldId: number): string[] {

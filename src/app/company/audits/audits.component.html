@@ -372,21 +372,25 @@
                         <!-- TEXT -->
                         <input *ngIf="field.fieldType === 'TEXT'" type="text" class="fi"
                             [placeholder]="field.placeholder || ''" [value]="getFieldValue(field.id)"
+                            (focus)="onFieldFocus(field.id)"
                             (input)="setFieldValue(field.id, $any($event.target).value)" />
 
                         <!-- TEXTAREA -->
                         <textarea *ngIf="field.fieldType === 'TEXTAREA'" class="fi fi--ta" rows="4"
                             [placeholder]="field.placeholder || ''" [value]="getFieldValue(field.id)"
+                            (focus)="onFieldFocus(field.id)"
                             (input)="setFieldValue(field.id, $any($event.target).value)"></textarea>
 
                         <!-- NUMBER -->
                         <input *ngIf="field.fieldType === 'NUMBER'" type="number" class="fi"
                             [placeholder]="field.placeholder || ''" [value]="getFieldValue(field.id)"
+                            (focus)="onFieldFocus(field.id)"
                             (input)="setFieldValue(field.id, $any($event.target).value)" />
 
                         <!-- EMAIL -->
                         <input *ngIf="field.fieldType === 'EMAIL'" type="email" class="fi"
                             [placeholder]="field.placeholder || ''" [value]="getFieldValue(field.id)"
+                            (focus)="onFieldFocus(field.id)"
                             (input)="setFieldValue(field.id, $any($event.target).value)" />
 
                         <!-- DATE -->
