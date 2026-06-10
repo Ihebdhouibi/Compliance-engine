@@ -611,14 +611,26 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   ocrLabel(r: OcrResult | null): string {
-    if (!r) return 'OCR queued';
+    if (!r) return 'Text queued';
     switch (r.status) {
-      case 'PENDING': return 'OCR pending';
-      case 'RUNNING': return 'OCR running';
-      case 'DONE':    return `OCR · ${r.pageCount ?? 0}p`;
-      case 'FAILED':  return 'OCR failed';
+      case 'PENDING': return 'Extracting…';
+      case 'RUNNING': return 'Extracting…';
+      case 'DONE':    return `View text · ${r.pageCount ?? 0}p`;
+      case 'FAILED':  return 'Text failed';
     }
-    return 'OCR';
+    return 'View text';
+  }
+
+  /** Fuller tooltip for the evidence text badge. */
+  ocrTitle(r: OcrResult | null): string {
+    if (!r) return 'Text extraction is queued for this document';
+    switch (r.status) {
+      case 'PENDING':
+      case 'RUNNING': return 'Reading the document text…';
+      case 'DONE':    return `Click to read the text extracted from this document (${r.pageCount ?? 0} page${r.pageCount === 1 ? '' : 's'})`;
+      case 'FAILED':  return 'Text extraction failed — click Retry';
+    }
+    return 'View extracted text';
   }
 
   ocrClass(r: OcrResult | null): string {

@@ -193,7 +193,7 @@
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
                 <span class="evidence-chip__name" [title]="fm.name">{{ fm.name }}</span>
-                <span [class]="ocrClass(ocrFor(fm.id))">{{ ocrLabel(ocrFor(fm.id)) }}</span>
+                <span [class]="ocrClass(ocrFor(fm.id))" [title]="ocrTitle(ocrFor(fm.id))">{{ ocrLabel(ocrFor(fm.id)) }}</span>
                 <button class="evidence-chip__btn evidence-chip__btn--retry"
                         *ngIf="isRetryable(ocrFor(fm.id))" (click)="retryOcr(fm.id, $event)">Retry</button>
               </div>
@@ -208,7 +208,7 @@
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
                 <span class="evidence-chip__name" [title]="f.media.name">{{ f.media.name }}</span>
-                <span [class]="ocrClass(ocrFor(f.media.id))">{{ ocrLabel(ocrFor(f.media.id)) }}</span>
+                <span [class]="ocrClass(ocrFor(f.media.id))" [title]="ocrTitle(ocrFor(f.media.id))">{{ ocrLabel(ocrFor(f.media.id)) }}</span>
                 <button class="evidence-chip__btn evidence-chip__btn--retry"
                         *ngIf="isRetryable(ocrFor(f.media.id))" (click)="retryOcr(f.media.id, $event)">Retry</button>
               </div>
