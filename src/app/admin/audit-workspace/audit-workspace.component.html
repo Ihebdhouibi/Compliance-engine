@@ -278,7 +278,7 @@
                     (input)="updateFindingText(f.id, $any($event.target).value)"
                     [disabled]="request?.status === 'COMPLETED'"
                     placeholder="Describe the finding, clause reference, and evidence cited…"
-                    rows="2"></textarea>
+                    rows="4"></textarea>
 
           <!-- Phase 4: RICS clauses attached to this finding -->
           <div class="clause-row">
@@ -344,7 +344,7 @@
                     (input)="updateRecText(r.id, $any($event.target).value)"
                     [disabled]="request?.status === 'COMPLETED'"
                     placeholder="Recommend a corrective action, owner and timeframe…"
-                    rows="2"></textarea>
+                    rows="4"></textarea>
           <button class="rec__del" (click)="removeRecommendation(r.id)"
                   [disabled]="request?.status === 'COMPLETED'"
                   title="Remove">×</button>

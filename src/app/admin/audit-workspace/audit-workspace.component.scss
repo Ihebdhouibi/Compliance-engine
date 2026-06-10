@@ -1121,10 +1121,13 @@
   background: rgb(var(--bg-card-rgb));
   border: 1px solid rgb(var(--accent-rgb) / .15);
   color: rgb(var(--fg-strong-rgb));
-  font: 400 .82rem t.$font-body;
+  font: 400 .82rem t.$font-body; line-height: 1.5;
   &:focus { outline: none; border-color: var(--color-btn-add, #059669);
             box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-btn-add, #059669) 14%, transparent); }
 }
+/* Findings/recommendations often hold multi-line AI-inserted text — give them
+   room to read without forcing the user to expand every box manually. */
+.finding__text, .rec__text { min-height: 92px; }
 .rec { flex-direction: row; align-items: flex-start; gap: 4px; }
 .rec__text { flex: 1; }
 
