@@ -119,3 +119,10 @@ venv38/
 __pycache__/
 fix_*.py
 ocr_result.json
+
+# Test evidence
+Test evidence/
+
+# JVM crash logs
+hs_err_pid*.log
+replay_pid*.log
