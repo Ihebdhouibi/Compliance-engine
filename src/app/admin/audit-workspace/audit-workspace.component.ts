@@ -14,10 +14,9 @@ import { AuditProcessStepService, AuditProcessStep } from '../../services/audit-
 import { AuditStepResultService, AuditStepResult } from '../../services/audit-step-result.service';
 import { TokenService } from '../../shared/token.service';
 import { AuditBotComponent } from '../../layout/audit-bot/audit-bot.component';
-import { AuditRequest } from '../../models/audit.model';
+import { AuditRequest , AuditRequestAnswer } from '../../models/audit.model';
 import { environment } from '../../environments/environment';
 import { RicsSearchService, RicsRuleResult } from '../../services/rics-search.service';
-
 /**
  * Unified step model used by the workspace stepper.
  * Built from intake form steps (preferred — they carry the actual fields)
@@ -906,23 +905,63 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
    * If `fieldIds` is empty (process-step fallback / default step), show all answers.
    */
   get currentStepAnswers() {
-    const answers = this.request?.answers ?? [];
-    const step    = this.currentStep;
-    if (!step) return [];
-    if (!step.fieldIds || step.fieldIds.length === 0) return answers;
-    const set = new Set(step.fieldIds);
-    return answers.filter(a => set.has(a.fieldId));
-  }
+  const answers = this.request?.answers ?? [];
+  const step = this.currentStep;
+  if (!step) return [];
+  if (!step.fieldIds || step.fieldIds.length === 0) return [];
 
-  get evidenceFileCount(): number {
-    let total = 0;
-    for (const a of this.currentStepAnswers) {
-      if (a.fileMedia) total++;
-      if (a.files?.length) total += a.files.length;
+  const set = new Set(step.fieldIds);
+  const stepAnswers = answers.filter(a => set.has(a.fieldId));
+
+  // Separate main answers, notes, and evidence-only records
+  const mains: any[] = [];
+  const notes: any[] = [];
+  const evidences: any[] = [];
+
+  for (const ans of stepAnswers) {
+    const label = (ans.fieldLabel || '').toLowerCase();
+    if (label === 'evidence files') {
+      evidences.push(ans);
+    } else if (label.includes('response') || label.includes('supporting')) {
+      notes.push(ans);
+    } else {
+      mains.push(ans);
     }
-    return total;
   }
 
+  // Pair mains with notes (assuming same order)
+  const result: any[] = [];
+  for (let i = 0; i < mains.length; i++) {
+    const main = { ...mains[i] };
+    // Add its own note (if any)
+    if (i < notes.length) {
+      const note = notes[i];
+      if (note.answerValue && !main.answerValue?.includes(note.answerValue)) {
+        main.answerValue = `${main.answerValue || ''}\n\n**Supporting note:** ${note.answerValue}`;
+      }
+      // Merge note's own files (if any)
+      if (note.fileMedia && !main.fileMedia) main.fileMedia = note.fileMedia;
+      if (note.files?.length) main.files = [...(main.files || []), ...note.files];
+    }
+    // Add the i-th evidence file (if any) to this main answer
+    if (i < evidences.length) {
+      const ev = evidences[i];
+      if (ev.fileMedia && !main.fileMedia) main.fileMedia = ev.fileMedia;
+      if (ev.files?.length) main.files = [...(main.files || []), ...ev.files];
+    }
+    result.push(main);
+  }
+
+  return result;
+}
+  get evidenceFileCount(): number {
+  let total = 0;
+  for (const a of this.currentStepAnswers) {
+    if (a.fileMedia) total++;
+    if (a.files?.length) total += a.files.length;
+  }
+  return total;
+}
   // ── Quick-insert chip → append snippet to current draft ──
   insertSnippet(label: string): void {
     if (!this.currentStep || this.request?.status === 'COMPLETED') return;
