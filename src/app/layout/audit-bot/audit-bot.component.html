@@ -57,6 +57,15 @@
 
   </div>
 
+  <div class="bot-prompts" *ngIf="quickPrompts.length">
+    <button type="button" class="bot-prompt"
+            *ngFor="let p of quickPrompts"
+            (click)="runPrompt(p)"
+            [disabled]="isThinking">
+      {{ p }}
+    </button>
+  </div>
+
   <div class="bot-input">
     <textarea
       [(ngModel)]="inputText"

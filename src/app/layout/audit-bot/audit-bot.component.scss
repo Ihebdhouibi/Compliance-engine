@@ -171,6 +171,34 @@
   40% { transform: scale(1); opacity: 1; }
 }
 
+// Quick-prompt chips — one-tap, context-aware starters above the input.
+.bot-prompts {
+  flex-shrink: 0;
+  display: flex; gap: 6px;
+  padding: 8px 10px 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.bot-prompt {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 5px 10px;
+  font-size: .7rem; font-family: t.$font-body;
+  background: rgb(var(--accent-rgb) / .1);
+  border: 1px solid rgb(var(--accent-rgb) / .25);
+  border-radius: 999px;
+  color: rgb(var(--accent-strong-rgb));
+  cursor: pointer; transition: all .15s;
+
+  &:hover:not(:disabled) {
+    background: rgb(var(--accent-rgb) / .22);
+    border-color: rgb(var(--accent-rgb) / .5);
+  }
+  &:disabled { opacity: .35; cursor: not-allowed; }
+}
+
 // â˜… KEY FIX: flex-shrink:0 keeps input always visible at bottom
 .bot-input {
   display: flex; align-items: flex-end; gap: 7px;

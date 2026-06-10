@@ -36,6 +36,15 @@ export class AuditBotComponent implements AfterViewChecked {
   inputText = '';
   isThinking = false;
 
+  /** One-tap prompts; the audit context supplies the specifics per step. */
+  @Input() quickPrompts: string[] = [
+    'Summarise the evidence for this step',
+    'Which RICS clauses apply here?',
+    'Is the firm compliant on this step?',
+    'What evidence is still missing?',
+    'Draft a finding for this step',
+  ];
+
   private http = inject(HttpClient);
   private zone = inject(NgZone);
 
@@ -88,6 +97,12 @@ export class AuditBotComponent implements AfterViewChecked {
         this._needsScroll = true;
       }
     });
+  }
+
+  runPrompt(p: string): void {
+    if (this.isThinking) return;
+    this.inputText = p;
+    this.send();
   }
 
   onKey(e: KeyboardEvent): void {
