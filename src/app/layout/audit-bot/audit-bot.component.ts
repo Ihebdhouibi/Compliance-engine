@@ -26,6 +26,8 @@ export class AuditBotComponent implements AfterViewChecked {
    *  Called at send-time so the assistant always sees the current step/answers. */
   @Input() contextProvider?: () => string;
   @Output() closed = new EventEmitter<void>();
+  /** Emitted when the auditor pushes an assistant reply into the audit. */
+  @Output() insert = new EventEmitter<{ target: 'finding' | 'recommendation' | 'note'; text: string }>();
 
   @ViewChild('messagesContainer')
   private messagesContainer!: ElementRef<HTMLDivElement>;
@@ -110,6 +112,11 @@ export class AuditBotComponent implements AfterViewChecked {
       e.preventDefault();
       this.send();
     }
+  }
+
+  insertAs(target: 'finding' | 'recommendation' | 'note', text: string): void {
+    if (!text?.trim()) return;
+    this.insert.emit({ target, text: text.trim() });
   }
 
   close(): void {

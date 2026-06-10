@@ -911,6 +911,32 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   /** Bound provider handed to the assistant so it always reads fresh state. */
   aiContextProvider = (): string => this.buildAiContext();
 
+  /** Push an assistant reply into the current step as a finding, recommendation, or note. */
+  onAiInsert(e: { target: 'finding' | 'recommendation' | 'note'; text: string }): void {
+    const text = (e?.text || '').trim();
+    if (!text || !this.currentStep || this.request?.status === 'COMPLETED') return;
+    const stepId = this.currentStep.id;
+
+    if (e.target === 'finding') {
+      this.addFinding();
+      const list = this.findings[stepId] ?? [];
+      const last = list[list.length - 1];
+      if (last) last.description = text;
+      this.flash('Added to findings from AI assistant.', false);
+    } else if (e.target === 'recommendation') {
+      this.addRecommendation();
+      const list = this.recommendations[stepId] ?? [];
+      const last = list[list.length - 1];
+      if (last) last.description = text;
+      this.flash('Added to recommendations from AI assistant.', false);
+    } else {
+      const current = this.drafts[stepId] || '';
+      this.drafts[stepId] = (current ? `${current}\n\n${text}` : text).trim();
+      this.flash('Inserted into step note.', false);
+    }
+    this.cdr.detectChanges();
+  }
+
   // ── Step-aware AI suggestions (heuristic, client-side stub) ──
   get currentSuggestions(): string[] {
     const step = this.currentStep;

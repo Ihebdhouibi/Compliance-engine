@@ -48,6 +48,11 @@
       <div class="bot-msg__bubble">
         <pre>{{ m.text }}</pre>
       </div>
+      <div class="bot-msg__actions" *ngIf="m.role === 'bot'">
+        <button type="button" class="bot-act" (click)="insertAs('finding', m.text)">→ Finding</button>
+        <button type="button" class="bot-act" (click)="insertAs('recommendation', m.text)">→ Rec</button>
+        <button type="button" class="bot-act" (click)="insertAs('note', m.text)">+ Note</button>
+      </div>
       <div class="bot-msg__time">{{ m.time | date:'HH:mm' }}</div>
     </div>
 

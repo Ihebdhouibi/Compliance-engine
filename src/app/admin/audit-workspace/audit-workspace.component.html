@@ -376,6 +376,7 @@
       <app-audit-bot
         [requestData]="request"
         [contextProvider]="aiContextProvider"
+        (insert)="onAiInsert($event)"
         (closed)="botOpen = false">
       </app-audit-bot>
     </div>

@@ -146,9 +146,28 @@
     }
   }
 
+  &__actions {
+    display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px;
+  }
+
   &__time {
     font-size: .63rem; color: rgb(var(--fg-rgb) / .2);
     font-family: t.$font-mono; padding: 0 3px;
+  }
+}
+
+.bot-act {
+  padding: 3px 8px;
+  font-size: .66rem; font-family: t.$font-mono;
+  background: rgb(var(--fg-rgb) / .04);
+  border: 1px solid rgb(var(--fg-rgb) / .12);
+  border-radius: 6px; color: rgb(var(--fg-rgb) / .55);
+  cursor: pointer; transition: all .15s;
+
+  &:hover {
+    background: rgb(var(--accent-rgb) / .15);
+    border-color: rgb(var(--accent-rgb) / .4);
+    color: rgb(var(--accent-strong-rgb));
   }
 }
 
