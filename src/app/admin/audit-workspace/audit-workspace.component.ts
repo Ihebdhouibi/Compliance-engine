@@ -1,4 +1,4 @@
-import {
+﻿import {
   Component, OnInit, OnDestroy, inject, ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -19,7 +19,7 @@ import { environment } from '../../environments/environment';
 import { RicsSearchService, RicsRuleResult, RicsEvidenceItem } from '../../services/rics-search.service';
 /**
  * Unified step model used by the workspace stepper.
- * Built from intake form steps (preferred — they carry the actual fields)
+ * Built from intake form steps (preferred â€” they carry the actual fields)
  * or from auditor process steps (fallback when no form template is available).
  */
 interface WorkspaceStep {
@@ -108,7 +108,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   toggleChat(): void {
     this.showChat = !this.showChat;
   }
-  // ── Phase 2: per-question verdicts + findings/recs (per step) ──────
+  // â”€â”€ Phase 2: per-question verdicts + findings/recs (per step) â”€â”€â”€â”€â”€â”€
   /** verdicts[stepId][fieldId] = verdict */
   verdicts:        Record<number, Record<number, Verdict>> = {};
   findings:        Record<number, Finding[]>        = {};
@@ -119,31 +119,32 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   viewingFileName: string | null = null;
   isLoadingFile    = false;
 
-  // ── OCR (extracted-text preview per evidence file) ─────────────────
+  // â”€â”€ OCR (extracted-text preview per evidence file) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   ocrByMedia: Record<number, OcrResult> = {};
   showOcrViewer = false;
   viewingOcr:   OcrResult | null = null;
   private ocrPollHandle: any = null;
 
-  // ── Phase 3: unified Evidence Drawer ───────────────────────────────
+  // â”€â”€ Phase 3: unified Evidence Drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   showDrawer       = false;
   drawerMedia:     { id: number; url: string; name: string } | null = null;
+  drawerMediaIndex = 0;
   drawerTab:       'preview' | 'ocr' = 'preview';
   drawerLoading    = false;
   drawerBlobUrl:   SafeResourceUrl | null = null;
   private drawerObjectUrl: string | null = null;
 
-  // ── Phase 4: RICS clause picker (per-finding) ──────────────────────
+  // â”€â”€ Phase 4: RICS clause picker (per-finding) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   pickerOpenFor: string | null = null;     // finding.id currently picking
   pickerQuery   = '';
   pickerLoading = false;
   pickerResults: RicsRuleResult[] = [];
   private pickerDebounce: any = null;
 
-  // ── Phase 5: dismissed AI suggestions (per-step, session-only) ─────
+  // â”€â”€ Phase 5: dismissed AI suggestions (per-step, session-only) â”€â”€â”€â”€â”€
   dismissedSuggestions: Record<number, Set<string>> = {};
 
-  // ── Grounded AI suggestions fetched from the RAG /rules/evidence-check ──
+  // â”€â”€ Grounded AI suggestions fetched from the RAG /rules/evidence-check â”€â”€
   private aiSuggestions: Record<number, string[]> = {};
   private aiSuggestRequested = new Set<number>();
   aiSuggestLoading: Record<number, boolean> = {};
@@ -191,7 +192,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
           this.autoStart(id);
         }
 
-        // Load intake form template — each form step becomes a workspace step.
+        // Load intake form template â€” each form step becomes a workspace step.
         // This gives the stepper meaningful navigation (Prev/Next across each
         // intake section) AND exact per-step answer filtering by fieldId.
         this.loadFormSteps(req.auditType);
@@ -212,7 +213,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
           .sort((a, b) => (a.stepOrder ?? 0) - (b.stepOrder ?? 0));
 
         if (formSteps.length > 0) {
-          // Only surface steps that actually carry a mapped customer response —
+          // Only surface steps that actually carry a mapped customer response â€”
           // the auditor/admin workspace shouldn't list empty intake sections.
           this.steps = formSteps
             .map(s => ({
@@ -224,13 +225,13 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
             .filter(s => this.answersForStep(s).length > 0);
 
           if (this.steps.length === 0) {
-            // Template exists but nothing mapped — fall back so the workspace
+            // Template exists but nothing mapped â€” fall back so the workspace
             // isn't left empty.
             this.loadStepsByAuditType(auditType);
             return;
           }
         } else {
-          // No intake form steps — fall back to auditor process steps.
+          // No intake form steps â€” fall back to auditor process steps.
           this.loadStepsByAuditType(auditType);
           return;
         }
@@ -318,7 +319,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ── Meta (de)serialization ───────────────────────────────────────
+  // â”€â”€ Meta (de)serialization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   private emptyMeta(): StepMeta {
     return { verdicts: {}, findings: [], recommendations: [] };
   }
@@ -360,7 +361,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return `${META_OPEN}${JSON.stringify(meta)}${META_CLOSE}\n${note}`;
   }
 
-  // ── Verdict helpers ──────────────────────────────────────────────
+  // â”€â”€ Verdict helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   verdictFor(stepId: number, fieldId: number): Verdict | null {
     return this.verdicts[stepId]?.[fieldId] ?? null;
   }
@@ -408,7 +409,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return Object.values(this.recommendations).reduce((n, arr) => n + arr.length, 0);
   }
 
-  // ── Findings ─────────────────────────────────────────────────────
+  // â”€â”€ Findings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   currentFindings(): Finding[] {
     const id = this.currentStep?.id;
     if (id == null) return [];
@@ -448,7 +449,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     if (f) { f.description = text; }
   }
 
-  // ── Recommendations ──────────────────────────────────────────────
+  // â”€â”€ Recommendations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   currentRecs(): Recommendation[] {
     const id = this.currentStep?.id;
     if (id == null) return [];
@@ -565,7 +566,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.viewingFileName = null;
   }
 
-  // ── OCR ────────────────────────────────────────────────────────────
+  // â”€â”€ OCR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   /** Fetch all OCR rows for the audit and index them by mediaId. */
   loadOcr(auditId: number, scheduleNext = true): void {
     const token   = this.tokenSvc.getToken();
@@ -596,7 +597,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     const pending = Object.values(this.ocrByMedia).some(
       r => r.status === 'PENDING' || r.status === 'RUNNING'
     );
-    // Always re-poll at least once after first load — fresh submits may not
+    // Always re-poll at least once after first load â€” fresh submits may not
     // have created rows yet.
     const empty = Object.keys(this.ocrByMedia).length === 0;
     if (pending || empty) {
@@ -611,14 +612,14 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   ocrLabel(r: OcrResult | null): string {
-    if (!r) return 'OCR queued';
+    if (!r) return '';
     switch (r.status) {
-      case 'PENDING': return 'OCR pending';
-      case 'RUNNING': return 'OCR running';
-      case 'DONE':    return `OCR · ${r.pageCount ?? 0}p`;
-      case 'FAILED':  return 'OCR failed';
+      case 'PENDING': return 'Extracting...';
+      case 'RUNNING': return 'Extracting...';
+      case 'DONE':    return 'Extracted text';
+      case 'FAILED':  return 'Extraction failed';
     }
-    return 'OCR';
+    return '';
   }
 
   ocrClass(r: OcrResult | null): string {
@@ -663,16 +664,26 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return !!r && r.status === 'FAILED';
   }
 
-  // ── Phase 3: Evidence Drawer ──────────────────────────────────────
+  /** Return a human-readable file name, stripping UUIDs if no real name exists. */
+  displayName(name: string | undefined | null, index = 0): string {
+    if (!name) return "Evidence " + index;
+    // UUID pattern: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(name);
+    if (isUuid) return "Evidence " + index;
+    return name;
+  }
+
+  // â”€â”€ Phase 3: Evidence Drawer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   /**
    * Open the unified evidence drawer for a file: shows preview (image / PDF /
    * generic) + OCR text + one-click "Link to finding". Replaces the older
    * separate file viewer + OCR modal flows for evidence chips.
    */
-  openEvidence(media: { id: number; url: string; name: string },
+  openEvidence(media: { id: number; url: string; name: string }, index = 0,
                tab: 'preview' | 'ocr' = 'preview'): void {
     this.releaseDrawerBlob();
     this.drawerMedia   = media;
+    this.drawerMediaIndex = index;
     this.drawerTab     = tab;
     this.showDrawer    = true;
     this.drawerLoading = true;
@@ -731,7 +742,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
     const ocr     = this.drawerOcr();
     const snippet = (ocr?.rawText || '').trim().slice(0, 280);
-    const tail    = snippet && (ocr?.rawText || '').length > 280 ? '…' : '';
+    const tail    = snippet && (ocr?.rawText || '').length > 280 ? 'â€¦' : '';
 
     this.addFinding();
     const list = this.findings[this.currentStep.id] ?? [];
@@ -744,7 +755,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // ── Phase 4: RICS clause picker ──────────────────────────────────
+  // â”€â”€ Phase 4: RICS clause picker â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   openClausePicker(findingId: string): void {
     if (this.request?.status === 'COMPLETED') return;
     this.pickerOpenFor = findingId;
@@ -818,7 +829,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // ── Phase 5: AI suggestion actions ────────────────────────────────
+  // â”€â”€ Phase 5: AI suggestion actions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   suggestionToFinding(text: string): void {
     if (!this.currentStep || this.request?.status === 'COMPLETED') return;
     this.addFinding();
@@ -882,7 +893,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         r.submittedBy?.companyInfo?.companyName ||
         [r.submittedBy?.firstName, r.submittedBy?.lastName].filter(Boolean).join(' ') ||
         'Unknown company';
-      lines.push(`Audit #${r.id} — ${company} — type ${r.auditType ?? 'N/A'} — status ${r.status ?? 'N/A'}.`);
+      lines.push(`Audit #${r.id} â€” ${company} â€” type ${r.auditType ?? 'N/A'} â€” status ${r.status ?? 'N/A'}.`);
     }
     if (step) lines.push(`Current step under review: ${step.name}.`);
 
@@ -902,7 +913,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         const name = m?.name || m?.url || `file ${m?.id}`;
         const ocr = this.ocrFor(m?.id);
         if (ocr?.status === 'DONE' && ocr.rawText?.trim()) {
-          lines.push(`Evidence "${name}" — extracted text:\n${ocr.rawText.trim().slice(0, 3000)}`);
+          lines.push(`Evidence "${name}" â€” extracted text:\n${ocr.rawText.trim().slice(0, 3000)}`);
         } else if (ocr) {
           lines.push(`Evidence "${name}": OCR ${ocr.status.toLowerCase()}, no text available yet.`);
         } else {
@@ -912,7 +923,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     });
 
     const ctx = lines.join('\n');
-    return ctx.length > 20000 ? ctx.slice(0, 20000) + '\n…(truncated)' : ctx;
+    return ctx.length > 20000 ? ctx.slice(0, 20000) + '\nâ€¦(truncated)' : ctx;
   }
 
   /** Bound provider handed to the assistant so it always reads fresh state. */
@@ -944,7 +955,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // ── Step-aware AI suggestions (heuristic, client-side stub) ──
+  // â”€â”€ Step-aware AI suggestions (heuristic, client-side stub) â”€â”€
   /**
    * Suggestions shown in the "AI Suggestions" box. Prefers grounded hints
    * fetched from the RAG knowledge base (RICS evidence-check, cited to clause
@@ -992,7 +1003,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     const what = (e.evidence_implied || e.requirement_text || '').trim();
     if (!what) return '';
     const cite = e.rule_id
-      ? ` (${e.rule_id}${e.section ? ' · §' + e.section : ''})`
+      ? ` (${e.rule_id}${e.section ? ' Â· Â§' + e.section : ''})`
       : '';
     return `${what}${cite}`;
   }
@@ -1008,13 +1019,13 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
       `Review the ${stepAnsCount} answer${stepAnsCount === 1 ? '' : 's'} mapped to this step for completeness.`,
       fileCount > 0
         ? `Cross-check claims against the ${fileCount} attached evidence file${fileCount === 1 ? '' : 's'}.`
-        : 'No evidence files attached — request supporting documents.'
+        : 'No evidence files attached â€” request supporting documents.'
     ];
 
     if (/risk|hazard|threat/.test(name)) {
       return [
         'Identify primary risk drivers in the submitted answers.',
-        'Estimate likelihood × impact for each identified risk.',
+        'Estimate likelihood Ã— impact for each identified risk.',
         ...generic
       ];
     }
@@ -1045,7 +1056,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     ];
   }
 
-  // ── Evidence helpers ──
+  // â”€â”€ Evidence helpers â”€â”€
   /**
    * Answers that belong to the current step.
    * If the step carries `fieldIds` (intake-form-based), filter by exact membership.
@@ -1058,7 +1069,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   /**
    * Resolve the customer answers that belong to a given step, pairing main
    * answers with their supporting notes and evidence files. Returns an empty
-   * array when nothing is mapped — used both to render a step and to decide
+   * array when nothing is mapped â€” used both to render a step and to decide
    * whether the step should appear in the workspace at all.
    */
   answersForStep(step: WorkspaceStep) {
@@ -1118,14 +1129,14 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   }
   return total;
 }
-  // ── Quick-insert chip → append snippet to current draft ──
+  // â”€â”€ Quick-insert chip â†’ append snippet to current draft â”€â”€
   insertSnippet(label: string): void {
     if (!this.currentStep || this.request?.status === 'COMPLETED') return;
     const map: Record<string, string> = {
-      'Compliance OK':       '\n\n✓ Compliance assessment: Requirements met. ',
-      'Risk identified':     '\n\n⚠ Risk identified: ',
-      'Needs more evidence': '\n\n✱ Additional evidence required: ',
-      'Recommendation':      '\n\n→ Recommendation: '
+      'Compliance OK':       '\n\nâœ“ Compliance assessment: Requirements met. ',
+      'Risk identified':     '\n\nâš  Risk identified: ',
+      'Needs more evidence': '\n\nâœ± Additional evidence required: ',
+      'Recommendation':      '\n\nâ†’ Recommendation: '
     };
     const snippet = map[label] ?? `\n\n${label}: `;
     const current = this.currentDraft || '';
@@ -1257,7 +1268,7 @@ private persist(status: 'DRAFT' | 'SAVED'): void {
   });
 }
 
-// ★ Submit: save ALL steps with content, then complete
+// â˜… Submit: save ALL steps with content, then complete
 submitAudit(): void {
   if (!this.request) return;
   this.isCompleting = true;
@@ -1305,3 +1316,18 @@ submitAudit(): void {
   });
 }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

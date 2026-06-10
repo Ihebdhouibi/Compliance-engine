@@ -1,6 +1,6 @@
-<div class="workspace">
+﻿<div class="workspace">
 
-  <!-- ══ TOP BAR ══ -->
+  <!-- â•â• TOP BAR â•â• -->
   <div class="ws-topbar">
     <button class="ws-back" (click)="goBack()">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -32,9 +32,9 @@
         <span class="ws-roll__bar"><span class="ws-roll__fill" [style.width.%]="overallProgress"></span></span>
         <span class="ws-roll__txt">{{ overallProgress }}%</span>
         <span class="ws-roll__stat ws-roll__stat--find" *ngIf="totalFindings"
-              [title]="totalFindings + ' findings'">⚠ {{ totalFindings }}</span>
+              [title]="totalFindings + ' findings'">âš  {{ totalFindings }}</span>
         <span class="ws-roll__stat ws-roll__stat--rec"  *ngIf="totalRecommendations"
-              [title]="totalRecommendations + ' recommendations'">→ {{ totalRecommendations }}</span>
+              [title]="totalRecommendations + ' recommendations'">â†’ {{ totalRecommendations }}</span>
       </div>
 
       <ng-container *ngIf="request?.status !== 'COMPLETED'">
@@ -48,20 +48,20 @@
                 (click)="submitAudit()"
                 [disabled]="isCompleting">
           <span class="mini-spin" *ngIf="isCompleting"></span>
-          {{ isCompleting ? 'Submitting…' : 'Submit Audit' }}
+          {{ isCompleting ? 'Submittingâ€¦' : 'Submit Audit' }}
         </button>
       </ng-container>
 
       <div class="ws-completed-badge" *ngIf="request?.status === 'COMPLETED'">
-        ✓ Audit Completed
+        âœ“ Audit Completed
       </div>
     </div>
   </div>
 
-  <!-- ══ 3-PANE COCKPIT ══ -->
+  <!-- â•â• 3-PANE COCKPIT â•â• -->
   <div class="ws-cockpit" *ngIf="steps.length > 0">
 
-    <!-- ╞══ LEFT: vertical step rail ══╡ -->
+    <!-- â•žâ•â• LEFT: vertical step rail â•â•â•¡ -->
     <aside class="ws-rail">
       <div class="rail-head">
         <span class="rail-head__title">Audit Steps</span>
@@ -101,10 +101,10 @@
           <span class="rail-item__body">
             <span class="rail-item__name">{{ s.name }}</span>
             <span class="rail-item__sub">
-              <ng-container *ngIf="stepRollup(s) === 'compliant'">✓ Compliant</ng-container>
-              <ng-container *ngIf="stepRollup(s) === 'partial'">⚠ Partial</ng-container>
-              <ng-container *ngIf="stepRollup(s) === 'non-compliant'">✗ Non-compliant</ng-container>
-              <ng-container *ngIf="stepRollup(s) === 'pending'">○ Pending</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'compliant'">Compliant</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'partial'">Partial</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'non-compliant'">âœ— Non-compliant</ng-container>
+              <ng-container *ngIf="stepRollup(s) === 'pending'">Pending</ng-container>
               <span class="rail-item__dot" *ngIf="(findings[s.id]?.length || 0) > 0"
                     [title]="findings[s.id].length + ' findings'">· {{ findings[s.id].length }}f</span>
             </span>
@@ -113,7 +113,7 @@
       </ol>
     </aside>
 
-    <!-- ╞══ CENTER: per-question cards ══╡ -->
+    <!-- â•žâ•â• CENTER: per-question cards â•â•â•¡ -->
     <section class="ws-center" *ngIf="currentStep">
       <div class="center-head">
         <div class="center-head__top">
@@ -142,7 +142,7 @@
             <circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/>
           </svg>
           AI Suggestions ({{ currentSuggestions.length }})
-          <span class="ai-suggest-loading" *ngIf="suggestionsLoading">· grounding…</span>
+          <span class="ai-suggest-loading" *ngIf="suggestionsLoading">· groundingâ€¦</span>
         </summary>
         <ul class="ai-suggest-list">
           <ng-container *ngFor="let s of currentSuggestions">
@@ -150,11 +150,11 @@
               <span class="ai-suggest-item__text">{{ s }}</span>
               <div class="ai-suggest-item__actions" *ngIf="request?.status !== 'COMPLETED'">
                 <button class="ai-suggest-btn ai-suggest-btn--find"
-                        (click)="suggestionToFinding(s)" title="Convert to finding">→ Finding</button>
+                        (click)="suggestionToFinding(s)" title="Convert to finding">â†’ Finding</button>
                 <button class="ai-suggest-btn ai-suggest-btn--rec"
-                        (click)="suggestionToRecommendation(s)" title="Convert to recommendation">→ Rec</button>
+                        (click)="suggestionToRecommendation(s)" title="Convert to recommendation">â†’ Rec</button>
                 <button class="ai-suggest-btn ai-suggest-btn--dismiss"
-                        (click)="dismissSuggestion(s)" title="Dismiss">×</button>
+                        (click)="dismissSuggestion(s)" title="Dismiss">Ã—</button>
               </div>
             </li>
           </ng-container>
@@ -178,36 +178,36 @@
 
           <div class="qcard__answer">
             <span class="qcard__answer-lbl">Customer answer</span>
-            <div class="qcard__answer-val">{{ a.answerValue || '—' }}</div>
+            <div class="qcard__answer-val">{{ a.answerValue || 'â€”' }}</div>
           </div>
 
           <!-- Evidence chips -->
           <div class="qcard__evidence" *ngIf="a.fileMedia || (a.files && a.files.length)">
             <ng-container *ngIf="a.fileMedia as fm">
               <div class="evidence-chip"
-                   (click)="openEvidence({id: fm.id, url: fm.url, name: fm.name})"
+                   (click)="openEvidence({id: fm.id, url: fm.url, name: fm.name}, 0)"
                    role="button" tabindex="0"
-                   (keyup.enter)="openEvidence({id: fm.id, url: fm.url, name: fm.name})">
+                   (keyup.enter)="openEvidence({id: fm.id, url: fm.url, name: fm.name}, 0)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
-                <span class="evidence-chip__name" [title]="fm.name">{{ fm.name }}</span>
+                <span class="evidence-chip__name" [title]="displayName(fm.name, 1)">{{ displayName(fm.name, 1) }}</span>
                 <span [class]="ocrClass(ocrFor(fm.id))">{{ ocrLabel(ocrFor(fm.id)) }}</span>
                 <button class="evidence-chip__btn evidence-chip__btn--retry"
                         *ngIf="isRetryable(ocrFor(fm.id))" (click)="retryOcr(fm.id, $event)">Retry</button>
               </div>
             </ng-container>
-            <ng-container *ngFor="let f of (a.files || [])">
+            <ng-container *ngFor="let f of (a.files || []); let i = index">
               <div class="evidence-chip"
-                   (click)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name})"
+                   (click)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name}, i + 1)"
                    role="button" tabindex="0"
-                   (keyup.enter)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name})">
+                   (keyup.enter)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name}, i + 1)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
-                <span class="evidence-chip__name" [title]="f.media.name">{{ f.media.name }}</span>
+                <span class="evidence-chip__name" [title]="displayName(f.media.name, a.fileMedia ? i + 2 : i + 1)">{{ displayName(f.media.name, a.fileMedia ? i + 2 : i + 1) }}</span>
                 <span [class]="ocrClass(ocrFor(f.media.id))">{{ ocrLabel(ocrFor(f.media.id)) }}</span>
                 <button class="evidence-chip__btn evidence-chip__btn--retry"
                         *ngIf="isRetryable(ocrFor(f.media.id))" (click)="retryOcr(f.media.id, $event)">Retry</button>
@@ -220,13 +220,13 @@
             <span class="verdict-row__lbl">Verdict</span>
             <button type="button" class="vchip vchip--compliant"
                     [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'compliant'"
-                    (click)="setVerdict(currentStep.id, a.fieldId, 'compliant')">✓ Compliant</button>
+                    (click)="setVerdict(currentStep.id, a.fieldId, 'compliant')">Compliant</button>
             <button type="button" class="vchip vchip--observation"
                     [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'observation'"
-                    (click)="setVerdict(currentStep.id, a.fieldId, 'observation')">⚠ Observation</button>
+                    (click)="setVerdict(currentStep.id, a.fieldId, 'observation')">Observation</button>
             <button type="button" class="vchip vchip--nc"
                     [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'non-conformity'"
-                    (click)="setVerdict(currentStep.id, a.fieldId, 'non-conformity')">✗ Non-conformity</button>
+                    (click)="setVerdict(currentStep.id, a.fieldId, 'non-conformity')">Non-conformity</button>
             <button type="button" class="vchip vchip--na"
                     [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'na'"
                     (click)="setVerdict(currentStep.id, a.fieldId, 'na')">N/A</button>
@@ -240,13 +240,13 @@
 
       <!-- Step nav -->
       <div class="center-nav">
-        <button class="ef-btn" (click)="goToStep(activeStep - 1)" [disabled]="activeStep === 0">← Prev</button>
+        <button class="ef-btn" (click)="goToStep(activeStep - 1)" [disabled]="activeStep === 0">â† Prev</button>
         <button class="ef-btn ef-btn--next" (click)="goToStep(activeStep + 1)"
-                [disabled]="activeStep >= steps.length - 1">Next →</button>
+                [disabled]="activeStep >= steps.length - 1">Next â†’</button>
       </div>
     </section>
 
-    <!-- ╞══ RIGHT: auditor deck ══╡ -->
+    <!-- â•žâ•â• RIGHT: auditor deck â•â•â•¡ -->
     <aside class="ws-deck" *ngIf="currentStep">
       <!-- Findings -->
       <div class="deck-section">
@@ -271,13 +271,13 @@
             <span class="finding__sev-dot" [ngClass]="'finding__sev-dot--' + f.severity"></span>
             <button class="finding__del" (click)="removeFinding(f.id)"
                     [disabled]="request?.status === 'COMPLETED'"
-                    title="Remove">×</button>
+                    title="Remove">Ã—</button>
           </div>
           <textarea class="finding__text"
                     [value]="f.description"
                     (input)="updateFindingText(f.id, $any($event.target).value)"
                     [disabled]="request?.status === 'COMPLETED'"
-                    placeholder="Describe the finding, clause reference, and evidence cited…"
+                    placeholder="Describe the finding, clause reference, and evidence citedâ€¦"
                     rows="2"></textarea>
 
           <!-- Phase 4: RICS clauses attached to this finding -->
@@ -287,7 +287,7 @@
               <strong>{{ c.ruleId }}</strong>
               <span class="clause-chip__title" *ngIf="c.shortTitle"> · {{ c.shortTitle }}</span>
               <button class="clause-chip__del" *ngIf="request?.status !== 'COMPLETED'"
-                      (click)="detachClause(f.id, c.ruleId)" title="Remove">×</button>
+                      (click)="detachClause(f.id, c.ruleId)" title="Remove">Ã—</button>
             </span>
             <button class="clause-add-btn" *ngIf="request?.status !== 'COMPLETED'"
                     (click)="openClausePicker(f.id)">+ Clause</button>
@@ -299,12 +299,12 @@
               <input type="text" class="clause-picker__input"
                      [(ngModel)]="pickerQuery"
                      (input)="onPickerQueryChange()"
-                     placeholder="Search RICS clauses (e.g. governance, transparency, oversight)…"
+                     placeholder="Search RICS clauses (e.g. governance, transparency, oversight)â€¦"
                      autofocus/>
-              <button class="clause-picker__close" (click)="closeClausePicker()" title="Close">×</button>
+              <button class="clause-picker__close" (click)="closeClausePicker()" title="Close">Ã—</button>
             </div>
             <div class="clause-picker__body">
-              <div class="clause-picker__loading" *ngIf="pickerLoading">Searching…</div>
+              <div class="clause-picker__loading" *ngIf="pickerLoading">Searchingâ€¦</div>
               <div class="clause-picker__empty"
                    *ngIf="!pickerLoading && pickerQuery.trim().length >= 3 && pickerResults.length === 0">
                 No matching clauses.
@@ -317,7 +317,7 @@
                       (click)="attachClause(f.id, r); closeClausePicker()">
                 <div class="clause-result__head">
                   <strong>{{ r.rule_id }}</strong>
-                  <span class="clause-result__section" *ngIf="r.payload.section">§{{ r.payload.section }}</span>
+                  <span class="clause-result__section" *ngIf="r.payload.section">Â§{{ r.payload.section }}</span>
                   <span class="clause-result__score">{{ (r.score * 100).toFixed(0) }}%</span>
                 </div>
                 <div class="clause-result__title" *ngIf="r.payload.short_title">{{ r.payload.short_title }}</div>
@@ -343,11 +343,11 @@
                     [value]="r.description"
                     (input)="updateRecText(r.id, $any($event.target).value)"
                     [disabled]="request?.status === 'COMPLETED'"
-                    placeholder="Recommend a corrective action, owner and timeframe…"
+                    placeholder="Recommend a corrective action, owner and timeframeâ€¦"
                     rows="2"></textarea>
           <button class="rec__del" (click)="removeRecommendation(r.id)"
                   [disabled]="request?.status === 'COMPLETED'"
-                  title="Remove">×</button>
+                  title="Remove">Ã—</button>
         </div>
       </div>
 
@@ -364,14 +364,14 @@
                   [value]="currentDraft"
                   (input)="setDraft($any($event.target).value)"
                   [disabled]="request?.status === 'COMPLETED'"
-                  placeholder="Overall observations and conclusion for this step…"
+                  placeholder="Overall observations and conclusion for this stepâ€¦"
                   rows="5"></textarea>
       </div>
     </aside>
 
   </div>
 
-  <!-- ══ FLOATING CHAT (panel + FAB) ══ -->
+  <!-- â•â• FLOATING CHAT (panel + FAB) â•â• -->
   <div class="ws-chat" [class.ws-chat--open]="botOpen">
     <div class="ws-chat__panel" *ngIf="botOpen">
       <app-audit-bot
@@ -402,7 +402,7 @@
 
 </div>
 
-<!-- ══ Phase 3: Evidence Drawer (preview + OCR + link to finding) ══ -->
+<!-- â•â• Phase 3: Evidence Drawer (preview + OCR + link to finding) â•â• -->
 <ng-container *ngIf="showDrawer && drawerMedia">
   <div class="ws-drawer-backdrop" (click)="closeDrawer()"></div>
   <aside class="ws-drawer" role="dialog" aria-label="Evidence drawer">
@@ -412,7 +412,7 @@
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
         </svg>
-        <span class="ws-drawer__name" [title]="drawerMedia.name">{{ drawerMedia.name }}</span>
+        <span class="ws-drawer__name" [title]="displayName(drawerMedia.name, drawerMediaIndex)">{{ displayName(drawerMedia.name, drawerMediaIndex) }}</span>
       </div>
       <button class="ws-drawer__close" (click)="closeDrawer()" aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
@@ -437,7 +437,7 @@
       <!-- Preview tab -->
       <ng-container *ngIf="drawerTab === 'preview'">
         <div class="file-loading" *ngIf="drawerLoading">
-          <div class="loader"></div><span>Loading…</span>
+          <div class="loader"></div><span>Loadingâ€¦</span>
         </div>
         <img *ngIf="!drawerLoading && drawerBlobUrl && isImage(drawerMedia.name)"
              [src]="drawerBlobUrl" [alt]="drawerMedia.name" class="ws-drawer__img"/>
@@ -482,3 +482,13 @@
     </footer>
   </aside>
 </ng-container>
+
+
+
+
+
+
+
+
+
+
