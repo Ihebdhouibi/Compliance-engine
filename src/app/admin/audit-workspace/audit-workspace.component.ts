@@ -207,12 +207,23 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
           .sort((a, b) => (a.stepOrder ?? 0) - (b.stepOrder ?? 0));
 
         if (formSteps.length > 0) {
-          this.steps = formSteps.map(s => ({
-            id:        s.id,
-            name:      s.title,
-            stepOrder: s.stepOrder,
-            fieldIds:  (s.fields ?? []).map(f => f.id)
-          }));
+          // Only surface steps that actually carry a mapped customer response —
+          // the auditor/admin workspace shouldn't list empty intake sections.
+          this.steps = formSteps
+            .map(s => ({
+              id:        s.id,
+              name:      s.title,
+              stepOrder: s.stepOrder,
+              fieldIds:  (s.fields ?? []).map(f => f.id)
+            }))
+            .filter(s => this.answersForStep(s).length > 0);
+
+          if (this.steps.length === 0) {
+            // Template exists but nothing mapped — fall back so the workspace
+            // isn't left empty.
+            this.loadStepsByAuditType(auditType);
+            return;
+          }
         } else {
           // No intake form steps — fall back to auditor process steps.
           this.loadStepsByAuditType(auditType);
@@ -905,8 +916,17 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
    * If `fieldIds` is empty (process-step fallback / default step), show all answers.
    */
   get currentStepAnswers() {
+    return this.currentStep ? this.answersForStep(this.currentStep) : [];
+  }
+
+  /**
+   * Resolve the customer answers that belong to a given step, pairing main
+   * answers with their supporting notes and evidence files. Returns an empty
+   * array when nothing is mapped — used both to render a step and to decide
+   * whether the step should appear in the workspace at all.
+   */
+  answersForStep(step: WorkspaceStep) {
   const answers = this.request?.answers ?? [];
-  const step = this.currentStep;
   if (!step) return [];
   if (!step.fieldIds || step.fieldIds.length === 0) return [];
 
