@@ -1235,6 +1235,26 @@
   color: rgb(var(--fg-strong-rgb));
   white-space: pre-wrap; word-break: break-word;
   overflow: auto;
+
+  .ocr-hl {
+    background: color-mix(in srgb, var(--color-btn-add, #059669) 26%, transparent);
+    color: rgb(var(--fg-strong-rgb));
+    border-radius: 2px; padding: 0 1px;
+  }
+}
+.ocr-hl-toggle {
+  margin-left: auto;
+  padding: 2px 9px; border-radius: 999px; cursor: pointer;
+  font: 600 .66rem t.$font-mono; letter-spacing: .03em;
+  background: rgb(var(--fg-rgb) / .05);
+  border: 1px solid rgb(var(--fg-rgb) / .15);
+  color: rgb(var(--fg-rgb) / .55);
+  transition: all .15s;
+  &--on {
+    background: color-mix(in srgb, var(--color-btn-add, #059669) 14%, transparent);
+    border-color: color-mix(in srgb, var(--color-btn-add, #059669) 40%, transparent);
+    color: var(--color-btn-add, #059669);
+  }
 }
 .ws-drawer__ocr-empty {
   padding: 24px; text-align: center;

@@ -457,9 +457,17 @@
             <span *ngIf="o.elapsedMs != null"><strong>Elapsed:</strong> {{ o.elapsedMs }} ms</span>
             <button class="evidence-chip__btn evidence-chip__btn--retry"
                     *ngIf="isRetryable(o)" (click)="retryOcr(o.mediaId, $event)">Retry OCR</button>
+            <button type="button" class="ocr-hl-toggle" *ngIf="o.rawText"
+                    [class.ocr-hl-toggle--on]="ocrHighlightOn"
+                    (click)="ocrHighlightOn = !ocrHighlightOn"
+                    title="Highlight terms from this step's questions in the extracted text">
+              {{ ocrHighlightOn ? 'Highlight: on' : 'Highlight: off' }}
+            </button>
           </div>
           <div *ngIf="o.error" class="ws-drawer__ocr-error">{{ o.error }}</div>
-          <pre class="ws-drawer__ocr-text" *ngIf="o.rawText">{{ o.rawText }}</pre>
+          <pre class="ws-drawer__ocr-text" *ngIf="o.rawText && ocrHighlightOn"
+               [innerHTML]="highlightedOcrText(o.rawText)"></pre>
+          <pre class="ws-drawer__ocr-text" *ngIf="o.rawText && !ocrHighlightOn">{{ o.rawText }}</pre>
           <div *ngIf="!o.rawText && !o.error" class="ws-drawer__ocr-empty">
             No text was extracted yet.
           </div>

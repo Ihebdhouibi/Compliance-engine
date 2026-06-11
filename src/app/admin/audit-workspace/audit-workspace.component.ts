@@ -6,7 +6,7 @@ import { ChatComponent } from '../../features/chat/chat.component';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer, SafeResourceUrl, SafeHtml } from '@angular/platform-browser';
 
 import { AuditRequestService } from '../../services/audit-request.service';
 import { AuditFormService } from '../../services/audit-form.service';
@@ -631,6 +631,56 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
       case 'FAILED':  return 'Text extraction failed — click Retry';
     }
     return 'View extracted text';
+  }
+
+  // ── Evidence relevance highlight (OCR text tab) ──────────────────
+  /** Toggle for highlighting question-relevant terms in the extracted text. */
+  ocrHighlightOn = true;
+  private _ocrHlCache: { key: string; html: SafeHtml } | null = null;
+
+  /**
+   * Render the OCR text with terms drawn from the current step's questions
+   * highlighted, so the auditor can spot the evidence-relevant lines at a
+   * glance. Keyword-based for now; escapes the source before marking.
+   */
+  highlightedOcrText(text: string): SafeHtml {
+    const keywords = this.relevanceKeywords();
+    const key = `${this.drawerMedia?.id ?? ''}|${text.length}|${keywords.join(',')}`;
+    if (this._ocrHlCache?.key === key) return this._ocrHlCache.html;
+
+    let html = this.escapeHtml(text);
+    if (keywords.length) {
+      const pattern = keywords
+        .slice()
+        .sort((a, b) => b.length - a.length)
+        .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+        .join('|');
+      const re = new RegExp(`\\b(${pattern})\\b`, 'gi');
+      html = html.replace(re, '<mark class="ocr-hl">$1</mark>');
+    }
+    const safe = this.sanitizer.bypassSecurityTrustHtml(html);
+    this._ocrHlCache = { key, html: safe };
+    return safe;
+  }
+
+  /** Meaningful terms from the step name + its question labels. */
+  private relevanceKeywords(): string[] {
+    const stop = new Set([
+      'the','and','for','that','with','this','have','are','was','from','your','firm',
+      'must','any','all','has','been','which','their','they','will','into','such','when',
+      'where','what','does','did','not','but','can','may','should','about','these','those',
+      'each','per','via','also','use','used','using','staff','firms','members','responsible'
+    ]);
+    const src = [
+      this.currentStep?.name ?? '',
+      ...this.currentStepAnswers.map((a: any) => a?.fieldLabel ?? '')
+    ].join(' ').toLowerCase();
+    const words = src.match(/[a-z][a-z-]{3,}/g) ?? [];
+    return Array.from(new Set(words.filter(w => !stop.has(w))));
+  }
+
+  private escapeHtml(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
   ocrClass(r: OcrResult | null): string {
