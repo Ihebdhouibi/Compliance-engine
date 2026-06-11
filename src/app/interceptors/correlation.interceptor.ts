@@ -34,7 +34,8 @@ export const correlationInterceptor: HttpInterceptorFn = (req, next) => {
       },
       error: err => {
         const ms = Math.round(performance.now() - t0);
-        log.error('ng.http', `x ${err?.status ?? 'ERR'} ${req.method} ${shortUrl(req.url)} (${ms}ms)`, { cid });
+        log.error('ng.http', `x ${err?.status ?? 'ERR'} ${req.method} ${shortUrl(req.url)} (${ms}ms)`,
+          { cid, message: err?.message, error: err?.error });
       },
     })
   );

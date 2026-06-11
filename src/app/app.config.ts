@@ -1,6 +1,7 @@
 import {
   ApplicationConfig,
   APP_INITIALIZER,
+  ErrorHandler,
   provideZoneChangeDetection
 } from '@angular/core';
 import { provideRouter }     from '@angular/router';
@@ -8,6 +9,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes }            from './app.routes';
 import { authInterceptor }   from './interceptors/auth.interceptor';
 import { correlationInterceptor } from './interceptors/correlation.interceptor';
+import { GlobalErrorHandler } from './core/logging/global-error-handler';
 import { DesignSettingsService } from './services/design-settings.service';
 import { AuthService }       from './services/auth.service';
 import { TokenService }      from './shared/token.service';
@@ -38,6 +40,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(withInterceptors([correlationInterceptor, authInterceptor])),
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
 
     // 1. Load design settings (applies CSS vars, title, favicon)
     {
