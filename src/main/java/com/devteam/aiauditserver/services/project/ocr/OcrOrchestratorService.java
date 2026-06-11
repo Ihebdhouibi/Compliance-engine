@@ -170,7 +170,9 @@ public class OcrOrchestratorService {
                 throw new RuntimeException("Invalid response from OCR service");
             }
         } catch (Exception e) {
-            log.warn("[OCR] failed audit={} media={}: {}", auditId, media.getId(), e.getMessage());
+            // Passing the throwable as the last arg makes SLF4J log the full
+            // stack trace into springboot.log (not just the message).
+            log.error("[OCR] failed audit={} media={}", auditId, media.getId(), e);
             row.setStatus(EvidenceOcrResult.OcrStatus.FAILED);
             row.setError("OCR failed: " + e.getMessage());
             ocrRepo.save(row);

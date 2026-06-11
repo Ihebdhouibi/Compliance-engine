@@ -48,6 +48,11 @@ public class CorrelationIdFilter extends OncePerRequestFilter {
         log.info("-> {} {}", request.getMethod(), request.getRequestURI());
         try {
             chain.doFilter(request, response);
+        } catch (Exception ex) {
+            // Log the full stack trace (with cid) for any error that escapes the
+            // handler chain, then re-throw so normal error handling continues.
+            log.error("request error {} {}", request.getMethod(), request.getRequestURI(), ex);
+            throw ex;
         } finally {
             long ms = System.currentTimeMillis() - t0;
             log.info("<- {} {} {} ({}ms)", response.getStatus(), request.getMethod(),
