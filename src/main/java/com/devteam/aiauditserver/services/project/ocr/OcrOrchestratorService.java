@@ -1,5 +1,6 @@
 package com.devteam.aiauditserver.services.project.ocr;
 
+import com.devteam.aiauditserver.config.CorrelationIdFilter;
 import com.devteam.aiauditserver.models.File.MediaModel;
 import com.devteam.aiauditserver.models.project.AuditRequest.AuditRequest;
 import com.devteam.aiauditserver.models.project.AuditRequest.AuditRequestAnswer;
@@ -9,6 +10,7 @@ import com.devteam.aiauditserver.repositories.File.MediaRepository;
 import com.devteam.aiauditserver.repositories.project.EvidenceOcrResultRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpEntity;
@@ -37,7 +39,7 @@ import java.util.Map;
 @Service
 public class OcrOrchestratorService {
 
-    private static final Logger log = LoggerFactory.getLogger(OcrOrchestratorService.class);
+    private static final Logger log = LoggerFactory.getLogger("spring.ocr-orchestrator");
 
     @Value("${ocr.base-url:http://localhost:8000}")
     private String ocrBaseUrl;
@@ -133,6 +135,13 @@ public class OcrOrchestratorService {
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+            // Forward the correlation id so the FastAPI OCR logs share this cid.
+            String cid = MDC.get(CorrelationIdFilter.MDC_KEY);
+            if (cid != null) {
+                headers.add(CorrelationIdFilter.HEADER, cid);
+            }
+
+            log.info("[OCR] upload > audit={} media={} file={}", auditId, media.getId(), media.getName());
 
             // Call Python's synchronous /upload endpoint
             @SuppressWarnings("unchecked")

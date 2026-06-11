@@ -70,4 +70,6 @@ logging:
         descriptor:
           sql: DEBUG
     root: INFO
+  pattern:
+    console: "%d{HH:mm:ss} | %-5level | %-22logger{0} | cid=%X{cid:-} | %msg%n"
 
