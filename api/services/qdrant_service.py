@@ -2,7 +2,10 @@ from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from api.config import QDRANT_URL, QDRANT_COLLECTION
+from api.logging_config import get_logger, timed
 from api.services.embedder import get_embedder
+
+_log = get_logger("svc.qdrant")
 
 
 class QdrantService:
@@ -44,17 +47,21 @@ class QdrantService:
         applies_to: str | None = None,
         entry_type: str | None = None,
     ) -> list[dict]:
-        vector = self._embed_query(query)
-        hits = self._client.search(
-            collection_name=QDRANT_COLLECTION,
-            query_vector=vector,
-            query_filter=self._build_filter(section, applies_to, entry_type),
-            limit=limit,
-        )
-        return [
-            {"rule_id": h.payload.get("rule_id", ""), "score": h.score, "entry_type": h.payload.get("entry_type", ""), "payload": h.payload}
-            for h in hits
-        ]
+        with timed(_log, "search", qlen=len(query), limit=limit,
+                   section=section or "-", type=entry_type or "-") as span:
+            vector = self._embed_query(query)
+            hits = self._client.search(
+                collection_name=QDRANT_COLLECTION,
+                query_vector=vector,
+                query_filter=self._build_filter(section, applies_to, entry_type),
+                limit=limit,
+            )
+            results = [
+                {"rule_id": h.payload.get("rule_id", ""), "score": h.score, "entry_type": h.payload.get("entry_type", ""), "payload": h.payload}
+                for h in hits
+            ]
+            span.set(hits=len(results), top=round(results[0]["score"], 3) if results else 0)
+            return results
 
     def get_rule(self, rule_id: str) -> dict | None:
         results = self._client.scroll(

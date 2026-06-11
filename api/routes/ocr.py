@@ -8,10 +8,12 @@ from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 
+from api.logging_config import get_logger, timed
 from api.services.ocr_queue import get_queue
 from api.services.ocr_engine import get_engine
 
 router = APIRouter(prefix="/ocr", tags=["OCR"])
+log = get_logger("fastapi.ocr")
 
 
 class OcrJobRequest(BaseModel):
@@ -90,17 +92,11 @@ async def upload_and_ocr(file: UploadFile = File(...)):
         tmp_path = tmp.name
 
     try:
-        # Run OCR
-        result = engine.recognize(tmp_path, mime=file.content_type)
-
-        # Print to terminal for immediate visibility
-        print("\n" + "=" * 60)
-        print(f"OCR RESULT for file: {file.filename}")
-        print("=" * 60)
-        print(result.full_text)
-        print("=" * 60 + "\n")
-
-        # Return the extracted text to the client
+        with timed(log, "upload", file=file.filename, size_kb=round(len(content) / 1024, 1),
+                   mime=file.content_type or "-") as span:
+            result = engine.recognize(tmp_path, mime=file.content_type)
+            span.set(pages=result.page_count, text_chars=len(result.full_text or ""),
+                     engine_ms=result.elapsed_ms)
         return {
             "filename": file.filename,
             "text": result.full_text,
@@ -108,7 +104,7 @@ async def upload_and_ocr(file: UploadFile = File(...)):
             "elapsed_ms": result.elapsed_ms,
         }
     except Exception as e:
-        print(f"OCR error for {file.filename}: {e}")
+        log.error(f"upload FAILED file={file.filename}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         # Clean up temporary file

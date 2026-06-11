@@ -1,8 +1,10 @@
 from openai import OpenAI
 
 from api.config import OPENAI_API_KEY
+from api.logging_config import get_logger, timed
 
 _client = OpenAI(api_key=OPENAI_API_KEY)
+_log = get_logger("svc.openai")
 
 SYSTEM_PROMPT = """You are a RICS Compliance Assistant — an expert AI auditor grounded in the RICS Professional Standard: "Responsible use of artificial intelligence in surveying practice" (1st edition, September 2025, effective 9 March 2026).
 
@@ -59,10 +61,16 @@ def chat(
         {"role": "user", "content": "\n\n".join(sections)},
     ]
 
-    response = _client.chat.completions.create(
-        model=model,
-        messages=messages,
-        temperature=0.2,
-        max_tokens=1500,
-    )
-    return response.choices[0].message.content
+    with timed(_log, "chat.completion", model=model, rules=len(rules),
+               has_audit_ctx=bool(audit_context and audit_context.strip())) as span:
+        response = _client.chat.completions.create(
+            model=model,
+            messages=messages,
+            temperature=0.2,
+            max_tokens=1500,
+        )
+        answer = response.choices[0].message.content
+        usage = getattr(response, "usage", None)
+        span.set(answer_chars=len(answer or ""),
+                 tokens=getattr(usage, "total_tokens", None))
+        return answer

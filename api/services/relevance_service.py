@@ -14,7 +14,10 @@ import re
 
 import numpy as np
 
+from api.logging_config import get_logger, timed
 from api.services.embedder import get_embedder
+
+_log = get_logger("svc.embedder")
 
 # A "sentence" = a run of text up to a terminator (.!?) or a line break.
 _SENTENCE_RE = re.compile(r"[^.!?\n\r]+[.!?]*", re.UNICODE)
@@ -81,11 +84,11 @@ def score_relevance(text: str, query: str) -> tuple[list[dict], bool]:
     truncated = len(spans) >= _MAX_SEGMENTS
 
     embedder = get_embedder()
-    query_vec = np.asarray(list(embedder.embed([query]))[0], dtype=np.float32)
-    query_vec /= np.linalg.norm(query_vec) + 1e-9
-
     seg_texts = [t for _, _, t in spans]
-    seg_vecs = list(embedder.embed(seg_texts))
+    with timed(_log, "embed", texts=len(seg_texts) + 1):  # +1 for the query
+        query_vec = np.asarray(list(embedder.embed([query]))[0], dtype=np.float32)
+        query_vec /= np.linalg.norm(query_vec) + 1e-9
+        seg_vecs = list(embedder.embed(seg_texts))
 
     scores: list[float] = []
     for vec in seg_vecs:
