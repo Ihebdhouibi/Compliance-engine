@@ -129,6 +129,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   showDrawer       = false;
   drawerMedia:     { id: number; url: string; name: string } | null = null;
   drawerMediaIndex = 0;
+  drawerQuery      = '';   // the audit question this evidence is meant to prove
   drawerTab:       'preview' | 'ocr' = 'preview';
   drawerLoading    = false;
   drawerBlobUrl:   SafeResourceUrl | null = null;
@@ -742,10 +743,12 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
    */
   openEvidence(media: { id: number; url: string; name: string },
                index = 0,
+               query = '',
                tab: 'preview' | 'ocr' = 'preview'): void {
     this.releaseDrawerBlob();
     this.drawerMedia      = media;
     this.drawerMediaIndex = index;
+    this.drawerQuery      = query;
     this.drawerTab     = tab;
     this.showDrawer    = true;
     this.drawerLoading = true;
