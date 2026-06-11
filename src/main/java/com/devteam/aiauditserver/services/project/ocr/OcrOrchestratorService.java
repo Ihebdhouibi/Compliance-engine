@@ -162,8 +162,10 @@ public class OcrOrchestratorService {
                 row.setStatus(EvidenceOcrResult.OcrStatus.DONE);
                 ocrRepo.save(row);
 
-                log.info("[OCR] completed audit={} media={} pages={} elapsedMs={}",
-                        auditId, media.getId(), pageCount, elapsedMs);
+                log.info("[OCR] completed audit={} media={} pages={} chars={} elapsedMs={}",
+                        auditId, media.getId(), pageCount,
+                        extractedText != null ? extractedText.length() : 0, elapsedMs);
+                log.debug("[OCR] text < {}", extractedText);
             } else {
                 throw new RuntimeException("Invalid response from OCR service");
             }

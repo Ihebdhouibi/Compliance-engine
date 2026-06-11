@@ -70,6 +70,10 @@ logging:
         descriptor:
           sql: DEBUG
     root: INFO
+    spring: DEBUG            # our spring.* component loggers (http, ocr-orchestrator, ...)
+  file:
+    name: logs/springboot.log
   pattern:
     console: "%d{HH:mm:ss} | %-5level | %-22logger{0} | cid=%X{cid:-} | %msg%n"
+    file: "%d{HH:mm:ss} | %-5level | %-22logger{0} | cid=%X{cid:-} | %msg%n"
 
