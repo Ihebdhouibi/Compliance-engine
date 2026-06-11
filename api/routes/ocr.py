@@ -105,7 +105,9 @@ async def upload_and_ocr(file: UploadFile = File(...)):
             "elapsed_ms": result.elapsed_ms,
         }
     except Exception as e:
-        log.error(f"upload FAILED file={file.filename}: {e}")
+        # This exception is converted to a 500 below, so the middleware never
+        # sees it — log the traceback here so it still reaches fastapi.log.
+        log.error(f"upload FAILED file={file.filename}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         # Clean up temporary file

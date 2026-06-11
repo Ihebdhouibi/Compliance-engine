@@ -56,7 +56,12 @@ class CorrelationLoggingMiddleware:
             await self.app(scope, receive, send_wrapper)
         except Exception as exc:  # noqa: BLE001 - logged then re-raised
             ms = int((time.perf_counter() - t0) * 1000)
-            log.error(f"<- 500 {method} {path} ({ms}ms) {type(exc).__name__}: {exc}")
+            # exc_info=True writes the full traceback into the log file, so any
+            # unhandled failure is debuggable from the logs alone.
+            log.error(
+                f"<- 500 {method} {path} ({ms}ms) {type(exc).__name__}: {exc}",
+                exc_info=True,
+            )
             raise
 
         ms = int((time.perf_counter() - t0) * 1000)

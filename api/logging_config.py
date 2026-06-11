@@ -108,7 +108,8 @@ def setup_logging(level: int = logging.DEBUG) -> None:
     root.setLevel(level)
 
     # Quieten chatty third-party loggers so our lines stay readable.
-    for noisy in ("httpx", "httpcore", "urllib3", "openai", "uvicorn.access"):
+    for noisy in ("httpx", "httpcore", "urllib3", "openai", "uvicorn.access",
+                  "asyncio", "multipart", "python_multipart", "fastembed"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
 
     _configured = True
