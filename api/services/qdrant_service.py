@@ -1,8 +1,8 @@
-from fastembed import TextEmbedding
 from qdrant_client import QdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
-from api.config import QDRANT_URL, QDRANT_COLLECTION, EMBEDDING_MODEL
+from api.config import QDRANT_URL, QDRANT_COLLECTION
+from api.services.embedder import get_embedder
 
 
 class QdrantService:
@@ -10,7 +10,7 @@ class QdrantService:
 
     def __init__(self) -> None:
         self._client = QdrantClient(url=QDRANT_URL)
-        self._embed = TextEmbedding(model_name=EMBEDDING_MODEL)
+        self._embed = get_embedder()
 
     # ── embedding helper ─────────────────────────────────────────────────
 

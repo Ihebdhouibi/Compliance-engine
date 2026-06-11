@@ -28,6 +28,11 @@ class EvidenceCheckRequest(BaseModel):
     limit: int = Field(5, ge=1, le=10)
 
 
+class RelevanceRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=200000, description="Evidence text (OCR) to score")
+    query: str = Field(..., min_length=1, max_length=2000, description="Audit question the evidence should address")
+
+
 # ── Response models ───────────────────────────────────────────────────────────
 
 class RuleResult(BaseModel):
@@ -60,6 +65,19 @@ class EvidenceCheckResponse(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     sources: list[RuleResult]
+
+
+class RelevanceSegment(BaseModel):
+    start: int          # char offset into the original text (inclusive)
+    end: int            # char offset (exclusive)
+    score: float        # cosine similarity to the query
+    level: int          # 0 = none, 1 = soft, 2 = strong
+
+
+class RelevanceResponse(BaseModel):
+    query: str
+    segments: list[RelevanceSegment]
+    truncated: bool = False
 
 
 class RuleDetailResponse(BaseModel):

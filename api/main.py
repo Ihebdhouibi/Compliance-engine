@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.routes import search, chat, ocr, routing
+from api.routes import search, chat, ocr, routing, relevance
 from api.services.ocr_queue import get_queue
 
 
@@ -36,6 +36,7 @@ app.include_router(search.router)
 app.include_router(chat.router)
 app.include_router(ocr.router)
 app.include_router(routing.router)
+app.include_router(relevance.router)
 
 
 @app.get("/health")
