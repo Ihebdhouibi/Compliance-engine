@@ -1236,14 +1236,20 @@
   white-space: pre-wrap; word-break: break-word;
   overflow: auto;
 
+  // Relevance shading — soft (level 1) vs strong (level 2) by semantic score.
   .ocr-hl {
-    background: color-mix(in srgb, var(--color-btn-add, #059669) 26%, transparent);
-    color: rgb(var(--fg-strong-rgb));
     border-radius: 2px; padding: 0 1px;
+    color: rgb(var(--fg-strong-rgb));
+    &--1 { background: color-mix(in srgb, var(--color-btn-add, #059669) 15%, transparent); }
+    &--2 {
+      background: color-mix(in srgb, var(--color-btn-add, #059669) 34%, transparent);
+      font-weight: 600;
+    }
   }
 }
 .ocr-hl-toggle {
   margin-left: auto;
+  display: inline-flex; align-items: center;
   padding: 2px 9px; border-radius: 999px; cursor: pointer;
   font: 600 .66rem t.$font-mono; letter-spacing: .03em;
   background: rgb(var(--fg-rgb) / .05);
@@ -1256,6 +1262,14 @@
     color: var(--color-btn-add, #059669);
   }
 }
+.ocr-hl-spin {
+  width: 9px; height: 9px; margin-right: 5px; border-radius: 50%;
+  display: inline-block; vertical-align: middle;
+  border: 2px solid rgb(var(--fg-rgb) / .25);
+  border-top-color: var(--color-btn-add, #059669);
+  animation: ocrSpin .7s linear infinite;
+}
+@keyframes ocrSpin { to { transform: rotate(360deg); } }
 .ws-drawer__ocr-empty {
   padding: 24px; text-align: center;
   font: 400 .8rem t.$font-body;

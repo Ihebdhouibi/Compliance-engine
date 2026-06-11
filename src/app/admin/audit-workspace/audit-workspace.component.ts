@@ -16,7 +16,7 @@ import { TokenService } from '../../shared/token.service';
 import { AuditBotComponent } from '../../layout/audit-bot/audit-bot.component';
 import { AuditRequest , AuditRequestAnswer } from '../../models/audit.model';
 import { environment } from '../../environments/environment';
-import { RicsSearchService, RicsRuleResult, RicsEvidenceItem } from '../../services/rics-search.service';
+import { RicsSearchService, RicsRuleResult, RicsEvidenceItem, RelevanceSegment } from '../../services/rics-search.service';
 /**
  * Unified step model used by the workspace stepper.
  * Built from intake form steps (preferred — they carry the actual fields)
@@ -644,20 +644,104 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   // ── Evidence relevance highlight (OCR text tab) ──────────────────
-  /** Toggle for highlighting question-relevant terms in the extracted text. */
+  /** Toggle for shading question-relevant lines in the extracted text. */
   ocrHighlightOn = true;
+  ocrRelevanceLoading = false;
+  ocrRelevanceFailed  = false;   // drives keyword fallback
   private _ocrHlCache: { key: string; html: SafeHtml } | null = null;
+  private ocrRelevance: Record<string, RelevanceSegment[]> = {};
+  private ocrRelevanceRequested = new Set<string>();
+
+  private relevanceKey(mediaId: number, query: string): string {
+    return `${mediaId}|${query}`;
+  }
+
+  /** The relevance target for the open evidence: the answered question. */
+  private get drawerRelevanceQuery(): string {
+    return (this.drawerQuery || this.currentStep?.name || '').trim();
+  }
 
   /**
-   * Render the OCR text with terms drawn from the current step's questions
-   * highlighted, so the auditor can spot the evidence-relevant lines at a
-   * glance. Keyword-based for now; escapes the source before marking.
+   * Fetch sentence-level semantic relevance for the open evidence against its
+   * audit question. Idempotent per (file, question); on failure the renderer
+   * silently falls back to keyword highlighting.
+   */
+  ensureRelevance(): void {
+    const media = this.drawerMedia;
+    const o = this.drawerOcr();
+    const query = this.drawerRelevanceQuery;
+    if (!this.ocrHighlightOn || !media || !o?.rawText || !query) return;
+
+    const key = this.relevanceKey(media.id, query);
+    if (this.ocrRelevanceRequested.has(key)) return;
+    this.ocrRelevanceRequested.add(key);
+    this.ocrRelevanceLoading = true;
+    this.ocrRelevanceFailed  = false;
+    this.ricsSvc.relevanceHighlight(o.rawText, query).subscribe({
+      next: res => {
+        this.ocrRelevance[key] = res?.segments ?? [];
+        this.ocrRelevanceLoading = false;
+        this._ocrHlCache = null;            // bust render cache
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.ocrRelevanceLoading = false;
+        this.ocrRelevanceFailed  = true;    // renderer uses keyword fallback
+        this.ocrRelevanceRequested.delete(key);
+        this._ocrHlCache = null;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /** True once semantic segments are available for the open evidence. */
+  get hasSemanticRelevance(): boolean {
+    const media = this.drawerMedia;
+    if (!media) return false;
+    return (this.ocrRelevance[this.relevanceKey(media.id, this.drawerRelevanceQuery)]?.length ?? 0) > 0;
+  }
+
+  /**
+   * Render the OCR text with the most question-relevant sentences shaded.
+   * Prefers semantic segments (offsets from the RAG service); falls back to
+   * keyword marking while loading or if the relevance service is unreachable.
    */
   highlightedOcrText(text: string): SafeHtml {
-    const keywords = this.relevanceKeywords();
-    const key = `${this.drawerMedia?.id ?? ''}|${text.length}|${keywords.join(',')}`;
+    const media = this.drawerMedia;
+    const query = this.drawerRelevanceQuery;
+    const segs = media ? this.ocrRelevance[this.relevanceKey(media.id, query)] : undefined;
+    const mode = segs && segs.length ? 'sem' : 'kw';
+    const key = `${media?.id ?? ''}|${mode}|${text.length}|${query}`;
     if (this._ocrHlCache?.key === key) return this._ocrHlCache.html;
 
+    const html = segs && segs.length
+      ? this.buildSemanticHtml(text, segs)
+      : this.buildKeywordHtml(text);
+    const safe = this.sanitizer.bypassSecurityTrustHtml(html);
+    this._ocrHlCache = { key, html: safe };
+    return safe;
+  }
+
+  /** Wrap the highest-scoring sentence spans (by char offset) in <mark>. */
+  private buildSemanticHtml(text: string, segs: RelevanceSegment[]): string {
+    const marks = segs.filter(s => s.level > 0).sort((a, b) => a.start - b.start);
+    let out = '';
+    let cursor = 0;
+    for (const s of marks) {
+      const start = Math.max(s.start, cursor);
+      if (start > cursor) out += this.escapeHtml(text.slice(cursor, start));
+      if (s.end > start) {
+        out += `<mark class="ocr-hl ocr-hl--${s.level}">${this.escapeHtml(text.slice(start, s.end))}</mark>`;
+        cursor = s.end;
+      }
+    }
+    if (cursor < text.length) out += this.escapeHtml(text.slice(cursor));
+    return out;
+  }
+
+  /** Offline fallback: mark question keywords in the text. */
+  private buildKeywordHtml(text: string): string {
+    const keywords = this.relevanceKeywords();
     let html = this.escapeHtml(text);
     if (keywords.length) {
       const pattern = keywords
@@ -666,11 +750,9 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         .map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
         .join('|');
       const re = new RegExp(`\\b(${pattern})\\b`, 'gi');
-      html = html.replace(re, '<mark class="ocr-hl">$1</mark>');
+      html = html.replace(re, '<mark class="ocr-hl ocr-hl--1">$1</mark>');
     }
-    const safe = this.sanitizer.bypassSecurityTrustHtml(html);
-    this._ocrHlCache = { key, html: safe };
-    return safe;
+    return html;
   }
 
   /** Meaningful terms from the step name + its question labels. */
@@ -753,6 +835,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.showDrawer    = true;
     this.drawerLoading = true;
     this.drawerBlobUrl = null;
+    if (tab === 'ocr') this.ensureRelevance();
 
     const token   = this.tokenSvc.getToken();
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
@@ -787,6 +870,14 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   setDrawerTab(t: 'preview' | 'ocr'): void {
     this.drawerTab = t;
+    if (t === 'ocr') this.ensureRelevance();
+  }
+
+  /** Toggle relevance shading; fetch semantic scores the first time it's on. */
+  toggleOcrHighlight(): void {
+    this.ocrHighlightOn = !this.ocrHighlightOn;
+    this._ocrHlCache = null;
+    if (this.ocrHighlightOn) this.ensureRelevance();
   }
 
   private releaseDrawerBlob(): void {

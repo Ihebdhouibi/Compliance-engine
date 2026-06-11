@@ -459,9 +459,12 @@
                     *ngIf="isRetryable(o)" (click)="retryOcr(o.mediaId, $event)">Retry OCR</button>
             <button type="button" class="ocr-hl-toggle" *ngIf="o.rawText"
                     [class.ocr-hl-toggle--on]="ocrHighlightOn"
-                    (click)="ocrHighlightOn = !ocrHighlightOn"
-                    title="Highlight terms from this step's questions in the extracted text">
-              {{ ocrHighlightOn ? 'Highlight: on' : 'Highlight: off' }}
+                    (click)="toggleOcrHighlight()"
+                    title="Shade the lines most relevant to this question (semantic)">
+              <span class="ocr-hl-spin" *ngIf="ocrHighlightOn && ocrRelevanceLoading"></span>
+              {{ ocrHighlightOn
+                  ? (ocrRelevanceLoading ? 'Scoring…' : (hasSemanticRelevance ? 'Relevance: on' : 'Highlight: on'))
+                  : 'Relevance: off' }}
             </button>
           </div>
           <div *ngIf="o.error" class="ws-drawer__ocr-error">{{ o.error }}</div>
