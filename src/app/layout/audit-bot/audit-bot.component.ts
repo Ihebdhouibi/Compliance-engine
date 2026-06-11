@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { log } from '../../core/logging/log';
 
 interface BotMessage {
   role: 'user' | 'bot';
@@ -80,6 +81,7 @@ export class AuditBotComponent implements AfterViewChecked {
     const url = `${environment.ragApiUrl}/chat/`;
     const context = this.contextProvider?.()?.slice(0, 24000) || undefined;
     const body = { message: text, limit: 5, context };
+    log.info('ng.audit-bot', 'ask assistant', { chars: text.length, hasContext: !!context });
 
     this.http.post<{ answer: string; sources: any[] }>(url, body).subscribe({
       next: (res) => {

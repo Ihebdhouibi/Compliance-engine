@@ -7,6 +7,7 @@ import { provideRouter }     from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes }            from './app.routes';
 import { authInterceptor }   from './interceptors/auth.interceptor';
+import { correlationInterceptor } from './interceptors/correlation.interceptor';
 import { DesignSettingsService } from './services/design-settings.service';
 import { AuthService }       from './services/auth.service';
 import { TokenService }      from './shared/token.service';
@@ -36,7 +37,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([correlationInterceptor, authInterceptor])),
 
     // 1. Load design settings (applies CSS vars, title, favicon)
     {

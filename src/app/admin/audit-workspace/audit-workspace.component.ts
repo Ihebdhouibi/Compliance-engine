@@ -17,6 +17,9 @@ import { AuditBotComponent } from '../../layout/audit-bot/audit-bot.component';
 import { AuditRequest , AuditRequestAnswer } from '../../models/audit.model';
 import { environment } from '../../environments/environment';
 import { RicsSearchService, RicsRuleResult, RicsEvidenceItem, RelevanceSegment } from '../../services/rics-search.service';
+import { log } from '../../core/logging/log';
+
+const LOG = 'ng.audit-workspace';
 /**
  * Unified step model used by the workspace stepper.
  * Built from intake form steps (preferred — they carry the actual fields)
@@ -185,9 +188,11 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
       ? this.reqSvc.auditorGetAuditById(id)
       : this.reqSvc.adminGetRequest(id);
 
+    log.info(LOG, 'open audit', { id, mode: this.isAuditorMode ? 'auditor' : 'admin' });
     request$.subscribe({
       next: req => {
         this.request = req;
+        log.info(LOG, 'audit loaded', { id, type: req.auditType, status: req.status });
 
         if (req.status === 'ASSIGNED') {
           this.autoStart(id);
@@ -679,17 +684,20 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.ocrRelevanceRequested.add(key);
     this.ocrRelevanceLoading = true;
     this.ocrRelevanceFailed  = false;
+    log.info(LOG, 'score relevance', { mediaId: media.id, textChars: o.rawText.length });
     this.ricsSvc.relevanceHighlight(o.rawText, query).subscribe({
       next: res => {
         this.ocrRelevance[key] = res?.segments ?? [];
         this.ocrRelevanceTruncated[key] = !!res?.truncated;
         this.ocrRelevanceLoading = false;
         this._ocrHlCache = null;            // bust render cache
+        log.info(LOG, 'relevance scored', { segments: res?.segments?.length ?? 0, truncated: !!res?.truncated });
         this.cdr.detectChanges();
       },
       error: () => {
         this.ocrRelevanceLoading = false;
         this.ocrRelevanceFailed  = true;    // renderer uses keyword fallback
+        log.warn(LOG, 'relevance unavailable — using keyword fallback', { mediaId: media.id });
         this.ocrRelevanceRequested.delete(key);
         this._ocrHlCache = null;
         this.cdr.detectChanges();
@@ -850,6 +858,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
                index = 0,
                query = '',
                tab: 'preview' | 'ocr' = 'preview'): void {
+    log.info(LOG, 'open evidence', { name: this.displayName(media.name, index), tab });
     this.releaseDrawerBlob();
     this.drawerMedia      = media;
     this.drawerMediaIndex = index;
@@ -1113,6 +1122,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     const text = (e?.text || '').trim();
     if (!text || !this.currentStep || this.request?.status === 'COMPLETED') return;
     const stepId = this.currentStep.id;
+    log.info(LOG, 'insert from AI assistant', { target: e.target, chars: text.length });
 
     if (e.target === 'finding') {
       this.addFinding();
