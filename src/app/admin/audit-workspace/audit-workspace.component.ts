@@ -377,8 +377,10 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     if (!this.verdicts[stepId]) this.verdicts[stepId] = {};
     if (this.verdicts[stepId][fieldId] === v) {
       delete this.verdicts[stepId][fieldId]; // toggle off
+      log.info(LOG, 'verdict cleared', { stepId, fieldId });
     } else {
       this.verdicts[stepId][fieldId] = v;
+      log.info(LOG, 'verdict set', { stepId, fieldId, verdict: v });
     }
     this.cdr.detectChanges();
   }
@@ -1460,6 +1462,7 @@ private persist(status: 'DRAFT' | 'SAVED'): void {
 // ★ Submit: save ALL steps with content, then complete
 submitAudit(): void {
   if (!this.request) return;
+  log.info(LOG, 'submit audit', { id: this.request.id, steps: this.steps.length });
   this.isCompleting = true;
 
   // Save all steps that have content as SAVED

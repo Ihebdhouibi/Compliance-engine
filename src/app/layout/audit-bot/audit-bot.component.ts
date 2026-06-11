@@ -86,6 +86,8 @@ export class AuditBotComponent implements AfterViewChecked {
     this.http.post<{ answer: string; sources: any[] }>(url, body).subscribe({
       next: (res) => {
         const reply = res.answer || 'No response received.';
+        log.info('ng.audit-bot', 'assistant replied', { chars: reply.length, sources: res.sources?.length ?? 0 });
+        log.debug('ng.audit-bot', 'answer', reply);
         this.messages.push({ role: 'bot', text: reply, time: new Date() });
         this.isThinking = false;
         this._needsScroll = true;
