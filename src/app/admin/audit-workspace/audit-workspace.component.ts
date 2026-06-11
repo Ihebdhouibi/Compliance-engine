@@ -128,6 +128,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   // ── Phase 3: unified Evidence Drawer ───────────────────────────────
   showDrawer       = false;
   drawerMedia:     { id: number; url: string; name: string } | null = null;
+  drawerMediaIndex = 0;
   drawerTab:       'preview' | 'ocr' = 'preview';
   drawerLoading    = false;
   drawerBlobUrl:   SafeResourceUrl | null = null;
@@ -610,15 +611,23 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return this.ocrByMedia[mediaId] ?? null;
   }
 
+  /** Friendly evidence label: temp UUID filenames become "Evidence N". */
+  displayName(name: string | undefined | null, index = 0): string {
+    if (!name) return `Evidence ${index}`;
+    // UUID pattern: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (filenames are prefixed with one)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(name);
+    return isUuid ? `Evidence ${index}` : name;
+  }
+
   ocrLabel(r: OcrResult | null): string {
     if (!r) return 'Text queued';
     switch (r.status) {
       case 'PENDING': return 'Extracting…';
       case 'RUNNING': return 'Extracting…';
-      case 'DONE':    return `View text · ${r.pageCount ?? 0}p`;
-      case 'FAILED':  return 'Text failed';
+      case 'DONE':    return `Extracted text · ${r.pageCount ?? 0}p`;
+      case 'FAILED':  return 'Extraction failed';
     }
-    return 'View text';
+    return 'Extracted text';
   }
 
   /** Fuller tooltip for the evidence text badge. */
@@ -732,9 +741,11 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
    * separate file viewer + OCR modal flows for evidence chips.
    */
   openEvidence(media: { id: number; url: string; name: string },
+               index = 0,
                tab: 'preview' | 'ocr' = 'preview'): void {
     this.releaseDrawerBlob();
-    this.drawerMedia   = media;
+    this.drawerMedia      = media;
+    this.drawerMediaIndex = index;
     this.drawerTab     = tab;
     this.showDrawer    = true;
     this.drawerLoading = true;
@@ -960,8 +971,8 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
       lines.push(`\nQ${i + 1}. ${q}\nAnswer: ${ans}`);
 
       const media = [a.fileMedia, ...(a.files ?? [])].filter(Boolean);
-      for (const m of media) {
-        const name = m?.name || m?.url || `file ${m?.id}`;
+      media.forEach((m: any, mi: number) => {
+        const name = this.displayName(m?.name, mi + 1);
         const ocr = this.ocrFor(m?.id);
         if (ocr?.status === 'DONE' && ocr.rawText?.trim()) {
           lines.push(`Evidence "${name}" — extracted text:\n${ocr.rawText.trim().slice(0, 3000)}`);
@@ -970,7 +981,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         } else {
           lines.push(`Evidence "${name}": attached (no extracted text).`);
         }
-      }
+      });
     });
 
     const ctx = lines.join('\n');

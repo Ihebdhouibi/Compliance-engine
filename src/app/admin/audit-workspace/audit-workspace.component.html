@@ -185,29 +185,29 @@
           <div class="qcard__evidence" *ngIf="a.fileMedia || (a.files && a.files.length)">
             <ng-container *ngIf="a.fileMedia as fm">
               <div class="evidence-chip"
-                   (click)="openEvidence({id: fm.id, url: fm.url, name: fm.name})"
+                   (click)="openEvidence({id: fm.id, url: fm.url, name: fm.name}, 1)"
                    role="button" tabindex="0"
-                   (keyup.enter)="openEvidence({id: fm.id, url: fm.url, name: fm.name})">
+                   (keyup.enter)="openEvidence({id: fm.id, url: fm.url, name: fm.name}, 1)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
-                <span class="evidence-chip__name" [title]="fm.name">{{ fm.name }}</span>
+                <span class="evidence-chip__name" [title]="displayName(fm.name, 1)">{{ displayName(fm.name, 1) }}</span>
                 <span [class]="ocrClass(ocrFor(fm.id))" [title]="ocrTitle(ocrFor(fm.id))">{{ ocrLabel(ocrFor(fm.id)) }}</span>
                 <button class="evidence-chip__btn evidence-chip__btn--retry"
                         *ngIf="isRetryable(ocrFor(fm.id))" (click)="retryOcr(fm.id, $event)">Retry</button>
               </div>
             </ng-container>
-            <ng-container *ngFor="let f of (a.files || [])">
+            <ng-container *ngFor="let f of (a.files || []); let i = index">
               <div class="evidence-chip"
-                   (click)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name})"
+                   (click)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name}, a.fileMedia ? i + 2 : i + 1)"
                    role="button" tabindex="0"
-                   (keyup.enter)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name})">
+                   (keyup.enter)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name}, a.fileMedia ? i + 2 : i + 1)">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                 </svg>
-                <span class="evidence-chip__name" [title]="f.media.name">{{ f.media.name }}</span>
+                <span class="evidence-chip__name" [title]="displayName(f.media.name, a.fileMedia ? i + 2 : i + 1)">{{ displayName(f.media.name, a.fileMedia ? i + 2 : i + 1) }}</span>
                 <span [class]="ocrClass(ocrFor(f.media.id))" [title]="ocrTitle(ocrFor(f.media.id))">{{ ocrLabel(ocrFor(f.media.id)) }}</span>
                 <button class="evidence-chip__btn evidence-chip__btn--retry"
                         *ngIf="isRetryable(ocrFor(f.media.id))" (click)="retryOcr(f.media.id, $event)">Retry</button>
@@ -412,7 +412,7 @@
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
           <polyline points="14 2 14 8 20 8"/>
         </svg>
-        <span class="ws-drawer__name" [title]="drawerMedia.name">{{ drawerMedia.name }}</span>
+        <span class="ws-drawer__name" [title]="drawerMedia.name">{{ displayName(drawerMedia.name, drawerMediaIndex) }}</span>
       </div>
       <button class="ws-drawer__close" (click)="closeDrawer()" aria-label="Close">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
