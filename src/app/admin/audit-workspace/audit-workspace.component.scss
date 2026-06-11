@@ -1270,6 +1270,38 @@
   animation: ocrSpin .7s linear infinite;
 }
 @keyframes ocrSpin { to { transform: rotate(360deg); } }
+
+.ocr-legend {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 12px;
+  padding: 6px 2px 8px;
+  font: 600 .66rem t.$font-mono; letter-spacing: .02em;
+  color: rgb(var(--fg-rgb) / .55);
+  &__item { display: inline-flex; align-items: center; gap: 5px; }
+  &__sw {
+    width: 11px; height: 11px; border-radius: 3px; display: inline-block;
+    &--1 { background: color-mix(in srgb, var(--color-btn-add, #059669) 15%, transparent); }
+    &--2 { background: color-mix(in srgb, var(--color-btn-add, #059669) 34%, transparent); }
+  }
+  &__note {
+    max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-weight: 400; font-style: italic; color: rgb(var(--fg-rgb) / .4);
+  }
+  &__jump {
+    margin-left: auto; cursor: pointer;
+    padding: 2px 9px; border-radius: 999px;
+    font: 600 .66rem t.$font-mono;
+    background: color-mix(in srgb, var(--color-btn-add, #059669) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-btn-add, #059669) 35%, transparent);
+    color: var(--color-btn-add, #059669);
+    &:hover { background: color-mix(in srgb, var(--color-btn-add, #059669) 22%, transparent); }
+  }
+}
+.ocr-trunc-note {
+  padding: 5px 9px; margin-bottom: 6px; border-radius: 6px;
+  font: 400 .72rem t.$font-body;
+  background: rgb(var(--warning-rgb) / .1);
+  color: rgb(var(--fg-rgb) / .7);
+}
 .ws-drawer__ocr-empty {
   padding: 24px; text-align: center;
   font: 400 .8rem t.$font-body;

@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, OnDestroy, inject, ChangeDetectorRef
+  Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ViewChild, ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ChatComponent } from '../../features/chat/chat.component';
@@ -650,7 +650,9 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   ocrRelevanceFailed  = false;   // drives keyword fallback
   private _ocrHlCache: { key: string; html: SafeHtml } | null = null;
   private ocrRelevance: Record<string, RelevanceSegment[]> = {};
+  private ocrRelevanceTruncated: Record<string, boolean> = {};
   private ocrRelevanceRequested = new Set<string>();
+  @ViewChild('ocrTextEl') private ocrTextEl?: ElementRef<HTMLElement>;
 
   private relevanceKey(mediaId: number, query: string): string {
     return `${mediaId}|${query}`;
@@ -680,6 +682,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.ricsSvc.relevanceHighlight(o.rawText, query).subscribe({
       next: res => {
         this.ocrRelevance[key] = res?.segments ?? [];
+        this.ocrRelevanceTruncated[key] = !!res?.truncated;
         this.ocrRelevanceLoading = false;
         this._ocrHlCache = null;            // bust render cache
         this.cdr.detectChanges();
@@ -699,6 +702,26 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     const media = this.drawerMedia;
     if (!media) return false;
     return (this.ocrRelevance[this.relevanceKey(media.id, this.drawerRelevanceQuery)]?.length ?? 0) > 0;
+  }
+
+  /** Number of "most relevant" (strong) sentences in the open evidence. */
+  get strongRelevanceCount(): number {
+    const media = this.drawerMedia;
+    if (!media) return 0;
+    const segs = this.ocrRelevance[this.relevanceKey(media.id, this.drawerRelevanceQuery)] ?? [];
+    return segs.filter(s => s.level >= 2).length;
+  }
+
+  /** True when the document was too long and was scored only up to the cap. */
+  get relevanceTruncated(): boolean {
+    const media = this.drawerMedia;
+    return !!media && !!this.ocrRelevanceTruncated[this.relevanceKey(media.id, this.drawerRelevanceQuery)];
+  }
+
+  /** Scroll the extracted-text pane to the first strongly-relevant line. */
+  jumpToMostRelevant(): void {
+    const el = this.ocrTextEl?.nativeElement?.querySelector('.ocr-hl--2');
+    el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 
   /**

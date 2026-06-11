@@ -467,8 +467,18 @@
                   : 'Relevance: off' }}
             </button>
           </div>
+          <div class="ocr-legend" *ngIf="o.rawText && ocrHighlightOn && hasSemanticRelevance">
+            <span class="ocr-legend__item"><span class="ocr-legend__sw ocr-legend__sw--2"></span>Most relevant</span>
+            <span class="ocr-legend__item"><span class="ocr-legend__sw ocr-legend__sw--1"></span>Related</span>
+            <span class="ocr-legend__note" *ngIf="drawerQuery" [title]="drawerQuery">to: “{{ drawerQuery }}”</span>
+            <button type="button" class="ocr-legend__jump" *ngIf="strongRelevanceCount > 0"
+                    (click)="jumpToMostRelevant()">Jump to most relevant ({{ strongRelevanceCount }})</button>
+          </div>
+          <div class="ocr-trunc-note" *ngIf="o.rawText && ocrHighlightOn && relevanceTruncated">
+            Large document — relevance scored on the first part only.
+          </div>
           <div *ngIf="o.error" class="ws-drawer__ocr-error">{{ o.error }}</div>
-          <pre class="ws-drawer__ocr-text" *ngIf="o.rawText && ocrHighlightOn"
+          <pre #ocrTextEl class="ws-drawer__ocr-text" *ngIf="o.rawText && ocrHighlightOn"
                [innerHTML]="highlightedOcrText(o.rawText)"></pre>
           <pre class="ws-drawer__ocr-text" *ngIf="o.rawText && !ocrHighlightOn">{{ o.rawText }}</pre>
           <div *ngIf="!o.rawText && !o.error" class="ws-drawer__ocr-empty">
