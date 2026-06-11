@@ -45,6 +45,20 @@ export interface RicsEvidenceResponse {
   evidence: RicsEvidenceItem[];
 }
 
+/** One scored sentence of evidence text, with offsets into the original text. */
+export interface RelevanceSegment {
+  start: number;   // char offset (inclusive)
+  end:   number;   // char offset (exclusive)
+  score: number;   // cosine similarity to the query
+  level: number;   // 0 = none, 1 = soft, 2 = strong
+}
+
+export interface RelevanceResponse {
+  query:     string;
+  segments:  RelevanceSegment[];
+  truncated: boolean;
+}
+
 /**
  * Calls the FastAPI RAG service (port 8000) for semantic search over the
  * RICS knowledge base. Independent of the Spring backend (port 8080).
@@ -68,5 +82,12 @@ export class RicsSearchService {
   /** Grounded evidence hints for a compliance area (e.g. an audit step name). */
   evidenceCheck(query: string, limit = 5): Observable<RicsEvidenceResponse> {
     return this.http.post<RicsEvidenceResponse>(`${this.base}/evidence-check`, { query, limit });
+  }
+
+  /** Score each sentence of evidence text against an audit question. */
+  relevanceHighlight(text: string, query: string): Observable<RelevanceResponse> {
+    return this.http.post<RelevanceResponse>(
+      `${environment.ragApiUrl}/relevance/highlight`, { text, query }
+    );
   }
 }
