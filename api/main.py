@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.logging_config import setup_logging, get_logger
 from api.middleware import CorrelationLoggingMiddleware
-from api.routes import search, chat, ocr, routing, relevance
+from api.routes import search, chat, ocr, routing, relevance, logs
 from api.services.ocr_queue import get_queue
 
 setup_logging()
@@ -49,6 +49,7 @@ app.include_router(chat.router)
 app.include_router(ocr.router)
 app.include_router(routing.router)
 app.include_router(relevance.router)
+app.include_router(logs.router)
 
 
 @app.get("/health")

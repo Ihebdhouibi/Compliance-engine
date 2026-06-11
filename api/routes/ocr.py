@@ -97,6 +97,7 @@ async def upload_and_ocr(file: UploadFile = File(...)):
             result = engine.recognize(tmp_path, mime=file.content_type)
             span.set(pages=result.page_count, text_chars=len(result.full_text or ""),
                      engine_ms=result.elapsed_ms)
+            log.debug(f"ocr.text < {result.full_text!r}")
         return {
             "filename": file.filename,
             "text": result.full_text,

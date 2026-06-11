@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
+from api.logging_config import get_logger
 from api.models.schemas import (
     SearchRequest,
     SearchResponse,
@@ -15,11 +16,13 @@ from api.services.qdrant_service import QdrantService
 router = APIRouter(prefix="/rules", tags=["Rules & Search"])
 
 qdrant = QdrantService()
+log = get_logger("fastapi.rules")
 
 
 @router.post("/search", response_model=SearchResponse)
 def search_rules(req: SearchRequest):
     """Semantic search across the RICS knowledge base with optional filters."""
+    log.info(f"search > {req.query!r} limit={req.limit} section={req.section or '-'}")
     hits = qdrant.search(
         query=req.query,
         limit=req.limit,
@@ -27,6 +30,7 @@ def search_rules(req: SearchRequest):
         applies_to=req.applies_to,
         entry_type=req.entry_type,
     )
+    log.debug("search < " + ", ".join(f"{h['rule_id']}({h['score']:.2f})" for h in hits))
     return SearchResponse(
         query=req.query,
         results=[RuleResult(**h) for h in hits],
@@ -53,6 +57,7 @@ def list_sections():
 @router.post("/evidence-check", response_model=EvidenceCheckResponse)
 def evidence_check(req: EvidenceCheckRequest):
     """Retrieve source text and implied evidence for a compliance area."""
+    log.info(f"evidence-check > {req.query!r} limit={req.limit}")
     hits = qdrant.search(query=req.query, limit=req.limit, entry_type="rule")
     evidence = []
     for h in hits:

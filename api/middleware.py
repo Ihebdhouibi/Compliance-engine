@@ -35,6 +35,12 @@ class CorrelationLoggingMiddleware:
 
         method = scope.get("method", "?")
         path = scope.get("path", "?")
+
+        # The browser ships logs here constantly; don't log the log-ingest call.
+        if path == "/logs":
+            await self.app(scope, receive, send)
+            return
+
         t0 = time.perf_counter()
         log.info(f"-> {method} {path}")
 

@@ -13,11 +13,19 @@ Component names mirror the interaction map, e.g. ``fastapi.chat``,
 from __future__ import annotations
 
 import logging
+import os
 import sys
 import time
 import uuid
 from contextlib import contextmanager
 from contextvars import ContextVar
+from logging.handlers import RotatingFileHandler
+
+# Per-component log files live here (gitignored). Each service writes its own
+# file so the logs read as if each microservice kept its own log.
+LOG_DIR = os.environ.get("LOG_DIR", "logs")
+_MAX_BYTES = 10 * 1024 * 1024
+_BACKUPS = 5
 
 # ── correlation id (per request, propagated across log lines) ─────────────────
 _correlation_id: ContextVar[str] = ContextVar("correlation_id", default="-")
@@ -43,21 +51,60 @@ class _CorrelationFilter(logging.Filter):
         return True
 
 
+class _NameFilter(logging.Filter):
+    """Route records to a file by logger-name prefix (include / exclude)."""
+
+    def __init__(self, include: tuple = (), exclude: tuple = ()):
+        super().__init__()
+        self.include = include
+        self.exclude = exclude
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        name = record.name
+        if any(name.startswith(p) for p in self.exclude):
+            return False
+        if self.include:
+            return any(name.startswith(p) for p in self.include)
+        return True
+
+
 _FORMAT = "%(asctime)s | %(levelname)-5s | %(name)-20s | cid=%(cid)s | %(message)s"
 _DATEFMT = "%H:%M:%S"
 _configured = False
 
 
-def setup_logging(level: int = logging.INFO) -> None:
-    """Install the shared handler/format on the root logger (idempotent)."""
-    global _configured
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(logging.Formatter(_FORMAT, datefmt=_DATEFMT))
-    handler.addFilter(_CorrelationFilter())
+def _file_handler(filename: str, include=(), exclude=()) -> RotatingFileHandler:
+    h = RotatingFileHandler(
+        os.path.join(LOG_DIR, filename), maxBytes=_MAX_BYTES,
+        backupCount=_BACKUPS, encoding="utf-8",
+    )
+    h.setFormatter(logging.Formatter(_FORMAT, datefmt=_DATEFMT))
+    h.addFilter(_CorrelationFilter())
+    h.addFilter(_NameFilter(include=include, exclude=exclude))
+    return h
+
+
+def setup_logging(level: int = logging.DEBUG) -> None:
+    """Install console + per-component file handlers on the root logger.
+
+    Files (under ``LOG_DIR``):
+      * ``qdrant.log``  — vector-store calls (``svc.qdrant``)
+      * ``angular.log`` — browser logs shipped to ``POST /logs`` (``ng.*``)
+      * ``fastapi.log`` — everything else in this process
+    """
+    os.makedirs(LOG_DIR, exist_ok=True)
+
+    console = logging.StreamHandler(sys.stdout)
+    console.setFormatter(logging.Formatter(_FORMAT, datefmt=_DATEFMT))
+    console.addFilter(_CorrelationFilter())
+    console.addFilter(_NameFilter(exclude=("ng.",)))  # browser logs only to file
 
     root = logging.getLogger()
     root.handlers.clear()
-    root.addHandler(handler)
+    root.addHandler(console)
+    root.addHandler(_file_handler("qdrant.log", include=("svc.qdrant",)))
+    root.addHandler(_file_handler("angular.log", include=("ng.",)))
+    root.addHandler(_file_handler("fastapi.log", exclude=("svc.qdrant", "ng.")))
     root.setLevel(level)
 
     # Quieten chatty third-party loggers so our lines stay readable.
