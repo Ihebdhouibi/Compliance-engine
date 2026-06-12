@@ -1,7 +1,7 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
-// â”€â”€ Background (identical base to step-email)
+// ── Background (identical base to step-email)
 .auth-bg {
   min-height: 100vh; width: 100%;
   display: flex; align-items: center; justify-content: center;
@@ -46,7 +46,7 @@
   animation: fadeUp .5s cubic-bezier(.4,0,.2,1) both;
 }
 
-// â”€â”€ Card
+// ── Card
 .auth-card {
   background: rgb(var(--bg-card-rgb) / .72);
   backdrop-filter: blur(24px) saturate(1.4);
@@ -71,7 +71,7 @@
   &--br { bottom:12px; right:12px; border-width:0 1.5px 1.5px 0; }
 }
 
-// â”€â”€ Brand
+// ── Brand
 .auth-brand {
   display: flex; align-items: center; gap: 11px; margin-bottom: 28px;
   &__icon {
@@ -88,11 +88,11 @@
   }
 }
 
-// â”€â”€ Step dots
+// ── Step dots
 .auth-steps {
   display: flex;
   align-items: center;
-  justify-content: center;   // â† this centers the stepper
+  justify-content: center;   // ← this centers the stepper
   gap: 6px;
   margin-bottom: 24px;
 
@@ -133,7 +133,7 @@
   }
 }
 
-// â”€â”€ FP icon badge
+// ── FP icon badge
 .fp-icon {
   width: 52px; height: 52px; display: flex; align-items: center; justify-content: center;
   background: rgb(var(--accent-rgb) / .09); border: 1px solid rgb(var(--accent-rgb) / .28);
@@ -141,7 +141,7 @@
   svg { width: 24px; height: 24px; color: t.$cyan-300; }
 }
 
-// â”€â”€ Heading
+// ── Heading
 .auth-heading {
   margin-bottom: 20px;
   h2 { font-family:t.$font-display; font-size:1.62rem; font-weight:800;
@@ -151,7 +151,7 @@
 
 .otp-email { color: t.$cyan-300; font-style: normal; }
 
-// â”€â”€ Timer
+// ── Timer
 .otp-timer {
   display: flex; align-items: center; gap: 8px; padding: 10px 14px;
   background: rgb(var(--bg-card-rgb) / .7); border: 1px solid rgb(var(--accent-rgb) / .13);
@@ -167,7 +167,7 @@
   }
 }
 
-// â”€â”€ Alert
+// ── Alert
 .auth-alert {
   display:flex; align-items:flex-start; gap:10px;
   padding:13px 15px; border-radius:12px; margin-bottom:16px;
@@ -180,7 +180,7 @@
   p   { font-size:.82rem; line-height:1.45; margin:0; }
 }
 
-// â”€â”€ 4 OTP digit inputs
+// ── 4 OTP digit inputs
 .otp-group {
   display: flex; justify-content: center; gap: 14px; margin-bottom: 22px;
   @media (max-width: 380px) { gap: 10px; }
@@ -208,7 +208,7 @@
   @media (max-width: 380px) { width: 54px; height: 62px; font-size: 1.6rem; }
 }
 
-// â”€â”€ Submit
+// ── Submit
 .auth-submit {
   display:inline-flex; align-items:center; justify-content:center; gap:10px;
   width:100%; padding:15px 28px; margin-top:4px;
@@ -234,7 +234,7 @@
   }
 }
 
-// â”€â”€ Resend
+// ── Resend
 .otp-resend {
   text-align:center; margin-top:14px; font-size:.84rem; color:rgb(var(--fg-rgb) / .65);
   button {
@@ -246,7 +246,7 @@
   }
 }
 
-// â”€â”€ Expired state
+// ── Expired state
 .otp-expired {
   text-align:center; padding:20px 16px;
   background:rgb(var(--danger-rgb) / .07); border:1px solid rgb(var(--danger-rgb) / .2);
@@ -254,14 +254,14 @@
   p { font-size:.87rem; color:rgb(var(--danger-rgb) / .85); margin:0 0 14px; }
 }
 
-// â”€â”€ Link
+// ── Link
 .auth-link {
   text-align:center; margin-top:14px; font-size:.86rem; color:rgb(var(--fg-rgb) / .65);
   a { color:t.$cyan-300; font-weight:600; transition:color .15s;
       &:hover { color:t.$cyan-200; text-decoration:underline; } }
 }
 
-// â”€â”€ Stagger
+// ── Stagger
 @for $i from 1 through 9 {
   .a#{$i} { animation: fadeUp .45s ease #{$i * 0.055}s both; }
 }

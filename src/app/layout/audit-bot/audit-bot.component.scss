@@ -1,4 +1,4 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 
 :host {
   display: flex;
@@ -10,14 +10,14 @@
 .bot-panel {
   display: flex;
   flex-direction: column;
-  height: 100%;        // â† fills :host completely
+  height: 100%;        // ← fills :host completely
   overflow: hidden;
   background: rgb(var(--bg-deep-rgb) / .95);
 }
 
 .bot-messages {
   flex: 1;
-  min-height: 0;       // â† critical: allows scroll inside flex
+  min-height: 0;       // ← critical: allows scroll inside flex
   overflow-y: auto;
   padding: 12px 10px;
   display: flex;
@@ -31,7 +31,7 @@
 }
 
 .bot-input {
-  flex-shrink: 0;      // â† NEVER shrinks, always at bottom
+  flex-shrink: 0;      // ← NEVER shrinks, always at bottom
   display: flex;
   align-items: flex-end;
   gap: 7px;
@@ -52,7 +52,7 @@
   display: flex; align-items: center; justify-content: space-between;
   padding: 12px 14px;
   border-bottom: 1px solid rgb(var(--accent-rgb) / .2);
-  flex-shrink: 0;         // â† never shrinks
+  flex-shrink: 0;         // ← never shrinks
 
   &__title {
     display: flex; align-items: center; gap: 7px;
@@ -71,10 +71,10 @@
   &:hover { background: rgb(var(--fg-rgb) / .12); color: rgb(var(--fg-strong-rgb)); }
 }
 
-// â˜… KEY FIX: flex:1 + min-height:0 makes this scroll, not push input out
+// ★ KEY FIX: flex:1 + min-height:0 makes this scroll, not push input out
 .bot-messages {
   flex: 1;
-  min-height: 0;          // â† essential for flex overflow to work
+  min-height: 0;          // ← essential for flex overflow to work
   overflow-y: auto;
   padding: 12px 10px;
   display: flex;
@@ -99,7 +99,7 @@
   }
 }
 
-// Messages â€” width:100% so user bubbles don't collapse
+// Messages — width:100% so user bubbles don't collapse
 .bot-msg {
   display: flex;
   flex-direction: column;
@@ -225,12 +225,12 @@
   &:disabled { opacity: .35; cursor: not-allowed; }
 }
 
-// â˜… KEY FIX: flex-shrink:0 keeps input always visible at bottom
+// ★ KEY FIX: flex-shrink:0 keeps input always visible at bottom
 .bot-input {
   display: flex; align-items: flex-end; gap: 7px;
   padding: 10px 10px;
   border-top: 1px solid rgb(var(--accent-rgb) / .15);
-  flex-shrink: 0;         // â† never pushed off screen
+  flex-shrink: 0;         // ← never pushed off screen
   background: rgb(var(--bg-deep-rgb) / .95);
 
   textarea {

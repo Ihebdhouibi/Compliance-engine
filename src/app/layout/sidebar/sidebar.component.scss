@@ -5,7 +5,7 @@ $sb-full:  260px;
 $sb-icon:  64px;
 $trans:    .28s cubic-bezier(.4,0,.2,1);
 
-// â”€â”€ Mobile overlay
+// ── Mobile overlay
 .sb-overlay {
   display: none;
   position: fixed; inset: 0;
@@ -15,7 +15,7 @@ $trans:    .28s cubic-bezier(.4,0,.2,1);
   &.visible { @media (max-width:1024px) { display: block; } }
 }
 
-// â”€â”€ Mobile hamburger
+// ── Mobile hamburger
 .sb-hamburger {
   display: flex;
   position: fixed; top: 14px; left: 14px; z-index: 200;
@@ -30,7 +30,7 @@ $trans:    .28s cubic-bezier(.4,0,.2,1);
   @media (min-width:1025px) { display: flex; }  
 }
 
-// â”€â”€ Sidebar panel
+// ── Sidebar panel
 .sidebar {
   position: fixed;
   top: 0; left: 0; bottom: 0;
@@ -66,13 +66,13 @@ $trans:    .28s cubic-bezier(.4,0,.2,1);
   }
 }
 
-// â”€â”€ Head: logo + brand text + toggle button
+// ── Head: logo + brand text + toggle button
 .sidebar__head {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 0 14px;
-  height: 64px;           // same as topbar height â€” eliminates the gap
+  height: 64px;           // same as topbar height — eliminates the gap
   flex-shrink: 0;
   border-bottom: 1px solid rgb(var(--fg-rgb) / .06);
   overflow: hidden;
@@ -108,7 +108,7 @@ $trans:    .28s cubic-bezier(.4,0,.2,1);
   @media (max-width:1024px) { display:none; }
 }
 
-// â”€â”€ Role badge
+// ── Role badge
 .sidebar__badge {
   display: flex; align-items: center; gap:7px;
   margin: 10px 12px 4px;
@@ -141,7 +141,7 @@ $trans:    .28s cubic-bezier(.4,0,.2,1);
   }
 }
 
-// â”€â”€ Nav
+// ── Nav
 .sidebar__nav {
   flex:1; display:flex; flex-direction:column; gap:2px;
   padding: 6px 8px 12px;
@@ -156,7 +156,7 @@ $trans:    .28s cubic-bezier(.4,0,.2,1);
   &.hide { opacity:0; }
 }
 
-// â”€â”€ Nav item
+// ── Nav item
 .nav-item {
   display: flex; align-items: center; gap:11px;
   padding: 10px 11px; border-radius:9px;
@@ -199,7 +199,7 @@ $trans:    .28s cubic-bezier(.4,0,.2,1);
     }
   }
 
-  // â”€â”€ Collapsed: perfectly centered icon
+  // ── Collapsed: perfectly centered icon
   &--icon-only {
     justify-content: center;
     padding: 11px 0;
@@ -207,7 +207,7 @@ $trans:    .28s cubic-bezier(.4,0,.2,1);
   }
 }
 
-// â”€â”€ Footer
+// ── Footer
 .sidebar__footer {
   padding: 12px 14px 10px;
   border-top: 1px solid rgb(var(--fg-rgb) / .06);

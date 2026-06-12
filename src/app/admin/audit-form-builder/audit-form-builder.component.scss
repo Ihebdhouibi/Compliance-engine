@@ -1,4 +1,4 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
 .builder-page {
@@ -70,7 +70,7 @@
   &--error   { background: rgb(var(--danger-rgb) / .09); border: 1px solid rgb(var(--danger-rgb) / .22); color: rgb(var(--danger-rgb)); }
 }
 
-// â”€â”€ Create panel
+// ── Create panel
 .create-panel {
   background: rgb(var(--bg-card-rgb) / .85); backdrop-filter: blur(16px);
   border: 1px solid rgb(var(--accent-rgb) / .2); border-radius: 14px;
@@ -97,7 +97,7 @@
   &:hover { background: rgb(var(--fg-rgb) / .1); color: rgb(var(--fg-strong-rgb)); }
 }
 
-// â”€â”€ Builder layout
+// ── Builder layout
 .builder-layout {
   display: grid;
   grid-template-columns: 220px 260px 1fr;
@@ -160,7 +160,7 @@
   border-radius: 50%; animation: spin .7s linear infinite;
 }
 
-// â”€â”€ Template items
+// ── Template items
 .template-item {
   display: flex; flex-direction: column; gap: 3px;
   padding: 12px 16px; cursor: pointer; transition: background .15s;
@@ -190,7 +190,7 @@
 .ti-title { font-size: .85rem; font-weight: 600; color: rgb(var(--fg-strong-rgb)); line-height: 1.3; }
 .ti-meta  { font-size: .72rem; color: rgb(var(--fg-rgb) / .32); }
 
-// â”€â”€ Step items
+// ── Step items
 .step-item {
   padding: 12px 16px; cursor: pointer; transition: background .15s;
   border-bottom: 1px solid rgb(var(--fg-rgb) / .04);
@@ -222,7 +222,7 @@
 .si-right { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
 .si-count { font-size: .72rem; color: rgb(var(--fg-rgb) / .3); white-space: nowrap; }
 
-// â”€â”€ Field items
+// ── Field items
 .field-item {
   padding: 11px 16px; border-bottom: 1px solid rgb(var(--fg-rgb) / .04);
   &:last-child { border-bottom: none; }
@@ -261,7 +261,7 @@
   border-radius: 5px; color: rgb(var(--fg-rgb) / .55);
 }
 
-// â”€â”€ Delete button
+// ── Delete button
 .del-btn {
   width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
   background: color-mix(in srgb, var(--color-btn-delete,rgb(var(--danger-rgb))) 8%, transparent);
@@ -271,7 +271,7 @@
   &:hover { background: color-mix(in srgb, var(--color-btn-delete,rgb(var(--danger-rgb))) 18%, transparent); }
 }
 
-// â”€â”€ Inline forms
+// ── Inline forms
 .inline-form {
   padding: 14px 16px; background: rgb(var(--bg-app-rgb) / .5);
   border-bottom: 1px solid rgb(var(--accent-rgb) / .1); animation: fadeUp .2s ease both;
@@ -284,7 +284,7 @@
   padding-top: 10px; border-top: 1px solid rgb(var(--fg-rgb) / .06);
 }
 
-// â”€â”€ Field type selector grid
+// ── Field type selector grid
 .field-type-grid {
   display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 4px;
   @media (max-width: 500px) { grid-template-columns: repeat(3, 1fr); }
@@ -306,7 +306,7 @@
 .ft-icon  { font-size: .8rem; color: var(--color-accent,rgb(var(--accent-rgb))); font-weight: 700; }
 .ft-label { font-size: .6rem; color: rgb(var(--fg-rgb) / .55); text-align: center; line-height: 1.2; }
 
-// â”€â”€ Options section
+// ── Options section
 .options-section {
   margin: 10px 0; padding: 12px;
   background: rgb(var(--bg-app-rgb) / .4); border: 1px solid rgb(var(--accent-rgb) / .1);
@@ -355,7 +355,7 @@
   &:hover { background: color-mix(in srgb, var(--color-btn-add,rgb(var(--accent-rgb))) 22%, transparent); }
 }
 
-// â”€â”€ Shared form elements
+// ── Shared form elements
 .f-row {
   display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;
   @media (max-width: 500px) { grid-template-columns: 1fr; }
@@ -415,7 +415,7 @@
   border-top-color: rgb(var(--bg-app-rgb)); border-radius: 50%; animation: spin .65s linear infinite;
 }
 
-// â”€â”€ Drag handle
+// ── Drag handle
 .drag-handle {
   cursor: grab; padding: 2px 4px; color: rgb(var(--fg-rgb) / .25);
   flex-shrink: 0; transition: color .15s; border-radius: 4px;
@@ -423,14 +423,14 @@
   &:active { cursor: grabbing; }
 }
 
-// â”€â”€ Drag-over highlight
+// ── Drag-over highlight
 .drag-over {
   background: color-mix(in srgb, var(--color-accent,rgb(var(--accent-rgb))) 12%, transparent) !important;
   border-left-color: var(--color-accent,rgb(var(--accent-rgb))) !important;
   outline: 1px dashed color-mix(in srgb, var(--color-accent,rgb(var(--accent-rgb))) 40%, transparent);
 }
 
-// â”€â”€ Edit button
+// ── Edit button
 .edit-btn {
   width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
   background: color-mix(in srgb, var(--color-btn-update,rgb(var(--accent-rgb))) 8%, transparent);
@@ -440,14 +440,14 @@
   &:hover { background: color-mix(in srgb, var(--color-btn-update,rgb(var(--accent-rgb))) 18%, transparent); }
 }
 
-// â”€â”€ Field item editing state
+// ── Field item editing state
 .field-item--editing {
   background: rgb(var(--bg-app-rgb) / .6) !important;
   border-left: 3px solid var(--color-btn-update,rgb(var(--accent-rgb))) !important;
   padding-left: 13px;
 }
 
-// â”€â”€ Inline form title
+// ── Inline form title
 .inline-form-title {
   display: flex; align-items: center; gap: 7px;
   font-family: t.$font-mono; font-size: .66rem; font-weight: 600;
@@ -458,14 +458,14 @@
     svg { color: var(--color-btn-update,rgb(var(--accent-rgb))); } }
 }
 
-// â”€â”€ Field edit form wrapper
+// ── Field edit form wrapper
 .field-edit-form {
   padding: 14px; background: rgb(var(--bg-app-rgb) / .4);
   border-top: 1px solid rgb(var(--accent-rgb) / .08);
   animation: fadeUp .2s ease both;
 }
 
-// â”€â”€ Update button
+// ── Update button
 .btn-update {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 9px 20px; background: var(--color-btn-update,rgb(var(--accent-rgb))); color: rgb(var(--bg-app-rgb));
@@ -479,7 +479,7 @@
   &:disabled { opacity: .48; cursor: not-allowed; }
 }
 
-// â”€â”€ Process Steps Section
+// ── Process Steps Section
 .process-steps-section {
   margin-top: 28px;
   background: rgb(var(--bg-card-rgb) / .5);
@@ -569,7 +569,7 @@
   }
 }
 
-// â”€â”€ Template action buttons
+// ── Template action buttons
 .ti-actions {
   display: flex; gap: 6px; margin-top: 8px;
   padding-top: 8px;
@@ -608,7 +608,7 @@
   }
 }
 
-// â”€â”€ Template action buttons
+// ── Template action buttons
 .ti-desc {
   font-size: .74rem; color: rgb(var(--fg-rgb) / .35);
   line-height: 1.4; margin: 2px 0;
@@ -647,7 +647,7 @@
   }
 }
 
-// â”€â”€ Process steps section
+// ── Process steps section
 .process-steps-section {
   margin-top: 28px;
   background: rgb(var(--bg-card-rgb) / .5);
@@ -758,12 +758,12 @@
   }
 }
 
-// â”€â”€ Inactive template dim
+// ── Inactive template dim
 .ti--inactive {
   opacity: .6;
 }
 
-// â”€â”€ Template description preview
+// ── Template description preview
 .ti-desc {
   font-size: .73rem; color: rgb(var(--fg-rgb) / .32);
   line-height: 1.4; margin: 2px 0;
@@ -773,7 +773,7 @@
   overflow: hidden;
 }
 
-// â”€â”€ Template action buttons
+// ── Template action buttons
 .ti-actions {
   display: flex;
   gap: 6px;
@@ -808,9 +808,9 @@
   }
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════
 // AUDIT PROCESS STEPS SECTION
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ═══════════════════════════════════
 
 .process-steps-section {
   margin-top: 30px;
@@ -938,7 +938,7 @@
   }
 }
 
-// â”€â”€ Wide edit panel layout
+// ── Wide edit panel layout
 .create-panel--wide {
   max-width: 100%;
 }

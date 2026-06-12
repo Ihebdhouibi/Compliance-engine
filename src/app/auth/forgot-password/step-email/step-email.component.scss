@@ -1,7 +1,7 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
-// â”€â”€ Animated background
+// ── Animated background
 .auth-bg {
   min-height: 100vh;
   width: 100%;
@@ -64,7 +64,7 @@
   animation: fadeUp .5s cubic-bezier(.4,0,.2,1) both;
 }
 
-// â”€â”€ Card
+// ── Card
 .auth-card {
   background: rgb(var(--bg-card-rgb) / .72);
   backdrop-filter: blur(24px) saturate(1.4);
@@ -96,7 +96,7 @@
   &--br { bottom:12px; right:12px; border-width:0 1.5px 1.5px 0; }
 }
 
-// â”€â”€ Brand
+// ── Brand
 .auth-brand {
   display: flex; align-items: center; gap: 11px; margin-bottom: 28px;
   &__icon {
@@ -115,11 +115,11 @@
   }
 }
 
-// â”€â”€ Step dots
+// ── Step dots
 .auth-steps {
   display: flex;
   align-items: center;
-  justify-content: center;   // â† this centers the stepper
+  justify-content: center;   // ← this centers the stepper
   gap: 6px;
   margin-bottom: 24px;
 
@@ -160,7 +160,7 @@
   }
 }
 
-// â”€â”€ FP icon badge
+// ── FP icon badge
 .fp-icon {
   width: 52px; height: 52px;
   display: flex; align-items: center; justify-content: center;
@@ -170,7 +170,7 @@
   svg { width: 24px; height: 24px; color: t.$cyan-300; }
 }
 
-// â”€â”€ Heading
+// ── Heading
 .auth-heading {
   margin-bottom: 24px;
   h2 { font-family:t.$font-display; font-size:1.62rem; font-weight:800;
@@ -178,7 +178,7 @@
   p  { font-size:.87rem; color:rgb(var(--fg-rgb) / .65); line-height:1.55; }
 }
 
-// â”€â”€ Alert
+// ── Alert
 .auth-alert {
   display:flex; align-items:flex-start; gap:10px;
   padding:13px 15px; border-radius:12px; margin-bottom:16px;
@@ -191,7 +191,7 @@
   p   { font-size:.82rem; line-height:1.45; margin:0; }
 }
 
-// â”€â”€ Field
+// ── Field
 .auth-field {
   margin-bottom: 16px;
   &__label {
@@ -229,7 +229,7 @@
   }
 }
 
-// â”€â”€ Submit
+// ── Submit
 .auth-submit {
   display:inline-flex; align-items:center; justify-content:center; gap:10px;
   width:100%; padding:15px 28px; margin-top:8px;
@@ -259,14 +259,14 @@
   }
 }
 
-// â”€â”€ Link
+// ── Link
 .auth-link {
   text-align:center; margin-top:14px; font-size:.86rem; color:rgb(var(--fg-rgb) / .65);
   a { color:t.$cyan-300; font-weight:600; transition:color .15s;
       &:hover { color:t.$cyan-200; text-decoration:underline; } }
 }
 
-// â”€â”€ Stagger animation classes
+// ── Stagger animation classes
 @for $i from 1 through 8 {
   .a#{$i} { animation: fadeUp .45s ease #{$i * 0.055}s both; }
 }

@@ -1,12 +1,12 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
-// â”€â”€ Stagger animations
+// ── Stagger animations
 @for $i from 1 through 10 {
   .a#{$i} { animation: fadeUp .45s ease #{$i * 0.055}s both; }
 }
 
-// â”€â”€ Page wrapper
+// ── Page wrapper
 .auth-bg {
   min-height: 100vh;
   width: 100%;
@@ -74,7 +74,7 @@
   max-width: 540px;
 }
 
-// â”€â”€ Glass card
+// ── Glass card
 .auth-card {
   background: rgb(var(--bg-card-rgb) / .78);
   backdrop-filter: blur(24px) saturate(1.4);
@@ -109,7 +109,7 @@
   &--br { bottom:12px; right:12px; border-width:0 1.5px 1.5px 0; }
 }
 
-// â”€â”€ Brand row
+// ── Brand row
 .auth-brand {
   display: flex; align-items: center; gap: 11px; margin-bottom: 28px;
 
@@ -135,7 +135,7 @@
   }
 }
 
-// â”€â”€ Heading
+// ── Heading
 .auth-heading {
   margin-bottom: 24px;
   h2 {
@@ -146,7 +146,7 @@
   p { font-size: .87rem; color: rgb(var(--fg-rgb) / .65); line-height: 1.55; }
 }
 
-// â”€â”€ Alerts
+// ── Alerts
 .auth-alert {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 13px 15px; border-radius: 12px; margin-bottom: 16px;
@@ -175,7 +175,7 @@
   }
 }
 
-// â”€â”€ Form fields
+// ── Form fields
 .auth-field {
   margin-bottom: 16px;
 
@@ -231,7 +231,7 @@
   }
 }
 
-// â”€â”€ Two-column row
+// ── Two-column row
 .su-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -243,7 +243,7 @@
   }
 }
 
-// â”€â”€ Info note
+// ── Info note
 .su-note {
   display: flex; align-items: flex-start; gap: 8px;
   padding: 12px 14px;
@@ -261,7 +261,7 @@
   span { font-size: .79rem; color: rgb(var(--fg-rgb) / .65); line-height: 1.5; }
 }
 
-// â”€â”€ Submit button
+// ── Submit button
 .auth-submit {
   display: inline-flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%; padding: 15px 28px; margin-top: 8px;
@@ -300,7 +300,7 @@
   }
 }
 
-// â”€â”€ Bottom link
+// ── Bottom link
 .auth-link {
   text-align: center; margin-top: 12px;
   font-size: .86rem; color: rgb(var(--fg-rgb) / .65);

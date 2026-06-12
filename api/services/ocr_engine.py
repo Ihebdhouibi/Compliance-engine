@@ -1,4 +1,4 @@
-﻿"""
+"""
 OCR engine service using RapidOCR (ONNX Runtime).
 Supports images and PDFs (converted to images). DOCX requires python-docx (optional).
 """

@@ -1,4 +1,4 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
 .settings-page {
@@ -17,7 +17,7 @@
   }
 }
 
-// â”€â”€ Two-column layout
+// ── Two-column layout
 .settings-layout {
   display: grid;
   grid-template-columns: 210px 1fr;
@@ -29,7 +29,7 @@
   }
 }
 
-// â”€â”€ Sticky side nav
+// ── Sticky side nav
 .settings-nav {
   position: sticky;
   top: 16px;
@@ -64,21 +64,21 @@
   }
 }
 
-// â”€â”€ Scrollable content column
+// ── Scrollable content column
 .settings-content {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  // No overflow:hidden here â€” let shell handle scrolling
+  // No overflow:hidden here — let shell handle scrolling
 }
 
-// â”€â”€ Content blocks
+// ── Content blocks
 .settings-block {
   background: rgb(var(--bg-card-rgb) / .7);
   backdrop-filter: blur(16px);
   border: 1px solid rgb(var(--accent-rgb) / .1);
   border-radius: 14px;
-  overflow: visible; // important â€” allows tooltips to overflow
+  overflow: visible; // important — allows tooltips to overflow
 
   &__head {
     padding: 18px 22px 14px;
@@ -95,7 +95,7 @@
   &__body { padding: 22px; }
 }
 
-// â”€â”€ Field row
+// ── Field row
 .field-row { margin-bottom: 4px; }
 
 .field-label {
@@ -122,7 +122,7 @@
   }
 }
 
-// â”€â”€ Tooltip
+// ── Tooltip
 .field-tooltip {
   position: relative;
   display: inline-flex;
@@ -185,7 +185,7 @@
   }
 }
 
-// â”€â”€ Media uploads
+// ── Media uploads
 .media-row {
   display: flex; gap: 16px; flex-wrap: wrap;
 }
@@ -235,7 +235,7 @@
     line-height: 1.45;
   }
 
-  // â”€â”€ THE UPLOAD BUTTON â€” make it always visible
+  // ── THE UPLOAD BUTTON — make it always visible
   &__btn {
     display: inline-flex; align-items: center; gap: 7px;
     margin-top: 6px;
@@ -263,7 +263,7 @@
   }
 }
 
-// â”€â”€ Colors grid
+// ── Colors grid
 .colors-grid {
   display: flex; flex-direction: column; gap: 0;
   border: 1px solid rgb(var(--accent-rgb) / .09);
@@ -347,7 +347,7 @@
   &:hover { background: rgb(var(--fg-rgb) / .09); color: rgb(var(--fg-strong-rgb)); }
 }
 
-// â”€â”€ Footer
+// ── Footer
 .settings-footer {
   display: flex; justify-content: flex-end;
   padding-top: 4px; padding-bottom: 32px; // extra bottom space
@@ -380,7 +380,7 @@
   }
 }
 
-// â”€â”€ Alerts
+// ── Alerts
 .alert {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 15px; border-radius: 10px;
@@ -398,7 +398,7 @@
   }
 }
 
-// â”€â”€ Coming soon
+// ── Coming soon
 .coming-soon {
   text-align: center; padding: 44px 24px;
   svg { color: rgb(var(--fg-rgb) / .18); margin: 0 auto 14px; display: block; }
@@ -407,7 +407,7 @@
   p  { font-size: .83rem; color: rgb(var(--fg-rgb) / .28); }
 }
 
-// â”€â”€ Media action buttons row
+// ── Media action buttons row
 .media-upload__actions {
   display: flex;
   align-items: center;
@@ -416,7 +416,7 @@
   margin-top: 6px;
 }
 
-// â”€â”€ Cancel selection button
+// ── Cancel selection button
 .media-upload__clear-btn {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 7px 12px;
@@ -433,7 +433,7 @@
   }
 }
 
-// â”€â”€ Remove from server button
+// ── Remove from server button
 .media-upload__remove-btn {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 7px 12px;

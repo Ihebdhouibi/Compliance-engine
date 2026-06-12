@@ -1,7 +1,7 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
-// â”€â”€ Page shell
+// ── Page shell
 .login-page {
   min-height: 100vh;
   display: flex;
@@ -14,7 +14,7 @@
   font-family: t.$font-body;
 }
 
-// â”€â”€ Animated background layers
+// ── Animated background layers
 .login-page__bg {
   position: fixed;
   inset: 0;
@@ -69,7 +69,7 @@
   }
 }
 
-// â”€â”€ Centered wrapper
+// ── Centered wrapper
 .login-wrap {
   position: relative; z-index: 10;
   width: 100%; max-width: 440px;
@@ -77,7 +77,7 @@
   animation: fadeUp .5s cubic-bezier(.4,0,.2,1) both;
 }
 
-// â”€â”€ Card
+// ── Card
 .login-card {
   width: 100%;
   background: rgb(var(--bg-card-rgb) / .82);
@@ -106,7 +106,7 @@
   }
 }
 
-// â”€â”€ Brand row
+// ── Brand row
 .login-brand {
   display: flex; align-items: center; gap: 12px;
   margin-bottom: 32px;
@@ -140,7 +140,7 @@
   }
 }
 
-// â”€â”€ Heading â€” centered
+// ── Heading — centered
 .login-heading {
   text-align: center;
   margin-bottom: 28px;
@@ -159,7 +159,7 @@
   }
 }
 
-// â”€â”€ Alert
+// ── Alert
 .form-alert {
   display: flex; align-items: center; gap: 10px;
   padding: 12px 14px; border-radius: 10px;
@@ -174,7 +174,7 @@
   }
 }
 
-// â”€â”€ Form
+// ── Form
 .login-form { display: flex; flex-direction: column; gap: 16px; }
 
 .form-field {
@@ -251,7 +251,7 @@
   }
 }
 
-// â”€â”€ Submit
+// ── Submit
 .login-btn {
   display: flex; align-items: center; justify-content: center; gap: 9px;
   width: 100%; padding: 14px 24px; margin-top: 6px;
@@ -290,7 +290,7 @@
   }
 }
 
-// â”€â”€ Footer
+// ── Footer
 .login-footer {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   margin-top: 24px;
@@ -303,7 +303,7 @@
   }
 }
 
-// â”€â”€ Trust badges
+// ── Trust badges
 .login-badges {
   display: flex; align-items: center; gap: 20px;
   animation: fadeUp .5s ease .15s both;

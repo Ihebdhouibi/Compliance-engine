@@ -1,1 +1,1 @@
-﻿# Setup script
+# Setup script

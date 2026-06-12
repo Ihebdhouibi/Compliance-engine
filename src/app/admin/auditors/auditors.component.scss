@@ -1,4 +1,4 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
 .page {
@@ -6,7 +6,7 @@
   animation: fadeUp .3s ease both;
 }
 
-// â”€â”€ Header
+// ── Header
 .page-header {
   display: flex;
   align-items: flex-start;
@@ -29,7 +29,7 @@
   }
 }
 
-// â”€â”€ Add button â€” uses --color-btn-add from settings
+// ── Add button — uses --color-btn-add from settings
 .btn-add {
   display: inline-flex;
   align-items: center;
@@ -55,7 +55,7 @@
   }
 }
 
-// â”€â”€ Toast
+// ── Toast
 .toast {
   display: flex;
   align-items: center;
@@ -79,7 +79,7 @@
   }
 }
 
-// â”€â”€ Filters
+// ── Filters
 .filters {
   display: flex;
   align-items: center;
@@ -177,7 +177,7 @@
   }
 }
 
-// â”€â”€ Table card
+// ── Table card
 .table-card {
   background: rgb(var(--bg-card-rgb) / .7);
   backdrop-filter: blur(16px);
@@ -256,7 +256,7 @@ table {
   }
 }
 
-// â”€â”€ User cell
+// ── User cell
 .user-cell {
   display: flex;
   align-items: center;
@@ -297,7 +297,7 @@ table {
   font-weight: 600;
 }
 
-// â”€â”€ Status pill
+// ── Status pill
 .pill {
   display: inline-flex;
   align-items: center;
@@ -343,7 +343,7 @@ table {
   margin-top: 4px;
 }
 
-// â”€â”€ Action buttons â€” each maps to a settings color
+// ── Action buttons — each maps to a settings color
 .acts {
   display: flex;
   align-items: center;
@@ -418,7 +418,7 @@ table {
   animation: spin .6s linear infinite;
 }
 
-// â”€â”€ Pagination
+// ── Pagination
 .pager {
   display: flex;
   align-items: center;
@@ -472,11 +472,11 @@ table {
   color: rgb(var(--fg-rgb) / .35);
 }
 
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════
 // MODALS
-// position:fixed relative to VIEWPORT â€” not any parent
+// position:fixed relative to VIEWPORT — not any parent
 // z-index 9998/9999 breaks out of all stacking contexts
-// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ════════════════════════════════════════════════════
 
 .modal-backdrop {
   position: fixed;
@@ -526,7 +526,7 @@ table {
   }
 }
 
-// â”€â”€ Modal header
+// ── Modal header
 .mb-head {
   display: flex;
   align-items: center;
@@ -570,7 +570,7 @@ table {
   }
 }
 
-// â”€â”€ Modal scrollable body
+// ── Modal scrollable body
 .mb-body {
   padding: 20px 22px;
   overflow-y: auto;
@@ -591,7 +591,7 @@ table {
   }
 }
 
-// â”€â”€ Modal footer
+// ── Modal footer
 .mb-footer {
   display: flex;
   justify-content: flex-end;
@@ -602,7 +602,7 @@ table {
   border-top: 1px solid rgb(var(--fg-rgb) / .06);
 }
 
-// â”€â”€ Form elements
+// ── Form elements
 .f-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -673,7 +673,7 @@ table {
   margin-top: 2px;
 }
 
-// â”€â”€ Alerts inside modal
+// ── Alerts inside modal
 .m-success {
   display: flex;
   align-items: center;
@@ -722,7 +722,7 @@ table {
   }
 }
 
-// â”€â”€ Modal buttons â€” wired to settings colors
+// ── Modal buttons — wired to settings colors
 .btn-cancel {
   padding: 10px 20px;
   background: rgb(var(--fg-rgb) / .05);
@@ -740,7 +740,7 @@ table {
   }
 }
 
-// Add / Create â†’ --color-btn-add from settings
+// Add / Create → --color-btn-add from settings
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -771,7 +771,7 @@ table {
   }
 }
 
-// Save / Update â†’ --color-btn-update from settings
+// Save / Update → --color-btn-update from settings
 .btn-update {
   display: inline-flex;
   align-items: center;
@@ -802,7 +802,7 @@ table {
   }
 }
 
-// â”€â”€ Profile view modal
+// ── Profile view modal
 .profile-hero {
   display: flex;
   align-items: center;

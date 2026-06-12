@@ -1,11 +1,11 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/mixins' as m;
 @use 'styles/keyframes';
 
-// â”€â”€ Stagger helpers
+// ── Stagger helpers
 @for $i from 1 through 8 { .a#{$i} { animation:fadeUp .45s ease #{$i * 0.07}s both; } }
 
-// â”€â”€ Re-use shared dashboard styles inline (no @use path issue)
+// ── Re-use shared dashboard styles inline (no @use path issue)
 .dash { display:flex; flex-direction:column; gap:24px; }
 
 .dash__header {
@@ -90,7 +90,7 @@
 
 .empty-state { text-align:center; padding:40px 24px; svg { width:44px; height:44px; color:t.$text-muted; margin:0 auto 14px; } h4 { font-family:t.$font-display; font-size:.96rem; font-weight:700; color:t.$text-secondary; margin-bottom:6px; } p { font-size:.84rem; color:t.$text-muted; } }
 
-// â”€â”€ Compliance grid
+// ── Compliance grid
 .compliance-grid { display:flex; flex-direction:column; gap:16px; }
 .comp-item {
   &__head { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }

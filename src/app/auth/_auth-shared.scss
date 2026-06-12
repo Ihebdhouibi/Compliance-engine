@@ -1,8 +1,8 @@
-﻿@use '../../styles/tokens' as t;
+@use '../../styles/tokens' as t;
 @use '../../styles/mixins' as m;
 @use '../../styles/keyframes';
 
-// â”€â”€ Animated dark page wrapper
+// ── Animated dark page wrapper
 .auth-bg {
   min-height: 100vh;
   width: 100%;
@@ -67,7 +67,7 @@
   animation: fadeUp 0.5s cubic-bezier(.4,0,.2,1) both;
 }
 
-// â”€â”€ Glass card
+// ── Glass card
 .auth-card {
   @include m.glass(24px);
   border-radius: t.$r-2xl;
@@ -95,7 +95,7 @@
   &--br { bottom:12px; right:12px; border-width:0 1.5px 1.5px 0; }
 }
 
-// â”€â”€ Brand row
+// ── Brand row
 .auth-brand {
   display: flex; align-items: center; gap: 11px; margin-bottom: 28px;
   &__icon {
@@ -113,14 +113,14 @@
   }
 }
 
-// â”€â”€ Heading
+// ── Heading
 .auth-heading {
   margin-bottom: 24px;
   h2 { font-family:t.$font-display; font-size:1.62rem; font-weight:800; color:t.$text-primary; line-height:1.2; margin-bottom:6px; }
   p  { font-size:.87rem; color:t.$text-secondary; line-height:1.55; }
 }
 
-// â”€â”€ Field
+// ── Field
 .auth-field {
   margin-bottom: 16px;
   &__label { @include m.field-label; }
@@ -145,7 +145,7 @@
   &__error { @include m.error-text; }
 }
 
-// â”€â”€ Alert
+// ── Alert
 .auth-alert {
   display: flex; align-items: flex-start; gap: 10px;
   padding: 13px 15px; border-radius: t.$r-md; margin-bottom: 16px;
@@ -162,28 +162,28 @@
   p   { font-size:.82rem; line-height:1.45; margin:0; }
 }
 
-// â”€â”€ Submit button
+// ── Submit button
 .auth-submit {
   @include m.btn-primary;
   margin-top: 8px;
   .btn-spinner { @include m.spinner(17px); }
 }
 
-// â”€â”€ Divider
+// ── Divider
 .auth-divider {
   display: flex; align-items: center; gap: 12px; margin: 8px 0;
   &::before,&::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,rgb(var(--accent-rgb) / .18),transparent); }
   span { font-family:t.$font-mono; font-size:.65rem; letter-spacing:.1em; text-transform:uppercase; color:t.$text-muted; white-space:nowrap; }
 }
 
-// â”€â”€ Bottom link
+// ── Bottom link
 .auth-link {
   text-align: center; margin-top: 14px;
   font-size: .86rem; color: t.$text-secondary;
   a { color:t.$cyan-300; font-weight:600; transition:color t.$t-fast; &:hover { color:t.$cyan-200; text-decoration:underline; } }
 }
 
-// â”€â”€ Step dots (forgot pw flow)
+// ── Step dots (forgot pw flow)
 .auth-steps {
   display: flex; align-items: center; gap: 6px; margin-bottom: 24px;
   .step {
@@ -198,7 +198,7 @@
   }
 }
 
-// â”€â”€ FP icon badge
+// ── FP icon badge
 .fp-icon {
   width:52px; height:52px;
   display:flex; align-items:center; justify-content:center;
@@ -208,7 +208,7 @@
   svg { width:24px; height:24px; color:t.$cyan-300; }
 }
 
-// â”€â”€ Staggered entrance helpers
+// ── Staggered entrance helpers
 @for $i from 1 through 12 {
   .a#{$i} { animation: fadeUp .45s ease #{$i * 0.055}s both; }
 }

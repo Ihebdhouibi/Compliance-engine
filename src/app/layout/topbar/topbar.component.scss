@@ -1,11 +1,11 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
 .topbar {
   height: 64px;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 28px; gap: 16px;
-  // â† DYNAMIC topbar background
+  // ← DYNAMIC topbar background
   background: var(--color-topbar-bg);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgb(var(--fg-rgb) / .06);
@@ -22,7 +22,7 @@
 
     .dot {
       width:6px; height:6px; border-radius:50%;
-      // â† DYNAMIC
+      // ← DYNAMIC
       background: var(--color-accent);
       animation: node-pulse 2s ease-in-out infinite; flex-shrink:0;
     }
@@ -38,7 +38,7 @@
     transition:all t.$t-fast; position:relative;
     svg { width:17px; height:17px; }
     &:hover {
-      // â† DYNAMIC
+      // ← DYNAMIC
       background: color-mix(in srgb, var(--color-accent) 10%, transparent);
       color: var(--color-accent);
       border-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
@@ -58,7 +58,7 @@
 
   .notif-panel {
     position:absolute; top:calc(100% + 10px); right:0; width:306px;
-    // â† DYNAMIC panel background matches topbar
+    // ← DYNAMIC panel background matches topbar
     background: var(--color-topbar-bg);
     border: 1px solid rgb(var(--fg-rgb) / .1);
     border-radius: t.$r-lg;
@@ -75,7 +75,7 @@
       button {
         background:none; border:none; font-size:.73rem; cursor:pointer;
         font-family:t.$font-body;
-        // â† DYNAMIC
+        // ← DYNAMIC
         color: var(--color-accent);
         &:hover { text-decoration:underline; }
       }
@@ -94,7 +94,7 @@
       &:hover { background:rgb(var(--fg-rgb) / .04); }
 
       &.unread .n-dot {
-        // â† DYNAMIC
+        // ← DYNAMIC
         background: var(--color-accent);
         box-shadow: 0 0 6px color-mix(in srgb, var(--color-accent) 50%, transparent);
       }
@@ -142,14 +142,14 @@
   &__user-info {
     display:flex; flex-direction:column; line-height:1;
     .u-name { font-size:.86rem; font-weight:600; color: rgb(var(--fg-strong-rgb)); max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    // â† DYNAMIC
+    // ← DYNAMIC
     .u-role { font-family:t.$font-mono; font-size:.6rem; letter-spacing:.1em;
               text-transform:uppercase; color:var(--color-accent); margin-top:3px; }
   }
 
   &__logout {
     display:flex; align-items:center; gap:7px; padding:8px 14px;
-    // â† DYNAMIC delete/danger color for logout
+    // ← DYNAMIC delete/danger color for logout
     background: color-mix(in srgb, var(--color-btn-delete) 8%, transparent);
     border: 1px solid color-mix(in srgb, var(--color-btn-delete) 20%, transparent);
     border-radius: t.$r-md;

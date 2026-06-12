@@ -1,4 +1,4 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
 .profile-page {
@@ -13,7 +13,7 @@
   }
 }
 
-// â”€â”€ Two-column layout
+// ── Two-column layout
 .profile-layout {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -23,7 +23,7 @@
   @media (max-width: 768px) { grid-template-columns: 1fr; }
 }
 
-// â”€â”€ Avatar card
+// ── Avatar card
 .avatar-card {
   background: rgb(var(--bg-card-rgb) / .7);
   backdrop-filter: blur(16px);
@@ -88,7 +88,7 @@
 
 .email-text { font-size: .78rem; color: rgb(var(--fg-rgb) / .4); }
 
-// â”€â”€ Right: tabs + content
+// ── Right: tabs + content
 .profile-content {
   background: rgb(var(--bg-card-rgb) / .7);
   backdrop-filter: blur(16px);
@@ -118,10 +118,10 @@
   }
 }
 
-// â”€â”€ Tab panels
+// ── Tab panels
 .tab-panel { padding: 24px; }
 
-// â”€â”€ Form
+// ── Form
 .form-row {
   display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;
   @media (max-width: 560px) { grid-template-columns: 1fr; }
@@ -211,7 +211,7 @@
   border-radius: 50%; animation: spin .7s linear infinite;
 }
 
-// â”€â”€ Alerts
+// ── Alerts
 .form-alert {
   display: flex; align-items: center; gap: 9px;
   padding: 11px 14px; border-radius: 9px; margin-bottom: 16px;

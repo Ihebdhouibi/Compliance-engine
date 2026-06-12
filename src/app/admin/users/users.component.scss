@@ -1,4 +1,4 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
 .page {
@@ -30,7 +30,7 @@
 
 
 
-// â”€â”€ Toast
+// ── Toast
 .toast {
   display: flex;
   align-items: center;
@@ -54,7 +54,7 @@
   }
 }
 
-// â”€â”€ Filters
+// ── Filters
 .filters {
   display: flex;
   align-items: center;
@@ -152,7 +152,7 @@
   }
 }
 
-// â”€â”€ Table card
+// ── Table card
 .table-card {
   background: rgb(var(--bg-card-rgb) / .7);
   backdrop-filter: blur(16px);
@@ -231,7 +231,7 @@ table {
   }
 }
 
-// â”€â”€ User cell
+// ── User cell
 .user-cell {
   display: flex;
   align-items: center;
@@ -285,7 +285,7 @@ table {
   }
 }
 
-// â”€â”€ Status pill
+// ── Status pill
 .pill {
   display: inline-flex;
   align-items: center;
@@ -335,7 +335,7 @@ table {
   margin-top: 16px;
 }
 
-// â”€â”€ Action buttons
+// ── Action buttons
 .acts {
   display: flex;
   align-items: center;
@@ -400,7 +400,7 @@ table {
   animation: spin .6s linear infinite;
 }
 
-// â”€â”€ Pagination
+// ── Pagination
 .pager {
   display: flex;
   align-items: center;
@@ -454,7 +454,7 @@ table {
   color: rgb(var(--fg-rgb) / .35);
 }
 
-// â”€â”€ Modal inner styles (backdrop/box are global in styles.scss)
+// ── Modal inner styles (backdrop/box are global in styles.scss)
 .mb-head {
   display: flex;
   align-items: center;
@@ -545,7 +545,7 @@ table {
   }
 }
 
-// â”€â”€ Profile view
+// ── Profile view
 .profile-hero {
   display: flex;
   align-items: center;
@@ -577,7 +577,7 @@ table {
   color: var(--color-accent, rgb(var(--accent-rgb)));
 }
 
-// â”€â”€ Section label
+// ── Section label
 .section-label {
   font-family: t.$font-mono;
   font-size: .65rem;
@@ -588,7 +588,7 @@ table {
   margin-bottom: 10px;
 }
 
-// â”€â”€ Detail grid
+// ── Detail grid
 .detail-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

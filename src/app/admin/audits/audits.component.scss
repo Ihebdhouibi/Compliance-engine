@@ -1,4 +1,4 @@
-﻿@use 'styles/tokens' as t;
+@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
 .page { font-family: t.$font-body; animation: fadeUp .3s ease both; }
@@ -28,7 +28,7 @@
   &--success { background: rgb(var(--success-rgb) / .09); border: 1px solid rgb(var(--success-rgb) / .22); color: rgb(var(--success-rgb)); }
 }
 
-// â”€â”€ Tabs
+// ── Tabs
 .tabs {
   display: flex; margin-bottom: 20px; border-bottom: 1px solid rgb(var(--accent-rgb) / .1);
 }
@@ -47,7 +47,7 @@
   }
 }
 
-// â”€â”€ Filters
+// ── Filters
 .filters {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
 }
@@ -85,7 +85,7 @@
   &:hover { background: rgb(var(--fg-rgb) / .09); color: rgb(var(--fg-strong-rgb)); }
 }
 
-// â”€â”€ Table
+// ── Table
 .table-card {
   background: rgb(var(--bg-card-rgb) / .7); backdrop-filter: blur(16px);
   border: 1px solid rgb(var(--accent-rgb) / .1); border-radius: 14px;
@@ -129,7 +129,7 @@ table { width: 100%; border-collapse: collapse;
   border-radius: 5px; color: var(--color-accent,rgb(var(--accent-rgb))); white-space: nowrap;
 }
 
-// â”€â”€ Status pills
+// ── Status pills
 .st-pill {
   display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 100px;
   font-family: t.$font-mono; font-size: .59rem; letter-spacing: .08em;
@@ -143,7 +143,7 @@ table { width: 100%; border-collapse: collapse;
   &.st--rej  { background: rgb(var(--danger-rgb) / .1); border: 1px solid rgb(var(--danger-rgb) / .25); color: rgb(var(--danger-rgb)); }
 }
 
-// â”€â”€ Actions
+// ── Actions
 .acts { display: flex; align-items: center; gap: 5px; }
 
 .act {
@@ -181,7 +181,7 @@ table { width: 100%; border-collapse: collapse;
 }
 }
 
-// â”€â”€ Pagination
+// ── Pagination
 .pager { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
 
 .pager-btn {
@@ -201,7 +201,7 @@ table { width: 100%; border-collapse: collapse;
 .pager-info { margin-left: 6px; font-family: t.$font-mono; font-size: .76rem;
   color: rgb(var(--fg-rgb) / .35); }
 
-// â”€â”€ Modal inner elements (backdrop+box live in styles.scss global)
+// ── Modal inner elements (backdrop+box live in styles.scss global)
 .mb-head {
   display: flex; align-items: center; justify-content: space-between;
   padding: 18px 22px 14px; border-bottom: 1px solid rgb(var(--accent-rgb) / .1); flex-shrink: 0;
@@ -276,7 +276,7 @@ table { width: 100%; border-collapse: collapse;
   svg { color: rgb(var(--danger-rgb)); margin-top: 1px; }
 }
 
-// â”€â”€ Answers
+// ── Answers
 .answers-list { display: flex; flex-direction: column; gap: 8px; }
 
 .answer-row {
@@ -314,7 +314,7 @@ table { width: 100%; border-collapse: collapse;
   }
 }
 
-// â”€â”€ File viewer modal special sizing
+// ── File viewer modal special sizing
 :host ::ng-deep .modal-box--file {
   max-width: 860px !important;
   max-height: 92vh !important;
@@ -343,7 +343,7 @@ table { width: 100%; border-collapse: collapse;
   &:hover { background: color-mix(in srgb, var(--color-btn-add,rgb(var(--accent-rgb))) 22%, transparent); }
 }
 
-// â”€â”€ Form elements in modals
+// ── Form elements in modals
 .f-field {
   display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px;
   label { font-family: t.$font-mono; font-size: .64rem; font-weight: 600;
@@ -420,7 +420,7 @@ input[type="date"] {
   }
 }
 
-// â”€â”€ "Take it" button
+// ── "Take it" button
 .act--take {
   background: color-mix(in srgb, var(--color-btn-add,rgb(var(--accent-rgb))) 10%, transparent);
   color: var(--color-btn-add,rgb(var(--accent-rgb)));
@@ -432,7 +432,7 @@ input[type="date"] {
   &:disabled { opacity: .32; cursor: not-allowed; }
 }
 
-// â”€â”€ "Take it" modal button
+// ── "Take it" modal button
 .btn-take {
   display: inline-flex; align-items: center; gap: 7px; padding: 10px 20px;
   background: color-mix(in srgb, var(--color-btn-add,rgb(var(--accent-rgb))) 12%, transparent);
@@ -447,7 +447,7 @@ input[type="date"] {
   &:disabled { opacity: .48; cursor: not-allowed; }
 }
 
-// â”€â”€ Assigned to me highlight
+// ── Assigned to me highlight
 .assigned-cell {
   font-size: .86rem; color: rgb(var(--fg-rgb) / .52);
   &--me { color: var(--color-accent,rgb(var(--accent-rgb))); font-weight: 600; }
@@ -458,7 +458,7 @@ input[type="date"] {
   font-weight: 600;
 }
 
-// â”€â”€ File viewer
+// ── File viewer
 .file-loading {
   display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 12px; padding: 60px;
@@ -486,13 +486,13 @@ input[type="date"] {
 
 
 // result audit modal style //
-// â•â• AUDIT RESULTS MODAL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// ══ AUDIT RESULTS MODAL ══════════════════════════════
 
 .modal-box--results {
   max-width: 660px;
 }
 
-// â”€â”€ Summary grid
+// ── Summary grid
 .results-summary {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -543,7 +543,7 @@ input[type="date"] {
   }
 }
 
-// â”€â”€ Empty state
+// ── Empty state
 .results-empty {
   text-align: center;
   padding: 36px 0 20px;
@@ -552,7 +552,7 @@ input[type="date"] {
   p { margin: 0; }
 }
 
-// â”€â”€ Step results timeline-style
+// ── Step results timeline-style
 .step-results-list {
   display: flex;
   flex-direction: column;
@@ -587,7 +587,7 @@ input[type="date"] {
   &:last-child { padding-bottom: 4px; }
 }
 
-// â”€â”€ Timeline dot
+// ── Timeline dot
 .src-timeline-dot {
   flex-shrink: 0;
   width: 40px;
@@ -612,7 +612,7 @@ input[type="date"] {
   }
 }
 
-// â”€â”€ Card content
+// ── Card content
 .src-content {
   flex: 1;
   min-width: 0;
@@ -692,7 +692,7 @@ input[type="date"] {
   word-break: break-word;
 }
 
-// â”€â”€ View result button
+// ── View result button
 .act--view-result {
   background: color-mix(in srgb, rgb(var(--success-rgb)) 10%, transparent);
   color: rgb(var(--success-rgb));
