@@ -938,7 +938,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     const list = this.findings[this.currentStep.id] ?? [];
     const last = list[list.length - 1];
     if (last) {
-      last.description = `Evidence: ${this.drawerMedia.name}` +
+      last.description = `Evidence: ${this.displayName(this.drawerMedia.name, this.drawerMediaIndex)}` +
         (snippet ? `\n\nOCR excerpt:\n${snippet}${tail}` : '');
     }
     this.flash('Finding seeded from evidence.', false);
