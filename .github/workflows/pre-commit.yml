@@ -1,0 +1,36 @@
+name: pre-commit
+
+# Enforcement that can't be skipped locally. Pull requests run the full hook
+# set against the files the PR changed (existing files are grandfathered, so no
+# repo-wide sweep); pushes run the mojibake guard across the whole tree.
+on:
+  pull_request:
+  push:
+    branches: [develop, main, knowledge-base]
+
+jobs:
+  pr-changed-files:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pre-commit
+      - name: Run all hooks on changed files
+        run: pre-commit run --from-ref "origin/${{ github.base_ref }}" --to-ref HEAD --show-diff-on-failure --color always
+
+  push-mojibake-guard:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pre-commit
+      - name: Block mojibake / BOM across the whole tree
+        run: pre-commit run no-mojibake --all-files --show-diff-on-failure --color always
