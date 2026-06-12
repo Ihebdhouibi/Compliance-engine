@@ -1,0 +1,37 @@
+# Pre-commit hooks — block mojibake/BOM and other common issues before they land.
+#
+# One-time setup per machine:
+#     pip install pre-commit
+#     pre-commit install            # installs the git commit + push hooks
+#
+# Run manually on everything:
+#     pre-commit run --all-files
+default_install_hook_types: [pre-commit, pre-push]
+
+repos:
+  # Local guard against the recurring UTF-8 mojibake / BOM corruption.
+  - repo: local
+    hooks:
+      - id: no-mojibake
+        name: no UTF-8 mojibake / BOM
+        entry: python scripts/check_encoding.py
+        language: python
+        types: [text]
+        exclude: '(?i)(package-lock\.json|\.min\.(js|css))$'
+
+  # Widely-used hygiene hooks.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files      # stop another venv/blob sneaking in
+        args: ['--maxkb=2048']
+      - id: check-merge-conflict         # leftover <<<<<<< markers
+      - id: check-case-conflict          # Windows/macOS case-insensitive clashes
+      - id: fix-byte-order-marker        # strip UTF-8 BOMs
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        exclude: '\.md$'                 # keep markdown hard line breaks
+      - id: check-yaml
+      - id: check-json
+        # tsconfig*.json and .vscode/*.json are JSONC (comments allowed).
+        exclude: '^(tsconfig.*\.json|\.vscode/.*)$'

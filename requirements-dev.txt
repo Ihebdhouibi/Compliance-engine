@@ -1,0 +1,4 @@
+# Developer tooling (not needed to run the app).
+#   pip install -r requirements-dev.txt
+#   pre-commit install
+pre-commit>=3.7,<5
