@@ -19,4 +19,3 @@ for path in sys.argv[2:]:
                 continue
             p(list(r))
 out.close()
-

@@ -75,7 +75,7 @@ export class StepResetComponent implements OnInit {
       }
     });
   }
-  
+
 
 get platformTitle(): string {
   return this.ds.settings().projectTitle || 'AuditAI';

@@ -27,7 +27,7 @@ $trans:    .28s cubic-bezier(.4,0,.2,1);
   color: rgb(var(--fg-rgb) / .65); transition: all .2s;
   &:hover { color: var(--color-accent,rgb(var(--accent-rgb))); border-color: rgb(var(--accent-rgb) / .45); }
   @media (max-width:1024px) { display: flex; }
-  @media (min-width:1025px) { display: flex; }  
+  @media (min-width:1025px) { display: flex; }
 }
 
 // ── Sidebar panel

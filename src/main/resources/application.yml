@@ -76,4 +76,3 @@ logging:
   pattern:
     console: "%d{HH:mm:ss} | %-5level | %-22logger{0} | cid=%X{cid:-} | %msg%n"
     file: "%d{HH:mm:ss} | %-5level | %-22logger{0} | cid=%X{cid:-} | %msg%n"
-

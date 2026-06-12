@@ -75,4 +75,3 @@ export class NotificationService {
     return Math.floor(h / 24) + " day(s) ago";
   }
 }
-

@@ -93,5 +93,5 @@ public class SessionModel implements Serializable {
     public void setTimestmp(Date timestmp) {
         this.timestmp = timestmp;
     }
-    
+
 }

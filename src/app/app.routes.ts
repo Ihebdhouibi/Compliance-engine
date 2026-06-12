@@ -95,7 +95,7 @@ export const routes: Routes = [
   path: 'audits/workspace/:id',
   component: AuditWorkspaceComponent
 },
-      
+
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
     ]
   },

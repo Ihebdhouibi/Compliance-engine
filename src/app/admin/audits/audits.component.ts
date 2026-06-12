@@ -405,6 +405,5 @@ closeResults(): void {
     return req.assignedTo?.id === this.currentAdminId;
   }
 
-  
-}
 
+}

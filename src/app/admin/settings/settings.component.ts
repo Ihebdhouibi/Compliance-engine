@@ -208,7 +208,7 @@ applyLightMode(): void {
     setTimeout(() => this.saveMsg = '', 4000);
   }
 
- 
+
 
   save(): void {
   this.isSaving  = true;

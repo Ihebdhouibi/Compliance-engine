@@ -55,4 +55,3 @@ app.include_router(logs.router)
 @app.get("/health")
 def health():
     return {"status": "ok"}
-
