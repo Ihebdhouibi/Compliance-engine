@@ -1,2 +1,22 @@
 /mvnw text eol=lf
 *.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Mark binary assets so git never treats them as text (no diff/normalize) and
+# they can't masquerade as committable source. Encoding/line-ending of text
+# files is nudged by .editorconfig + enforced by the pre-commit hooks; we
+# deliberately avoid a repo-wide `text=auto eol=lf` here to skip a noisy
+# renormalization of the existing tree.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.pdf   binary
+*.jar   binary
+*.exe   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
