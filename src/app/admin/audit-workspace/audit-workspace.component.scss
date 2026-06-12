@@ -1,10 +1,10 @@
-@use 'styles/tokens' as t;
+﻿@use 'styles/tokens' as t;
 @use 'styles/keyframes';
 
-// ───────────────────────────────────────────────────────────
-// AUDIT WORKSPACE — auditor cockpit
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// AUDIT WORKSPACE â€” auditor cockpit
 // Layout: topbar / stepper / two-col body, with floating chat
-// ───────────────────────────────────────────────────────────
+// â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .workspace {
   position: relative;
@@ -16,7 +16,7 @@
   overflow: hidden;
 }
 
-// ═══ TOP BAR ════════════════════════════════════════════════
+// â•â•â• TOP BAR â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 .ws-topbar {
   display: flex;
   align-items: center;
@@ -100,7 +100,7 @@
   border-radius: 50%; animation: spin .6s linear infinite;
 }
 
-// ═══ STEPPER ════════════════════════════════════════════════
+// â•â•â• STEPPER â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 .ws-stepper {
   display: flex;
   align-items: center;
@@ -153,7 +153,7 @@
   font-family: inherit;
   transition: background .15s;
 
-  // Hide label by default — only active step shows its name to keep the
+  // Hide label by default â€” only active step shows its name to keep the
   // stepper compact regardless of step count. Hover reveals via tooltip.
   .step-label-inline { display: none; }
 
@@ -217,7 +217,7 @@
   &--done { background: rgb(var(--success-rgb)); }
 }
 
-// ═══ BODY (2 columns) ════════════════════════════════════════
+// â•â•â• BODY (2 columns) â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 .ws-body {
   display: flex;
   flex: 1;
@@ -246,7 +246,7 @@
   }
 }
 
-// ═══ LEFT PANEL ═════════════════════════════════════════════
+// â•â•â• LEFT PANEL â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 .col-head {
   display: flex; align-items: center; gap: 8px;
   padding: 13px 16px;
@@ -351,7 +351,7 @@
 
 .data-files { display: flex; flex-direction: column; gap: 2px; }
 
-// ── OCR badge ───────────────────────────────────────────────
+// â”€â”€ OCR badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ocr-badge {
   font-size: .65rem;
   font-weight: 700;
@@ -393,7 +393,7 @@
   &:hover { background: rgba(239, 68, 68, .22) !important; }
 }
 
-// ── OCR text viewer modal ───────────────────────────────────
+// â”€â”€ OCR text viewer modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ws-ocr-modal {
   max-width: 720px;
   width: 90vw;
@@ -449,7 +449,7 @@
   margin-bottom: 10px;
 }
 
-// ── AI Suggestions card ─────────────────────────────────────
+// â”€â”€ AI Suggestions card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ai-suggest {
   margin-top: 2px;
   background: linear-gradient(135deg,
@@ -485,7 +485,7 @@
   }
 }
 
-// ── Quick-insert chips above textarea ───────────────────────
+// â”€â”€ Quick-insert chips above textarea â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .editor-chips {
   display: flex;
   flex-wrap: wrap;
@@ -535,7 +535,7 @@
   }
 }
 
-// ═══ CENTER: EDITOR CARD ═════════════════════════════════════
+// â•â•â• CENTER: EDITOR CARD â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 .editor-card {
   display: flex;
   flex-direction: column;
@@ -650,7 +650,7 @@
   }
 }
 
-// ═══ STATUS PILLS ═══════════════════════════════════════════
+// â•â•â• STATUS PILLS â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 .st-pill {
   display: inline-flex; align-items: center;
   padding: 3px 9px; border-radius: 100px;
@@ -663,7 +663,7 @@
 .st--completed   { background: rgb(var(--success-rgb) / .12); border: 1px solid rgb(var(--success-rgb) / .28); color: rgb(var(--success-rgb)); }
 .st--rejected    { background: rgb(var(--danger-rgb) / .1);   border: 1px solid rgb(var(--danger-rgb) / .25);  color: rgb(var(--danger-rgb)); }
 
-// ═══ FLOATING CHAT ══════════════════════════════════════════
+// â•â•â• FLOATING CHAT â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 .ws-chat {
   position: absolute;
   right: 24px;
@@ -756,7 +756,7 @@
   100% { opacity: 0;  transform: scale(1.4); }
 }
 
-// ═══ FILE VIEWER OVERLAY ════════════════════════════════════
+// â•â•â• FILE VIEWER OVERLAY â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 .ws-file-backdrop {
   position: fixed; inset: 0;
   background: rgb(var(--fg-strong-rgb) / .55);
@@ -805,7 +805,7 @@
 .file-preview-img    { max-width: 100%; max-height: 80vh; object-fit: contain; }
 .file-preview-iframe { width: 100%; height: 80vh; border: none; }
 
-// ═══ RESPONSIVE ═════════════════════════════════════════════
+// â•â•â• RESPONSIVE â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 @media (max-width: 1024px) {
   .ws-col--data { width: 280px; }
   .ws-chat__panel { width: 340px; height: 480px; }
@@ -828,9 +828,9 @@
   .ws-col--data { display: none; }   // hidden on phones; reachable via future drawer
 }
 
-// ═══════════════════════════════════════════════════════════
-// PHASE 1+2 — 3-pane auditor cockpit
-// ═══════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+// PHASE 1+2 â€” 3-pane auditor cockpit
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 // Live risk roll-up in the topbar
 .ws-roll {
@@ -852,15 +852,15 @@
 // Cockpit grid
 .ws-cockpit {
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr) 320px;
+  grid-template-columns: 320px minmax(0, 1fr) 320px;
   gap: 14px;
   padding: 14px 18px 20px;
   flex: 1; min-height: 0; overflow: hidden;
-  @media (max-width: 1200px) { grid-template-columns: 220px 1fr 280px; }
+  @media (max-width: 1200px) { grid-template-columns: 280px 1fr 280px; }
   @media (max-width: 980px)  { grid-template-columns: 1fr; overflow: auto; }
 }
 
-// ── LEFT: vertical step rail ─────────────────────────────
+// â”€â”€ LEFT: vertical step rail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ws-rail {
   display: flex; flex-direction: column; gap: 12px;
   overflow-y: auto; padding-right: 4px;
@@ -922,7 +922,7 @@
   &--rollup-nc        .rail-item__sub { color: rgb(var(--danger-rgb)); }
 }
 
-// ── CENTER: per-question cards ──────────────────────────
+// â”€â”€ CENTER: per-question cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ws-center {
   display: flex; flex-direction: column; gap: 12px;
   overflow-y: auto; padding-right: 6px;
@@ -1060,7 +1060,7 @@
   padding-top: 10px;
 }
 
-// ── RIGHT: auditor deck ─────────────────────────────────
+// â”€â”€ RIGHT: auditor deck â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ws-deck {
   display: flex; flex-direction: column; gap: 12px;
   overflow-y: auto; padding-right: 4px;
@@ -1125,13 +1125,13 @@
   &:focus { outline: none; border-color: var(--color-btn-add, #059669);
             box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-btn-add, #059669) 14%, transparent); }
 }
-/* Findings/recommendations often hold multi-line AI-inserted text — give them
+/* Findings/recommendations often hold multi-line AI-inserted text â€” give them
    room to read without forcing the user to expand every box manually. */
 .finding__text, .rec__text { min-height: 92px; }
 .rec { flex-direction: row; align-items: flex-start; gap: 4px; }
 .rec__text { flex: 1; }
 
-/* ══ Phase 3: Evidence Drawer ══ */
+/* â•â• Phase 3: Evidence Drawer â•â• */
 .ws-drawer-backdrop {
   position: fixed; inset: 0; background: rgb(0 0 0 / .35);
   z-index: 1900; animation: ws-drawer-fade .18s ease-out;
@@ -1236,7 +1236,7 @@
   white-space: pre-wrap; word-break: break-word;
   overflow: auto;
 
-  // Relevance shading — soft (level 1) vs strong (level 2) by semantic score.
+  // Relevance shading â€” soft (level 1) vs strong (level 2) by semantic score.
   .ocr-hl {
     border-radius: 2px; padding: 0 1px;
     color: rgb(var(--fg-strong-rgb));
@@ -1347,9 +1347,9 @@
   &:active { transform: translateY(1px); }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   Phase 4 — RICS clause linking on findings
-   ═══════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   Phase 4 â€” RICS clause linking on findings
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .clause-row {
   display: flex;
@@ -1543,9 +1543,9 @@
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════
-   Phase 5 — AI suggestion actions
-   ═══════════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   Phase 5 â€” AI suggestion actions
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .ai-suggest-list {
   list-style: none;
@@ -1617,3 +1617,4 @@
     }
   }
 }
+
