@@ -36,3 +36,24 @@ npm start            # dev server
 - Environment is Windows + PowerShell; prefer PowerShell syntax for shell tasks.
 - Do not commit virtualenvs (`venv/`, `venv38/`, `venv_rapid/`) — they are gitignored.
 - Secrets live in `.env`; never commit real credentials.
+- **Save all source files as UTF-8 without a BOM, LF line endings.** The repo
+  `.editorconfig` sets this automatically (install your editor's EditorConfig
+  support). Saving as Windows-1252 / ANSI produces "mojibake" (garbled `──`,
+  `—`, `✓`) and has corrupted the workspace component repeatedly.
+
+## Pre-commit hooks
+
+This repo uses the [pre-commit](https://pre-commit.com) framework to block
+mojibake/BOMs and other common issues before they land. Set it up once per clone:
+
+```sh
+./venv/Scripts/python.exe -m pip install -r requirements-dev.txt
+./venv/Scripts/python.exe -m pre_commit install   # installs the commit + push hooks
+```
+
+- Config: `.pre-commit-config.yaml`. The custom mojibake/BOM guard lives in
+  `scripts/check_encoding.py`; the rest are standard hooks from
+  `pre-commit/pre-commit-hooks` (large files, merge markers, BOM, YAML/JSON, …).
+- Run on demand: `pre_commit run --all-files` (or `run no-mojibake --all-files`).
+- CI (`.github/workflows/pre-commit.yml`) re-runs the hooks on every PR/push, so
+  the checks can't be skipped by not installing the local hook.
