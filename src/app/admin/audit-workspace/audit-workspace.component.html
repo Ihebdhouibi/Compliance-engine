@@ -241,8 +241,18 @@
       <!-- Step nav -->
       <div class="center-nav">
         <button class="ef-btn" (click)="goToStep(activeStep - 1)" [disabled]="activeStep === 0">← Prev</button>
-        <button class="ef-btn ef-btn--next" (click)="goToStep(activeStep + 1)"
-                [disabled]="activeStep >= steps.length - 1">Next →</button>
+
+        <!-- Mid-audit: advance to the next step -->
+        <button *ngIf="activeStep < steps.length - 1"
+                class="ef-btn ef-btn--next" (click)="goToStep(activeStep + 1)">Next →</button>
+
+        <!-- Last step: complete/submit the audit -->
+        <button *ngIf="activeStep >= steps.length - 1"
+                class="ef-btn ef-btn--complete" (click)="submitAudit()"
+                [disabled]="isCompleting || request?.status === 'COMPLETED'">
+          <span class="mini-spin" *ngIf="isCompleting"></span>
+          {{ isCompleting ? 'Submitting…' : (request?.status === 'COMPLETED' ? 'Completed ✓' : 'Complete ✓') }}
+        </button>
       </div>
     </section>
 
