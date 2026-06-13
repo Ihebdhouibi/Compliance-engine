@@ -32,22 +32,26 @@ spring:
       max-file-size: 10000MB
       max-request-size: 10000MB
   jpa:
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
     properties:
       hibernate:
         default_schema: public
         format_sql: true
-        hbm2ddl:
-          auto: update
-        ddl-auto: update
         jdbc:
           lob:
             non_contextual_creation: true
-      database-platform: org.hibernate.dialect.PostgreSQLDialect
-      show-sql: true
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
   flyway:
     enabled: false
 server:
   port: ${PORT:8080}
+  error:
+    include-message: always
 
 ocr:
   base-url: ${OCR_BASE_URL:http://localhost:8000}
