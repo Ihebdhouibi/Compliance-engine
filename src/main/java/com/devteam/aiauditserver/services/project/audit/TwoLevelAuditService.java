@@ -24,6 +24,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -119,6 +121,25 @@ public class TwoLevelAuditService {
 
     // ── L2 ──────────────────────────────────────────────────────────────
 
+    /** Module identifiers are prefixed with a code, e.g. "M3 Risk, …" → "M3". */
+    private static final Pattern MODULE_CODE = Pattern.compile("M\\d+");
+
+    /** Extracts the module code (M1, M2, …) from a full module string. */
+    private static String moduleCode(String module) {
+        if (module == null) return null;
+        Matcher m = MODULE_CODE.matcher(module);
+        return m.find() ? m.group() : module.trim();
+    }
+
+    /** All module codes referenced in a stored activeModules string, delimiter-agnostic. */
+    private static Set<String> moduleCodes(String activeModules) {
+        Set<String> codes = new HashSet<>();
+        if (activeModules == null) return codes;
+        Matcher m = MODULE_CODE.matcher(activeModules);
+        while (m.find()) codes.add(m.group());
+        return codes;
+    }
+
     /**
      * Returns the L2 template filtered to only the modules active for this
      * audit (per RoutingProfile.activeModules). Steps with no remaining
@@ -142,12 +163,18 @@ public class TwoLevelAuditService {
             throw new RuntimeException("No Level 2 template available");
         }
 
-        Set<String> activeModules = routingProfileRepo.findByAuditRequestId(requestId)
-                .map(p -> p.getActiveModules() == null ? null
-                        : Arrays.stream(p.getActiveModules().split(","))
-                              .map(String::trim).collect(Collectors.toSet()))
+        // Match on the module CODE (M1, M2, …) rather than the full module
+        // string. The module names contain commas (e.g. "M3 Risk, Data &
+        // Confidentiality"), and activeModules is persisted as a comma-joined
+        // list — so splitting the stored value on "," shatters those names and
+        // only the comma-free modules (M1, M2, M5) ever matched, collapsing
+        // every audit to the same 5 steps (A, D, E, H, K). Comparing by code is
+        // immune to the delimiter and works on already-persisted rows.
+        Set<String> activeCodes = routingProfileRepo.findByAuditRequestId(requestId)
+                .map(RoutingProfile::getActiveModules)
+                .map(TwoLevelAuditService::moduleCodes)
                 .orElse(null);
-        if (activeModules == null || activeModules.isEmpty()) {
+        if (activeCodes == null || activeCodes.isEmpty()) {
             return l2; // no filter
         }
 
@@ -167,7 +194,8 @@ public class TwoLevelAuditService {
 
         for (AuditFormStep step : l2.getSteps()) {
             List<AuditFormField> kept = step.getFields().stream()
-                    .filter(f -> f.getModule() == null || activeModules.contains(f.getModule()))
+                    .filter(f -> f.getModule() == null
+                            || activeCodes.contains(moduleCode(f.getModule())))
                     .collect(Collectors.toList());
             if (kept.isEmpty()) continue;
             AuditFormStep newStep = new AuditFormStep();
