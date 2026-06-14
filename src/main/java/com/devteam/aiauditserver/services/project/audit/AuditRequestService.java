@@ -51,6 +51,9 @@ public class AuditRequestService {
     @Autowired(required = false)
     private com.devteam.aiauditserver.services.project.ocr.OcrOrchestratorService ocrOrchestrator;
 
+    @Autowired
+    private com.devteam.aiauditserver.services.NotificationService notificationService;
+
 
     @Transactional
     public AuditRequest uploadAnswerFile(Long requestId,
@@ -148,6 +151,9 @@ public class AuditRequestService {
         }
 
         AuditRequest saved = requestRepository.save(auditRequest);
+
+        // Notify admins of the new audit request (shared feed).
+        notificationService.notifyAuditSubmitted(saved);
 
         // Fire-and-forget OCR on all evidence attached to this request.
         // Runs on a separate thread (@Async) so the HTTP submit returns fast.

@@ -11,6 +11,7 @@ public class Notification {
     private Long id;
     private String message;
     private String type;
+    private String auditType;
     private Long recipientUserId;
     private Long auditRequestId;
     private boolean read;
@@ -33,6 +34,8 @@ public class Notification {
     public void setMessage(String message) { this.message = message; }
     public String getType() { return type; }
     public void setType(String type) { this.type = type; }
+    public String getAuditType() { return auditType; }
+    public void setAuditType(String auditType) { this.auditType = auditType; }
     public Long getRecipientUserId() { return recipientUserId; }
     public void setRecipientUserId(Long recipientUserId) { this.recipientUserId = recipientUserId; }
     public Long getAuditRequestId() { return auditRequestId; }

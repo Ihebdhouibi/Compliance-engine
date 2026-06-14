@@ -1,16 +1,16 @@
 package com.devteam.aiauditserver.controllers.admin;
 
-import com.devteam.aiauditserver.enums.Project.AuditStatus;
-import com.devteam.aiauditserver.models.project.AuditRequest.AuditRequest;
-import com.devteam.aiauditserver.repositories.project.AuditRequestRepository;
+import com.devteam.aiauditserver.models.Notification;
+import com.devteam.aiauditserver.requests.project.NotificationIdsRequest;
+import com.devteam.aiauditserver.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.LinkedHashMap;
-import java.util.stream.Collectors;
 
 @RestController
 @CrossOrigin
@@ -18,32 +18,52 @@ import java.util.stream.Collectors;
 public class NotificationController {
 
     @Autowired
-    private AuditRequestRepository requestRepository;
+    private NotificationService notificationService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<Map<String, Object>>> getNotifications() {
-        List<AuditRequest> submitted = requestRepository
-            .findByStatusOrderBySubmittedAtDesc(AuditStatus.SUBMITTED);
-        List<Map<String, Object>> notifications = submitted.stream().map(r -> {
-            Map<String, Object> n = new LinkedHashMap<>();
-            n.put("id", r.getId());
-            String name = r.getSubmittedBy() != null
-                ? r.getSubmittedBy().getFirstName() + " " + r.getSubmittedBy().getLastName()
-                : "Unknown";
-            n.put("message", "New audit request from " + name.trim());
-            n.put("auditType", r.getAuditType() != null ? r.getAuditType().toString() : "");
-            n.put("submittedAt", r.getSubmittedAt());
-            n.put("status", r.getStatus());
-            return n;
-        }).collect(Collectors.toList());
-        return ResponseEntity.ok(notifications);
+    public ResponseEntity<List<Notification>> getNotifications() {
+        return ResponseEntity.ok(notificationService.listAll());
     }
 
     @GetMapping("/count")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Map<String, Long>> getUnreadCount() {
-        long count = requestRepository.countByStatus(AuditStatus.SUBMITTED);
-        return ResponseEntity.ok(Map.of("count", count));
+        return ResponseEntity.ok(Map.of("count", notificationService.unreadCount()));
+    }
+
+    @PatchMapping("/{id}/read")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> markOneRead(@PathVariable Long id) {
+        notificationService.markRead(Collections.singletonList(id));
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/read")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> markRead(@RequestBody NotificationIdsRequest body) {
+        notificationService.markRead(body.getIds());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PatchMapping("/read-all")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> markAllRead() {
+        notificationService.markAllRead();
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteOne(@PathVariable Long id) {
+        notificationService.delete(Collections.singletonList(id));
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> deleteBatch(@RequestBody NotificationIdsRequest body) {
+        notificationService.delete(body.getIds());
+        return ResponseEntity.noContent().build();
     }
 }

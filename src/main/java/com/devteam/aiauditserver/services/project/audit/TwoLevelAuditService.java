@@ -19,6 +19,7 @@ import com.devteam.aiauditserver.repositories.project.AuditRequestRepository;
 import com.devteam.aiauditserver.repositories.project.RoutingProfileRepository;
 import com.devteam.aiauditserver.requests.project.ScoreAnswerRequest;
 import com.devteam.aiauditserver.requests.project.SubmitTwoLevelRequest;
+import com.devteam.aiauditserver.services.NotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,6 +52,7 @@ public class TwoLevelAuditService {
     @Autowired private AuditAnswerScoringRepository scoringRepo;
     @Autowired private RoutingProfileRepository routingProfileRepo;
     @Autowired private RoutingEngine routingEngine;
+    @Autowired private NotificationService notificationService;
 
     // ── L1 ──────────────────────────────────────────────────────────────
 
@@ -235,7 +237,9 @@ public class TwoLevelAuditService {
         }
         auditRequest.setPhase(AuditPhase.L2_SUBMITTED);
         auditRequest.setStatus(AuditStatus.SUBMITTED);
-        return requestRepo.save(auditRequest);
+        AuditRequest saved = requestRepo.save(auditRequest);
+        notificationService.notifyAuditSubmitted(saved);
+        return saved;
     }
 
     // ── auditor scoring ─────────────────────────────────────────────────
