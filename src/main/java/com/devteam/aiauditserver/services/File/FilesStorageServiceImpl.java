@@ -25,15 +25,30 @@ public class FilesStorageServiceImpl implements FilesStorageService {
     private MediaRepository repository;
 
     private static final List<String> FILES_ACCEPTED_TYPE = Arrays.asList(
-            "jpeg", "jpg", "png", "svg", "webp", "pdf", "mp4"
+            "jpeg", "jpg", "png", "svg", "webp", "pdf", "mp4",
+            "docx", "doc", "xlsx", "xls"
     );
 
     @Override
     public MediaModel save_file(MultipartFile file, String directory) {
         try {
-            // 1. Handle Extension
-            String contentType = file.getContentType();
-            String extension = contentType.substring(contentType.indexOf("/") + 1).toLowerCase(Locale.ROOT);
+            // 1. Resolve the extension from the ORIGINAL FILENAME. Deriving it
+            //    from the MIME subtype breaks office formats — a .docx arrives
+            //    as "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            //    whose subtype is a long vnd.* string that never matches a clean
+            //    extension. Fall back to the MIME subtype only when the filename
+            //    has no extension.
+            String original = file.getOriginalFilename();
+            String extension = "";
+            if (original != null && original.contains(".")) {
+                extension = original.substring(original.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT);
+            }
+            if (extension.isEmpty()) {
+                String contentType = file.getContentType();
+                if (contentType != null && contentType.contains("/")) {
+                    extension = contentType.substring(contentType.indexOf("/") + 1).toLowerCase(Locale.ROOT);
+                }
+            }
             if (extension.contains("+xml") && extension.contains("svg")) extension = "svg";
 
             if (!FILES_ACCEPTED_TYPE.contains(extension)) {

@@ -52,6 +52,7 @@ class OcrResult:
 _IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"}
 _PDF_EXTS = {".pdf"}
 _DOCX_EXTS = {".docx"}
+_XLSX_EXTS = {".xlsx", ".xls"}
 
 
 def _kind(file_path: str, mime: Optional[str]) -> str:
@@ -62,12 +63,16 @@ def _kind(file_path: str, mime: Optional[str]) -> str:
         return "pdf"
     if ext in _DOCX_EXTS:
         return "docx"
+    if ext in _XLSX_EXTS:
+        return "xlsx"
     if mime:
         m = mime.lower()
         if m.startswith("image/"):
             return "image"
         if m == "application/pdf":
             return "pdf"
+        if "spreadsheetml" in m or "ms-excel" in m:
+            return "xlsx"
         if "wordprocessingml" in m or "officedocument" in m:
             return "docx"
     return "unknown"
@@ -108,6 +113,8 @@ class OcrEngine:
             pages = self._ocr_pdf(file_path)
         elif kind == "docx":
             pages = self._ocr_docx(file_path)
+        elif kind == "xlsx":
+            pages = self._ocr_xlsx(file_path)
         else:
             raise ValueError(f"Unsupported file type: {file_path} (mime={mime})")
 
@@ -199,6 +206,40 @@ class OcrEngine:
                         pass
         except Exception as e:
             logger.warning(f"DOCX image extraction failed: {e}")
+
+        if not pages:
+            pages.append(OcrPage(page=1, text="", confidence=0.0))
+        return pages
+
+    def _ocr_xlsx(self, file_path: str) -> list[OcrPage]:
+        """Extract cell text from an Excel workbook, one OcrPage per sheet."""
+        try:
+            import openpyxl
+        except ImportError:
+            logger.warning("openpyxl not installed. XLSX text extraction unavailable.")
+            return [OcrPage(page=1, text="", confidence=0.0)]
+
+        try:
+            wb = openpyxl.load_workbook(file_path, read_only=True, data_only=True)
+        except Exception as e:
+            # Legacy .xls is not supported by openpyxl; surface as empty rather
+            # than raising so the upload/OCR pipeline doesn't fail.
+            logger.warning(f"XLSX open failed for {file_path}: {e}")
+            return [OcrPage(page=1, text="", confidence=0.0)]
+
+        pages: list[OcrPage] = []
+        try:
+            for idx, ws in enumerate(wb.worksheets, start=1):
+                rows_text = []
+                for row in ws.iter_rows(values_only=True):
+                    cells = [str(c).strip() for c in row if c is not None and str(c).strip()]
+                    if cells:
+                        rows_text.append(" | ".join(cells))
+                sheet_text = "\n".join(rows_text).strip()
+                if sheet_text:
+                    pages.append(OcrPage(page=idx, text=f"[Sheet: {ws.title}]\n{sheet_text}", confidence=1.0))
+        finally:
+            wb.close()
 
         if not pages:
             pages.append(OcrPage(page=1, text="", confidence=0.0))
