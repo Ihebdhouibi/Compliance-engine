@@ -1098,10 +1098,18 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
       const ans = (a.answerValue || '(no answer provided)').toString().trim();
       lines.push(`\nQ${i + 1}. ${q}\nAnswer: ${ans}`);
 
-      const media = [a.fileMedia, ...(a.files ?? [])].filter(Boolean);
+      // Normalise both evidence shapes to {id, name}: `fileMedia` is a
+      // MediaModel (id/name), but each `files[]` entry is a join row whose
+      // real media id/name live under `.media`. Reading `f.id` (the join-row
+      // id) made ocrFor() miss, so the assistant wrongly reported it had no
+      // extracted evidence text.
+      const media = [
+        ...(a.fileMedia ? [{ id: a.fileMedia.id, name: a.fileMedia.name }] : []),
+        ...((a.files ?? []).map((f: any) => ({ id: f?.media?.id, name: f?.media?.name })))
+      ].filter((m: any) => m.id != null);
       media.forEach((m: any, mi: number) => {
-        const name = this.displayName(m?.name, mi + 1);
-        const ocr = this.ocrFor(m?.id);
+        const name = this.displayName(m.name, mi + 1);
+        const ocr = this.ocrFor(m.id);
         if (ocr?.status === 'DONE' && ocr.rawText?.trim()) {
           lines.push(`Evidence "${name}" — extracted text:\n${ocr.rawText.trim().slice(0, 3000)}`);
         } else if (ocr) {
