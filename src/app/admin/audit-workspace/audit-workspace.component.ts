@@ -1268,46 +1268,48 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   if (!step) return [];
   if (!step.fieldIds || step.fieldIds.length === 0) return [];
 
-  const set = new Set(step.fieldIds);
-  const stepAnswers = answers.filter(a => set.has(a.fieldId));
+  // Index answers by fieldId so we can walk the step's fields in TEMPLATE
+  // order. Each L2 question is laid out as consecutive fields — the radio
+  // question, its supporting-note textarea, then its evidence FILE field — so
+  // grouping by that order attaches each note/evidence to the question it
+  // actually belongs to. The previous logic filtered the answers into three
+  // arrays and zipped them by index, which shifted a file onto the wrong
+  // question whenever an earlier question had no evidence (e.g. Q3's file
+  // showing under Q1).
+  const byField = new Map<number, any>();
+  for (const a of answers) byField.set(a.fieldId, a);
 
-  // Separate main answers, notes, and evidence-only records
-  const mains: any[] = [];
-  const notes: any[] = [];
-  const evidences: any[] = [];
-
-  for (const ans of stepAnswers) {
+  const classify = (ans: any): 'evidence' | 'note' | 'main' => {
     const label = (ans.fieldLabel || '').toLowerCase();
-    if (label === 'evidence files') {
-      evidences.push(ans);
-    } else if (label.includes('response') || label.includes('supporting')) {
-      notes.push(ans);
-    } else {
-      mains.push(ans);
-    }
-  }
+    if (label === 'evidence files') return 'evidence';
+    if (label.includes('response') || label.includes('supporting')) return 'note';
+    return 'main';
+  };
+  const mergeFiles = (target: any, src: any) => {
+    if (src.fileMedia && !target.fileMedia) target.fileMedia = src.fileMedia;
+    if (src.files?.length) target.files = [...(target.files || []), ...src.files];
+  };
 
-  // Pair mains with notes (assuming same order)
   const result: any[] = [];
-  for (let i = 0; i < mains.length; i++) {
-    const main = { ...mains[i] };
-    // Add its own note (if any)
-    if (i < notes.length) {
-      const note = notes[i];
-      if (note.answerValue && !main.answerValue?.includes(note.answerValue)) {
-        main.answerValue = `${main.answerValue || ''}\n\n**Supporting note:** ${note.answerValue}`;
+  let current: any = null;
+
+  for (const fieldId of step.fieldIds) {
+    const ans = byField.get(fieldId);
+    if (!ans) continue;
+    const kind = classify(ans);
+    if (kind === 'main' || !current) {
+      // Start a new question block. (A leading note/evidence with no preceding
+      // main is kept as its own block rather than silently dropped.)
+      current = { ...ans };
+      result.push(current);
+    } else if (kind === 'note') {
+      if (ans.answerValue && !current.answerValue?.includes(ans.answerValue)) {
+        current.answerValue = `${current.answerValue || ''}\n\n**Supporting note:** ${ans.answerValue}`;
       }
-      // Merge note's own files (if any)
-      if (note.fileMedia && !main.fileMedia) main.fileMedia = note.fileMedia;
-      if (note.files?.length) main.files = [...(main.files || []), ...note.files];
+      mergeFiles(current, ans);
+    } else {
+      mergeFiles(current, ans);
     }
-    // Add the i-th evidence file (if any) to this main answer
-    if (i < evidences.length) {
-      const ev = evidences[i];
-      if (ev.fileMedia && !main.fileMedia) main.fileMedia = ev.fileMedia;
-      if (ev.files?.length) main.files = [...(main.files || []), ...ev.files];
-    }
-    result.push(main);
   }
 
   return result;
