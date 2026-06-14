@@ -5,7 +5,7 @@ import { UserStoreService } from '../../shared/user-store.service';
 import { AuthService } from '../../services/auth.service';
 import { environment } from '../../environments/environment';
 import { DesignSettingsService } from '../../services/design-settings.service';
-import { NotificationService } from '../../services/notification.service';
+import { NotificationService, AppNotification } from '../../services/notification.service';
 
 @Component({
   selector: 'app-topbar',
@@ -78,7 +78,16 @@ export class TopbarComponent implements OnInit, OnDestroy {
   }
 
   markRead(): void {
-    this.notifService.markAllRead();
+    this.notifService.markAllRead().subscribe({
+      next: () => this.notifService.refresh(),
+      error: () => this.notifService.refresh()
+    });
+  }
+
+  /** Open the dedicated notifications management page. */
+  goToNotificationsPage(): void {
+    this.showNotif = false;
+    this.router.navigate(['/admin/notifications']);
   }
 
   logout(): void {
@@ -93,14 +102,14 @@ export class TopbarComponent implements OnInit, OnDestroy {
   }
 
   // ----- CLICKABLE NOTIFICATION REDIRECTION -----
-  goToAudit(auditRequestId: number): void {
-    console.log('Notification clicked, ID:', auditRequestId);
-    // Mark the notification as read
-    this.notifService.markRead(auditRequestId);
-    // Close the panel
+  goToAudit(n: AppNotification): void {
+    // Mark this notification as read, then refresh the badge.
+    this.notifService.markRead([n.id]).subscribe({
+      next: () => this.notifService.refresh(),
+      error: () => this.notifService.refresh()
+    });
+    // Close the panel and open the related audit workspace.
     this.showNotif = false;
-    // Redirect to the audit details page – change the route to match your app
-    // Example: ['/admin/audits', auditRequestId] or ['/audit-requests', auditRequestId]
-    this.router.navigate(['/admin/audits/workspace', auditRequestId]);
+    this.router.navigate(['/admin/audits/workspace', n.auditRequestId]);
   }
 }

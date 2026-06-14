@@ -82,6 +82,12 @@ export class SidebarComponent {
       roles:   ['ROLE_ADMIN']
     },
     {
+      label:   'Notifications',
+      route:   'notifications',
+      iconKey: 'bell',
+      roles:   ['ROLE_ADMIN']
+    },
+    {
       label:   'Settings',
       route:   'settings',
       iconKey: 'settings',

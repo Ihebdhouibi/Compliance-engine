@@ -1,0 +1,55 @@
+<div class="notif-page">
+  <header class="np-head">
+    <div>
+      <h1 class="np-title">Notifications</h1>
+      <p class="np-sub">{{ notifications.length }} total · {{ unreadCount }} unread</p>
+    </div>
+    <button class="np-btn np-btn--ghost" (click)="load()" [disabled]="loading || busy">Refresh</button>
+  </header>
+
+  <div class="np-toolbar">
+    <label class="np-check">
+      <input type="checkbox" [checked]="allSelected"
+             (change)="toggleAll()" [disabled]="notifications.length === 0" />
+      <span>{{ selectedCount > 0 ? selectedCount + ' selected' : 'Select all' }}</span>
+    </label>
+    <div class="np-toolbar__actions">
+      <button class="np-btn" (click)="markSelectedRead()" [disabled]="selectedCount === 0 || busy">
+        Mark as read
+      </button>
+      <button class="np-btn np-btn--danger" (click)="deleteSelected()" [disabled]="selectedCount === 0 || busy">
+        Delete
+      </button>
+      <button class="np-btn np-btn--ghost" (click)="markAllRead()" [disabled]="unreadCount === 0 || busy">
+        Mark all read
+      </button>
+    </div>
+  </div>
+
+  <div class="np-loading" *ngIf="loading">Loading…</div>
+
+  <div class="np-empty" *ngIf="!loading && notifications.length === 0">
+    <p>No notifications</p>
+  </div>
+
+  <ul class="np-list" *ngIf="!loading && notifications.length > 0">
+    <li class="np-item" *ngFor="let n of notifications; trackBy: trackById"
+        [class.np-item--unread]="!n.read">
+      <input class="np-item__check" type="checkbox"
+             [checked]="isSelected(n.id)" (change)="toggle(n.id)" />
+      <span class="np-item__dot" [class.np-item__dot--read]="n.read"></span>
+      <div class="np-item__body" (click)="open(n)">
+        <p class="np-item__msg">{{ n.message }}</p>
+        <div class="np-item__meta">
+          <span class="np-item__type" *ngIf="n.auditType">{{ n.auditType }}</span>
+          <span class="np-item__time">{{ timeAgo(n.createdAt) }}</span>
+        </div>
+      </div>
+      <div class="np-item__actions">
+        <button class="np-act" (click)="open(n)" title="Open audit">Open</button>
+        <button class="np-act" (click)="markOneRead(n)" [disabled]="n.read || busy" title="Mark as read">Mark read</button>
+        <button class="np-act np-act--danger" (click)="removeOne(n)" [disabled]="busy" title="Delete">Delete</button>
+      </div>
+    </li>
+  </ul>
+</div>

@@ -79,6 +79,12 @@ export const routes: Routes = [
             .then(m => m.AuditFormBuilderComponent)
       },
       {
+        path: 'notifications',
+        loadComponent: () =>
+          import('./admin/notifications/notifications.component')
+            .then(m => m.NotificationsComponent)
+      },
+      {
         path: 'settings',
         loadComponent: () =>
           import('./admin/settings/settings.component')

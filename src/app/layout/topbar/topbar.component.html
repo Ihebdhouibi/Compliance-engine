@@ -16,7 +16,8 @@
       </button>
       <div class="notif-panel" *ngIf="showNotif">
         <div class="notif-panel__head">
-          <span>Notifications</span>
+          <button class="notif-panel__title" (click)="goToNotificationsPage()"
+                  title="Open notifications page">Notifications</button>
           <button (click)="markRead()">Mark all read</button>
         </div>
         <div class="notif-panel__empty" *ngIf="notifService.notifications().length === 0">
@@ -29,12 +30,12 @@
         <div class="notif-panel__item"
              *ngFor="let n of notifService.notifications()"
              [class.unread]="!n.read"
-             (click)="goToAudit(n.id)">
+             (click)="goToAudit(n)">
           <div class="n-dot" [class.n-dot--read]="n.read"></div>
           <div class="n-body">
             <p>{{ n.message }}</p>
             <span class="n-type">{{ n.auditType }}</span>
-            <span class="n-time">{{ notifService.timeAgo(n.submittedAt) }}</span>
+            <span class="n-time">{{ notifService.timeAgo(n.createdAt) }}</span>
           </div>
         </div>
       </div>

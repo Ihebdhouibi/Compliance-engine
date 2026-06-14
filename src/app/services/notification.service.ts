@@ -1,67 +1,68 @@
 import { Injectable, signal } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { interval, Subscription } from "rxjs";
+import { interval, Observable, Subscription, of } from "rxjs";
 import { switchMap, catchError } from "rxjs/operators";
-import { of } from "rxjs";
 import { environment } from "../environments/environment";
 import { UserStoreService } from "../shared/user-store.service";
 
 export interface AppNotification {
-  id: number;
+  id: number;             // notification id (used for read/delete)
   message: string;
   auditType: string;
-  submittedAt: string;
-  status: string;
+  auditRequestId: number; // target audit (used for "Open")
   read: boolean;
+  createdAt: string;
 }
 
 @Injectable({ providedIn: "root" })
 export class NotificationService {
   notifications = signal<AppNotification[]>([]);
   unreadCount   = signal<number>(0);
+
   private pollSub?: Subscription;
-  private readIds  = new Set<number>();
+  private readonly base = environment.apiUrl + "/admin/notifications";
 
   constructor(private http: HttpClient, private userStore: UserStoreService) {}
 
   startPolling(): void {
-    this.fetch();
+    this.refresh();
     this.pollSub = interval(30000).pipe(
-      switchMap(() => this.fetchNotifications())
-    ).subscribe(data => this.handleData(data));
+      switchMap(() => this.fetch())
+    ).subscribe(data => this.setData(data));
   }
 
   stopPolling(): void { this.pollSub?.unsubscribe(); }
 
-  private fetch(): void {
-    this.fetchNotifications().subscribe(data => this.handleData(data));
+  /** Re-fetch the feed and update the shared signals (badge + dropdown). */
+  refresh(): void {
+    this.fetch().subscribe(data => this.setData(data));
   }
 
-  private fetchNotifications() {
+  /** Raw fetch — also used directly by the dedicated notifications page. */
+  list(): Observable<AppNotification[]> { return this.fetch(); }
+
+  private fetch(): Observable<AppNotification[]> {
     if (this.userStore.getRole() !== "ROLE_ADMIN") return of([]);
-    return this.http.get<AppNotification[]>(
-      environment.apiUrl + "/admin/notifications"
-    ).pipe(catchError(() => of([])));
+    return this.http
+      .get<AppNotification[]>(this.base)
+      .pipe(catchError(() => of([])));
   }
 
-  private handleData(data: AppNotification[]): void {
-    const mapped = data.map(n => ({ ...n, read: this.readIds.has(n.id) }));
-    this.notifications.set(mapped);
-    this.unreadCount.set(mapped.filter(n => !n.read).length);
+  private setData(data: AppNotification[]): void {
+    this.notifications.set(data);
+    this.unreadCount.set(data.filter(n => !n.read).length);
   }
 
-  markAllRead(): void {
-    const current = this.notifications();
-    current.forEach(n => this.readIds.add(n.id));
-    this.notifications.set(current.map(n => ({ ...n, read: true })));
-    this.unreadCount.set(0);
+  markRead(ids: number[]): Observable<void> {
+    return this.http.patch<void>(`${this.base}/read`, { ids });
   }
 
-  markRead(id: number): void {
-    this.readIds.add(id);
-    const current = this.notifications();
-    this.notifications.set(current.map(n => n.id === id ? { ...n, read: true } : n));
-    this.unreadCount.set(current.filter(n => !n.read && n.id !== id).length);
+  markAllRead(): Observable<void> {
+    return this.http.patch<void>(`${this.base}/read-all`, {});
+  }
+
+  remove(ids: number[]): Observable<void> {
+    return this.http.request<void>("delete", this.base, { body: { ids } });
   }
 
   timeAgo(dateStr: string): string {
