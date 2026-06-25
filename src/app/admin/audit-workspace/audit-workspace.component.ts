@@ -468,6 +468,28 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return Object.keys(map).length;
   }
 
+  // ─── NEW: Verdict completion validation ────────────────────────────
+  isStepFullyVerdicted(step: WorkspaceStep): boolean {
+    const answers = this.answersForStep(step);
+    if (answers.length === 0) return true;
+    const stepVerdicts = this.verdicts[step.id] || {};
+    for (const ans of answers) {
+      if (!stepVerdicts[ans.fieldId]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  getUnansweredQuestions(step: WorkspaceStep): string[] {
+    const answers = this.answersForStep(step);
+    const stepVerdicts = this.verdicts[step.id] || {};
+    return answers
+      .filter(a => !stepVerdicts[a.fieldId])
+      .map(a => a.fieldLabel || `Question ${a.fieldId}`);
+  }
+  // ──────────────────────────────────────────────────────────────────
+
   get overallProgress(): number {
     if (!this.steps.length) return 0;
     const touched = this.steps.filter(s => this.stepRollup(s) !== 'pending').length;
@@ -768,6 +790,17 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   // ── Navigation ──────────────────────────────────────────────────
   async goToStep(idx: number): Promise<void> {
+    // ── NEW: validate forward navigation ──────────────────────────
+    if (idx > this.activeStep && this.request?.status !== 'COMPLETED') {
+      const current = this.currentStep;
+      if (current && !this.isStepFullyVerdicted(current)) {
+        const unanswered = this.getUnansweredQuestions(current);
+        this.flash(`Please provide a verdict for all questions before moving on: ${unanswered.join(', ')}`, true);
+        this.cdr.detectChanges();
+        return;
+      }
+    }
+
     if (!this.request || this.request?.status === 'COMPLETED') {
       this.activeStep = idx;
       this.ensureAiSuggestions(this.currentStep);
