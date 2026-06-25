@@ -11,6 +11,9 @@ spring:
       enabled: true
   main:
     allow-bean-definition-overriding: true
+  security:
+    headers:
+      frame: false
   mail:
     host: smtp.gmail.com
     port: 587
@@ -48,6 +51,7 @@ spring:
       matching-strategy: ant_path_matcher
   flyway:
     enabled: false
+
 server:
   port: ${PORT:8080}
   error:

@@ -59,7 +59,7 @@
   </div>
 
   <!-- ══ 3-PANE COCKPIT ══ -->
-  <div class="ws-cockpit" *ngIf="steps.length > 0">
+  <div class="ws-cockpit" [class.ws-cockpit--rail-collapsed]="isRailCollapsed" *ngIf="steps.length > 0">
 
     <!-- ╞══ LEFT: vertical step rail ══╡ -->
     <aside class="ws-rail">
@@ -113,8 +113,20 @@
       </ol>
     </aside>
 
-    <!-- ╞══ CENTER: per-question cards ══╡ -->
+    <!-- ╞══ CENTER: per-question cards + Findings & Recommendations ══╡ -->
     <section class="ws-center" *ngIf="currentStep">
+      <!-- ✅ FLOATING TOGGLE BUTTON – always visible -->
+      <button class="ws-rail-toggle ws-rail-toggle--floating"
+              (click)="toggleRail()"
+              [title]="isRailCollapsed ? 'Show steps' : 'Hide steps'">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+             stroke-width="2" width="18" height="18" style="display:block;">
+          <line x1="3" y1="6" x2="21" y2="6"/>
+          <line x1="3" y1="12" x2="21" y2="12"/>
+          <line x1="3" y1="18" x2="21" y2="18"/>
+        </svg>
+      </button>
+
       <div class="center-head">
         <div class="center-head__top">
           <span class="center-head__pill">STEP {{ activeStep + 1 }} / {{ steps.length }}</span>
@@ -161,81 +173,212 @@
         </ul>
       </details>
 
-      <div class="qcards">
-        <div class="qcard-empty" *ngIf="currentStepAnswers.length === 0">
-          No customer answers mapped to this step.
+      <!-- ===== SCROLLABLE QUESTION CARDS ===== -->
+      <div class="qcards-scroll">
+        <div class="qcards">
+          <div class="qcard-empty" *ngIf="currentStepAnswers.length === 0">
+            No customer answers mapped to this step.
+          </div>
+
+          <!-- ===== QUESTION CARD LOOP ===== -->
+          <article class="qcard" *ngFor="let a of currentStepAnswers; let i = index"
+                   [class.qcard--compliant]="verdictFor(currentStep.id, a.fieldId) === 'compliant'"
+                   [class.qcard--observation]="verdictFor(currentStep.id, a.fieldId) === 'observation'"
+                   [class.qcard--nc]="verdictFor(currentStep.id, a.fieldId) === 'non-conformity'"
+                   [class.qcard--na]="verdictFor(currentStep.id, a.fieldId) === 'na'">
+            <header class="qcard__head">
+              <span class="qcard__idx">Q{{ i + 1 }}</span>
+              <span class="qcard__label">{{ a.fieldLabel }}</span>
+            </header>
+
+            <div class="qcard__answer">
+              <span class="qcard__answer-lbl">Customer answer</span>
+              <div class="qcard__answer-val">{{ a.answerValue || '—' }}</div>
+            </div>
+
+            <!-- ✅ Evidence chips – avec index correct (commence à 1) -->
+            <div class="qcard__evidence" *ngIf="a.fileMedia || (a.files && a.files.length)">
+              <!-- Fichier principal (fileMedia) -->
+              <ng-container *ngIf="a.fileMedia">
+                <div class="evidence-chip"
+                     (click)="openEvidence({id: a.fileMedia.id, url: a.fileMedia.url, name: a.fileMedia.name}, i + 1, a.fieldLabel)"
+                     role="button" tabindex="0"
+                     (keyup.enter)="openEvidence({id: a.fileMedia.id, url: a.fileMedia.url, name: a.fileMedia.name}, i + 1, a.fieldLabel)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                  </svg>
+                  <span class="evidence-chip__name">Evidence {{ i + 1 }}</span>
+                  <span [class]="ocrClass(ocrFor(a.fileMedia.id))" [title]="ocrTitle(ocrFor(a.fileMedia.id))">{{ ocrLabel(ocrFor(a.fileMedia.id)) }}</span>
+                  <button class="evidence-chip__btn evidence-chip__btn--retry"
+                          *ngIf="isRetryable(ocrFor(a.fileMedia.id))" (click)="retryOcr(a.fileMedia.id, $event)">Retry</button>
+                </div>
+              </ng-container>
+
+              <!-- Fichiers supplémentaires (files) – avec index calculé selon présence de fileMedia -->
+              <ng-container *ngFor="let f of (a.files || []); let fi = index">
+                <!-- Calcul de l'index : si fileMedia existe, l'index est i + fi + 2, sinon i + fi + 1 -->
+                <ng-container *ngIf="a.fileMedia; else noFileMedia">
+                  <div class="evidence-chip"
+                       (click)="openEvidence({id: f.media ? f.media.id : f.id, url: f.media ? f.media.url : f.url, name: f.media ? f.media.name : f.name}, i + fi + 2, a.fieldLabel)"
+                       role="button" tabindex="0"
+                       (keyup.enter)="openEvidence({id: f.media ? f.media.id : f.id, url: f.media ? f.media.url : f.url, name: f.media ? f.media.name : f.name}, i + fi + 2, a.fieldLabel)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span class="evidence-chip__name">Evidence {{ i + fi + 2 }}</span>
+                    <span [class]="ocrClass(ocrFor(f.media ? f.media.id : f.id))" [title]="ocrTitle(ocrFor(f.media ? f.media.id : f.id))">{{ ocrLabel(ocrFor(f.media ? f.media.id : f.id)) }}</span>
+                    <button class="evidence-chip__btn evidence-chip__btn--retry"
+                            *ngIf="isRetryable(ocrFor(f.media ? f.media.id : f.id))" (click)="retryOcr(f.media ? f.media.id : f.id, $event)">Retry</button>
+                  </div>
+                </ng-container>
+                <ng-template #noFileMedia>
+                  <div class="evidence-chip"
+                       (click)="openEvidence({id: f.media ? f.media.id : f.id, url: f.media ? f.media.url : f.url, name: f.media ? f.media.name : f.name}, i + fi + 1, a.fieldLabel)"
+                       role="button" tabindex="0"
+                       (keyup.enter)="openEvidence({id: f.media ? f.media.id : f.id, url: f.media ? f.media.url : f.url, name: f.media ? f.media.name : f.name}, i + fi + 1, a.fieldLabel)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <span class="evidence-chip__name">Evidence {{ i + fi + 1 }}</span>
+                    <span [class]="ocrClass(ocrFor(f.media ? f.media.id : f.id))" [title]="ocrTitle(ocrFor(f.media ? f.media.id : f.id))">{{ ocrLabel(ocrFor(f.media ? f.media.id : f.id)) }}</span>
+                    <button class="evidence-chip__btn evidence-chip__btn--retry"
+                            *ngIf="isRetryable(ocrFor(f.media ? f.media.id : f.id))" (click)="retryOcr(f.media ? f.media.id : f.id, $event)">Retry</button>
+                  </div>
+                </ng-template>
+              </ng-container>
+            </div>
+
+            <!-- Verdict -->
+            <div class="verdict-row" *ngIf="request?.status !== 'COMPLETED'">
+              <span class="verdict-row__lbl">Verdict</span>
+              <button type="button" class="vchip vchip--compliant"
+                      [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'compliant'"
+                      (click)="setVerdict(currentStep.id, a.fieldId, 'compliant')">✓ Compliant</button>
+              <button type="button" class="vchip vchip--observation"
+                      [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'observation'"
+                      (click)="setVerdict(currentStep.id, a.fieldId, 'observation')">⚠ Observation</button>
+              <button type="button" class="vchip vchip--nc"
+                      [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'non-conformity'"
+                      (click)="setVerdict(currentStep.id, a.fieldId, 'non-conformity')">✗ Non-conformity</button>
+              <button type="button" class="vchip vchip--na"
+                      [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'na'"
+                      (click)="setVerdict(currentStep.id, a.fieldId, 'na')">N/A</button>
+            </div>
+            <div class="verdict-row verdict-row--readonly" *ngIf="request?.status === 'COMPLETED' && verdictFor(currentStep.id, a.fieldId) as v">
+              <span class="verdict-row__lbl">Verdict</span>
+              <span class="vchip vchip--on" [ngClass]="'vchip--' + v">{{ v }}</span>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <!-- ===== FINDINGS & RECOMMENDATIONS (always visible) ===== -->
+      <div class="ws-deck-bottom">
+        <!-- Findings -->
+        <div class="deck-section">
+          <div class="deck-section__head">
+            <span class="deck-section__title">Findings</span>
+            <button class="deck-section__add" (click)="addFinding()"
+                    [disabled]="request?.status === 'COMPLETED'">+ Add</button>
+          </div>
+          <div class="deck-empty" *ngIf="currentFindings().length === 0">
+            No findings recorded for this step.
+          </div>
+          <div class="finding" *ngFor="let f of currentFindings()">
+            <div class="finding__head">
+              <select class="finding__sev" [value]="f.severity"
+                      (change)="updateFindingSeverity(f.id, $any($event.target).value)"
+                      [disabled]="request?.status === 'COMPLETED'">
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+              <span class="finding__sev-dot" [ngClass]="'finding__sev-dot--' + f.severity"></span>
+              <button class="finding__del" (click)="removeFinding(f.id)"
+                      [disabled]="request?.status === 'COMPLETED'"
+                      title="Remove">×</button>
+            </div>
+            <textarea class="finding__text"
+                      [value]="f.description"
+                      (input)="updateFindingText(f.id, $any($event.target).value)"
+                      [disabled]="request?.status === 'COMPLETED'"
+                      placeholder="Describe the finding, clause reference, and evidence cited…"
+                      rows="4"></textarea>
+
+            <!-- RICS clauses -->
+            <div class="clause-row">
+              <span class="clause-chip" *ngFor="let c of (f.clauses || [])"
+                    [title]="c.requirement || c.ruleId">
+                <strong>{{ c.ruleId }}</strong>
+                <span class="clause-chip__title" *ngIf="c.shortTitle"> · {{ c.shortTitle }}</span>
+                <button class="clause-chip__del" *ngIf="request?.status !== 'COMPLETED'"
+                        (click)="detachClause(f.id, c.ruleId)" title="Remove">×</button>
+              </span>
+              <button class="clause-add-btn" *ngIf="request?.status !== 'COMPLETED'"
+                      (click)="openClausePicker(f.id)">+ Clause</button>
+            </div>
+
+            <!-- Clause picker -->
+            <div class="clause-picker" *ngIf="pickerOpenFor === f.id">
+              <div class="clause-picker__head">
+                <input type="text" class="clause-picker__input"
+                       [(ngModel)]="pickerQuery"
+                       (input)="onPickerQueryChange()"
+                       placeholder="Search RICS clauses (e.g. governance, transparency, oversight)…"
+                       autofocus/>
+                <button class="clause-picker__close" (click)="closeClausePicker()" title="Close">×</button>
+              </div>
+              <div class="clause-picker__body">
+                <div class="clause-picker__loading" *ngIf="pickerLoading">Searching…</div>
+                <div class="clause-picker__empty"
+                     *ngIf="!pickerLoading && pickerQuery.trim().length >= 3 && pickerResults.length === 0">
+                  No matching clauses.
+                </div>
+                <div class="clause-picker__empty"
+                     *ngIf="!pickerLoading && pickerQuery.trim().length < 3">
+                  Type at least 3 characters.
+                </div>
+                <button class="clause-result" *ngFor="let r of pickerResults"
+                        (click)="attachClause(f.id, r); closeClausePicker()">
+                  <div class="clause-result__head">
+                    <strong>{{ r.rule_id }}</strong>
+                    <span class="clause-result__section" *ngIf="r.payload.section">§{{ r.payload.section }}</span>
+                    <span class="clause-result__score">{{ (r.score * 100).toFixed(0) }}%</span>
+                  </div>
+                  <div class="clause-result__title" *ngIf="r.payload.short_title">{{ r.payload.short_title }}</div>
+                  <div class="clause-result__req" *ngIf="r.payload.requirement_text">{{ r.payload.requirement_text }}</div>
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <article class="qcard" *ngFor="let a of currentStepAnswers; let i = index"
-                 [class.qcard--compliant]="verdictFor(currentStep.id, a.fieldId) === 'compliant'"
-                 [class.qcard--observation]="verdictFor(currentStep.id, a.fieldId) === 'observation'"
-                 [class.qcard--nc]="verdictFor(currentStep.id, a.fieldId) === 'non-conformity'"
-                 [class.qcard--na]="verdictFor(currentStep.id, a.fieldId) === 'na'">
-          <header class="qcard__head">
-            <span class="qcard__idx">Q{{ i + 1 }}</span>
-            <span class="qcard__label">{{ a.fieldLabel }}</span>
-          </header>
-
-          <div class="qcard__answer">
-            <span class="qcard__answer-lbl">Customer answer</span>
-            <div class="qcard__answer-val">{{ a.answerValue || '—' }}</div>
+        <!-- Recommendations -->
+        <div class="deck-section">
+          <div class="deck-section__head">
+            <span class="deck-section__title">Recommendations</span>
+            <button class="deck-section__add" (click)="addRecommendation()"
+                    [disabled]="request?.status === 'COMPLETED'">+ Add</button>
           </div>
-
-          <!-- Evidence chips -->
-          <div class="qcard__evidence" *ngIf="a.fileMedia || (a.files && a.files.length)">
-            <ng-container *ngIf="a.fileMedia as fm">
-              <div class="evidence-chip"
-                   (click)="openEvidence({id: fm.id, url: fm.url, name: fm.name}, 1, a.fieldLabel)"
-                   role="button" tabindex="0"
-                   (keyup.enter)="openEvidence({id: fm.id, url: fm.url, name: fm.name}, 1, a.fieldLabel)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                </svg>
-                <span class="evidence-chip__name" [title]="displayName(fm.name, 1)">{{ displayName(fm.name, 1) }}</span>
-                <span [class]="ocrClass(ocrFor(fm.id))" [title]="ocrTitle(ocrFor(fm.id))">{{ ocrLabel(ocrFor(fm.id)) }}</span>
-                <button class="evidence-chip__btn evidence-chip__btn--retry"
-                        *ngIf="isRetryable(ocrFor(fm.id))" (click)="retryOcr(fm.id, $event)">Retry</button>
-              </div>
-            </ng-container>
-            <ng-container *ngFor="let f of (a.files || []); let i = index">
-              <div class="evidence-chip"
-                   (click)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name}, a.fileMedia ? i + 2 : i + 1, a.fieldLabel)"
-                   role="button" tabindex="0"
-                   (keyup.enter)="openEvidence({id: f.media.id, url: f.media.url, name: f.media.name}, a.fileMedia ? i + 2 : i + 1, a.fieldLabel)">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                </svg>
-                <span class="evidence-chip__name" [title]="displayName(f.media.name, a.fileMedia ? i + 2 : i + 1)">{{ displayName(f.media.name, a.fileMedia ? i + 2 : i + 1) }}</span>
-                <span [class]="ocrClass(ocrFor(f.media.id))" [title]="ocrTitle(ocrFor(f.media.id))">{{ ocrLabel(ocrFor(f.media.id)) }}</span>
-                <button class="evidence-chip__btn evidence-chip__btn--retry"
-                        *ngIf="isRetryable(ocrFor(f.media.id))" (click)="retryOcr(f.media.id, $event)">Retry</button>
-              </div>
-            </ng-container>
+          <div class="deck-empty" *ngIf="currentRecs().length === 0">
+            No recommendations yet.
           </div>
-
-          <!-- Per-question verdict -->
-          <div class="verdict-row" *ngIf="request?.status !== 'COMPLETED'">
-            <span class="verdict-row__lbl">Verdict</span>
-            <button type="button" class="vchip vchip--compliant"
-                    [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'compliant'"
-                    (click)="setVerdict(currentStep.id, a.fieldId, 'compliant')">✓ Compliant</button>
-            <button type="button" class="vchip vchip--observation"
-                    [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'observation'"
-                    (click)="setVerdict(currentStep.id, a.fieldId, 'observation')">⚠ Observation</button>
-            <button type="button" class="vchip vchip--nc"
-                    [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'non-conformity'"
-                    (click)="setVerdict(currentStep.id, a.fieldId, 'non-conformity')">✗ Non-conformity</button>
-            <button type="button" class="vchip vchip--na"
-                    [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'na'"
-                    (click)="setVerdict(currentStep.id, a.fieldId, 'na')">N/A</button>
+          <div class="rec" *ngFor="let r of currentRecs()">
+            <textarea class="rec__text"
+                      [value]="r.description"
+                      (input)="updateRecText(r.id, $any($event.target).value)"
+                      [disabled]="request?.status === 'COMPLETED'"
+                      placeholder="Recommend a corrective action, owner and timeframe…"
+                      rows="4"></textarea>
+            <button class="rec__del" (click)="removeRecommendation(r.id)"
+                    [disabled]="request?.status === 'COMPLETED'"
+                    title="Remove">×</button>
           </div>
-          <div class="verdict-row verdict-row--readonly" *ngIf="request?.status === 'COMPLETED' && verdictFor(currentStep.id, a.fieldId) as v">
-            <span class="verdict-row__lbl">Verdict</span>
-            <span class="vchip vchip--on" [ngClass]="'vchip--' + v">{{ v }}</span>
-          </div>
-        </article>
+        </div>
       </div>
 
       <!-- Step nav -->
@@ -256,112 +399,8 @@
       </div>
     </section>
 
-    <!-- ╞══ RIGHT: auditor deck ══╡ -->
+    <!-- ╞══ RIGHT: Step note only ══╡ -->
     <aside class="ws-deck" *ngIf="currentStep">
-      <!-- Findings -->
-      <div class="deck-section">
-        <div class="deck-section__head">
-          <span class="deck-section__title">Findings</span>
-          <button class="deck-section__add" (click)="addFinding()"
-                  [disabled]="request?.status === 'COMPLETED'">+ Add</button>
-        </div>
-        <div class="deck-empty" *ngIf="currentFindings().length === 0">
-          No findings recorded for this step.
-        </div>
-        <div class="finding" *ngFor="let f of currentFindings()">
-          <div class="finding__head">
-            <select class="finding__sev" [value]="f.severity"
-                    (change)="updateFindingSeverity(f.id, $any($event.target).value)"
-                    [disabled]="request?.status === 'COMPLETED'">
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
-            </select>
-            <span class="finding__sev-dot" [ngClass]="'finding__sev-dot--' + f.severity"></span>
-            <button class="finding__del" (click)="removeFinding(f.id)"
-                    [disabled]="request?.status === 'COMPLETED'"
-                    title="Remove">×</button>
-          </div>
-          <textarea class="finding__text"
-                    [value]="f.description"
-                    (input)="updateFindingText(f.id, $any($event.target).value)"
-                    [disabled]="request?.status === 'COMPLETED'"
-                    placeholder="Describe the finding, clause reference, and evidence cited…"
-                    rows="4"></textarea>
-
-          <!-- Phase 4: RICS clauses attached to this finding -->
-          <div class="clause-row">
-            <span class="clause-chip" *ngFor="let c of (f.clauses || [])"
-                  [title]="c.requirement || c.ruleId">
-              <strong>{{ c.ruleId }}</strong>
-              <span class="clause-chip__title" *ngIf="c.shortTitle"> · {{ c.shortTitle }}</span>
-              <button class="clause-chip__del" *ngIf="request?.status !== 'COMPLETED'"
-                      (click)="detachClause(f.id, c.ruleId)" title="Remove">×</button>
-            </span>
-            <button class="clause-add-btn" *ngIf="request?.status !== 'COMPLETED'"
-                    (click)="openClausePicker(f.id)">+ Clause</button>
-          </div>
-
-          <!-- Phase 4: inline picker popover -->
-          <div class="clause-picker" *ngIf="pickerOpenFor === f.id">
-            <div class="clause-picker__head">
-              <input type="text" class="clause-picker__input"
-                     [(ngModel)]="pickerQuery"
-                     (input)="onPickerQueryChange()"
-                     placeholder="Search RICS clauses (e.g. governance, transparency, oversight)…"
-                     autofocus/>
-              <button class="clause-picker__close" (click)="closeClausePicker()" title="Close">×</button>
-            </div>
-            <div class="clause-picker__body">
-              <div class="clause-picker__loading" *ngIf="pickerLoading">Searching…</div>
-              <div class="clause-picker__empty"
-                   *ngIf="!pickerLoading && pickerQuery.trim().length >= 3 && pickerResults.length === 0">
-                No matching clauses.
-              </div>
-              <div class="clause-picker__empty"
-                   *ngIf="!pickerLoading && pickerQuery.trim().length < 3">
-                Type at least 3 characters.
-              </div>
-              <button class="clause-result" *ngFor="let r of pickerResults"
-                      (click)="attachClause(f.id, r); closeClausePicker()">
-                <div class="clause-result__head">
-                  <strong>{{ r.rule_id }}</strong>
-                  <span class="clause-result__section" *ngIf="r.payload.section">§{{ r.payload.section }}</span>
-                  <span class="clause-result__score">{{ (r.score * 100).toFixed(0) }}%</span>
-                </div>
-                <div class="clause-result__title" *ngIf="r.payload.short_title">{{ r.payload.short_title }}</div>
-                <div class="clause-result__req" *ngIf="r.payload.requirement_text">{{ r.payload.requirement_text }}</div>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Recommendations -->
-      <div class="deck-section">
-        <div class="deck-section__head">
-          <span class="deck-section__title">Recommendations</span>
-          <button class="deck-section__add" (click)="addRecommendation()"
-                  [disabled]="request?.status === 'COMPLETED'">+ Add</button>
-        </div>
-        <div class="deck-empty" *ngIf="currentRecs().length === 0">
-          No recommendations yet.
-        </div>
-        <div class="rec" *ngFor="let r of currentRecs()">
-          <textarea class="rec__text"
-                    [value]="r.description"
-                    (input)="updateRecText(r.id, $any($event.target).value)"
-                    [disabled]="request?.status === 'COMPLETED'"
-                    placeholder="Recommend a corrective action, owner and timeframe…"
-                    rows="4"></textarea>
-          <button class="rec__del" (click)="removeRecommendation(r.id)"
-                  [disabled]="request?.status === 'COMPLETED'"
-                  title="Remove">×</button>
-        </div>
-      </div>
-
-      <!-- Step note -->
       <div class="deck-section">
         <div class="deck-section__head">
           <span class="deck-section__title">Step note</span>
@@ -449,12 +488,31 @@
         <div class="file-loading" *ngIf="drawerLoading">
           <div class="loader"></div><span>Loading…</span>
         </div>
+        <!-- Image -->
         <img *ngIf="!drawerLoading && drawerBlobUrl && isImage(drawerMedia.name)"
              [src]="drawerBlobUrl" [alt]="drawerMedia.name" class="ws-drawer__img"/>
-        <iframe *ngIf="!drawerLoading && drawerBlobUrl && !isImage(drawerMedia.name)"
-                [src]="drawerBlobUrl" class="ws-drawer__iframe">
-          <p>Your browser cannot display this file. <a [href]="drawerBlobUrl" target="_blank">Open in new tab</a></p>
-        </iframe>
+
+        <!-- ✅ Utilisation de <object> à la place de l'iframe pour contourner X-Frame-Options -->
+        <object *ngIf="!drawerLoading && drawerBlobUrl && !isImage(drawerMedia.name)"
+                [data]="drawerBlobUrl"
+                type="application/pdf"
+                class="ws-drawer__object"
+                style="width:100%;height:100%;border:none;min-height:400px;">
+          <p>Votre navigateur ne peut pas afficher ce PDF. <a [href]="drawerBlobUrl" target="_blank">Télécharger</a></p>
+        </object>
+
+        <!-- Fallback lorsque drawerBlobUrl est null -->
+        <div *ngIf="!drawerLoading && !drawerBlobUrl" class="ws-drawer__empty">
+          <svg *ngIf="isOfficeDoc(drawerMedia.name)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="40" height="40">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          <p *ngIf="isOfficeDoc(drawerMedia.name)">
+            Preview not available.
+            <a [href]="getFileUrl(drawerMedia.url)" target="_blank">Download the file</a>
+          </p>
+          <p *ngIf="!isOfficeDoc(drawerMedia.name)">Preview not available.</p>
+        </div>
       </ng-container>
 
       <!-- OCR tab -->

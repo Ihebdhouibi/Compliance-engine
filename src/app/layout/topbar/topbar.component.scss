@@ -154,20 +154,35 @@
   }
 
   &__logout {
-    display:flex; align-items:center; gap:7px; padding:8px 14px;
-    // ← DYNAMIC delete/danger color for logout
-    background: color-mix(in srgb, var(--color-btn-delete) 8%, transparent);
-    border: 1px solid color-mix(in srgb, var(--color-btn-delete) 20%, transparent);
-    border-radius: t.$r-md;
-    color: color-mix(in srgb, var(--color-btn-delete) 80%, white);
-    font-family:t.$font-body; font-size:.81rem; font-weight:600;
-    cursor:pointer; transition:all t.$t-fast;
-    svg { width:15px; height:15px; flex-shrink:0; }
-    &:hover {
-      background: color-mix(in srgb, var(--color-btn-delete) 15%, transparent);
-      color: var(--color-btn-delete);
-      border-color: color-mix(in srgb, var(--color-btn-delete) 40%, transparent);
-    }
-    span { @media (max-width:600px){ display:none; } }
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-family: t.$font-body;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s ease;
+  white-space: nowrap;
+
+  background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  box-shadow: 0 4px 10px rgba(167, 243, 208, 0.2);
+  svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
   }
+
+  span {
+    @media (max-width: 600px) { display: none; }
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(110, 231, 183, 0.35);
+  }
+}
 }

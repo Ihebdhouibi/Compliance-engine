@@ -2,7 +2,6 @@ import {
   Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ViewChild, ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChatComponent } from '../../features/chat/chat.component';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -14,36 +13,29 @@ import { AuditProcessStepService, AuditProcessStep } from '../../services/audit-
 import { AuditStepResultService, AuditStepResult } from '../../services/audit-step-result.service';
 import { TokenService } from '../../shared/token.service';
 import { AuditBotComponent } from '../../layout/audit-bot/audit-bot.component';
-import { AuditRequest , AuditRequestAnswer } from '../../models/audit.model';
+import { AuditRequest } from '../../models/audit.model';
 import { environment } from '../../environments/environment';
 import { RicsSearchService, RicsRuleResult, RicsEvidenceItem, RelevanceSegment } from '../../services/rics-search.service';
 import { log } from '../../core/logging/log';
 
 const LOG = 'ng.audit-workspace';
-/**
- * Unified step model used by the workspace stepper.
- * Built from intake form steps (preferred — they carry the actual fields)
- * or from auditor process steps (fallback when no form template is available).
- */
+
 interface WorkspaceStep {
-  id:        number;        // intake form step id, or -1 for synthetic fallback
+  id:        number;
   name:      string;
   stepOrder: number;
-  fieldIds:  number[];      // empty array => show all answers (fallback mode)
+  fieldIds:  number[];
   isDefault?: boolean;
 }
 
-/** Auditor's per-question verdict. */
 export type Verdict = 'compliant' | 'observation' | 'non-conformity' | 'na';
-
-/** Step-level roll-up derived from per-question verdicts. */
 export type StepRollup = 'pending' | 'compliant' | 'partial' | 'non-compliant';
 
 export interface RicsClauseRef {
   ruleId:        string;
   section?:      string;
   shortTitle?:   string;
-  requirement?:  string;   // short snippet for tooltip / context
+  requirement?:  string;
 }
 
 export interface Finding {
@@ -51,6 +43,7 @@ export interface Finding {
   severity:    'low' | 'medium' | 'high' | 'critical';
   description: string;
   clauses?:    RicsClauseRef[];
+  note?: string;
 }
 
 export interface Recommendation {
@@ -58,9 +51,8 @@ export interface Recommendation {
   description: string;
 }
 
-/** Persisted alongside the step's description as a hidden HTML-comment block. */
 interface StepMeta {
-  verdicts:        Record<number, Verdict>;   // keyed by fieldId
+  verdicts:        Record<number, Verdict>;
   findings:        Finding[];
   recommendations: Recommendation[];
 }
@@ -68,7 +60,6 @@ interface StepMeta {
 const META_OPEN  = '<!--AUDIT_META_V1:';
 const META_CLOSE = ':END-->';
 
-/** OCR row returned by GET /api/v1/audits/{id}/ocr. */
 interface OcrResult {
   id:             number;
   auditRequestId: number;
@@ -95,6 +86,7 @@ interface OcrResult {
 })
 export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
+  // ── Public properties ──────────────────────────────────────────────
   request:     AuditRequest | null = null;
   steps:       WorkspaceStep[]     = [];
   results:     AuditStepResult[]   = [];
@@ -107,56 +99,62 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   drafts: Record<number, string> = {};
   showChat = false;
+  allQuestionsCollapsed = false;
+  isRailCollapsed = false;
 
-  toggleChat(): void {
-    this.showChat = !this.showChat;
-  }
-  // ── Phase 2: per-question verdicts + findings/recs (per step) ──────
-  /** verdicts[stepId][fieldId] = verdict */
+  // verdicts[stepId][fieldId] = verdict
   verdicts:        Record<number, Record<number, Verdict>> = {};
   findings:        Record<number, Finding[]>        = {};
   recommendations: Record<number, Recommendation[]> = {};
 
+  // ── OCR / file viewer ──────────────────────────────────────────────
   showFileViewer   = false;
   viewingFileUrl:  SafeResourceUrl | null = null;
   viewingFileName: string | null = null;
   isLoadingFile    = false;
 
-  // ── OCR (extracted-text preview per evidence file) ─────────────────
   ocrByMedia: Record<number, OcrResult> = {};
   showOcrViewer = false;
   viewingOcr:   OcrResult | null = null;
   private ocrPollHandle: any = null;
 
-  // ── Phase 3: unified Evidence Drawer ───────────────────────────────
+  // ── Evidence Drawer ────────────────────────────────────────────────
   showDrawer       = false;
   drawerMedia:     { id: number; url: string; name: string } | null = null;
   drawerMediaIndex = 0;
-  drawerQuery      = '';   // the audit question this evidence is meant to prove
+  drawerQuery      = '';
   drawerTab:       'preview' | 'ocr' = 'preview';
   drawerLoading    = false;
   drawerBlobUrl:   SafeResourceUrl | null = null;
   private drawerObjectUrl: string | null = null;
 
-  // ── Phase 4: RICS clause picker (per-finding) ──────────────────────
-  pickerOpenFor: string | null = null;     // finding.id currently picking
+  // ── Clause picker ──────────────────────────────────────────────────
+  pickerOpenFor: string | null = null;
   pickerQuery   = '';
   pickerLoading = false;
   pickerResults: RicsRuleResult[] = [];
   private pickerDebounce: any = null;
 
-  // ── Phase 5: dismissed AI suggestions (per-step, session-only) ─────
+  // ── AI suggestions ────────────────────────────────────────────────
   dismissedSuggestions: Record<number, Set<string>> = {};
-
-  // ── Grounded AI suggestions fetched from the RAG /rules/evidence-check ──
   private aiSuggestions: Record<number, string[]> = {};
   private aiSuggestRequested = new Set<number>();
   aiSuggestLoading: Record<number, boolean> = {};
 
-  isAuditorMode = false;
+  // ── OCR relevance ──────────────────────────────────────────────────
+  ocrHighlightOn = true;
+  ocrRelevanceLoading = false;
+  ocrRelevanceFailed  = false;
+  private _ocrHlCache: { key: string; html: SafeHtml } | null = null;
+  private ocrRelevance: Record<string, RelevanceSegment[]> = {};
+  private ocrRelevanceTruncated: Record<string, boolean> = {};
+  private ocrRelevanceRequested = new Set<string>();
+  @ViewChild('ocrTextEl') private ocrTextEl?: ElementRef<HTMLElement>;
 
+  isAuditorMode = false;
   readonly serverBase = environment.serverBaseUrl;
 
+  // ── Injected services ─────────────────────────────────────────────
   private route     = inject(ActivatedRoute);
   private router    = inject(Router);
   private reqSvc    = inject(AuditRequestService);
@@ -169,6 +167,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   private cdr       = inject(ChangeDetectorRef);
   private ricsSvc   = inject(RicsSearchService);
 
+  // ── Lifecycle ──────────────────────────────────────────────────────
   ngOnInit(): void {
     this.isAuditorMode = this.router.url.includes('/auditor/');
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -183,6 +182,90 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.releaseDrawerBlob();
   }
 
+  // ── Methods ──────────────────────────────────────────────────────
+
+  toggleRail(): void {
+    this.isRailCollapsed = !this.isRailCollapsed;
+  }
+
+  toggleChat(): void {
+    this.showChat = !this.showChat;
+  }
+
+  toggleAllQuestions(): void {
+    this.allQuestionsCollapsed = !this.allQuestionsCollapsed;
+    if (this.currentStepAnswers) {
+      this.currentStepAnswers.forEach(a => a.collapsed = this.allQuestionsCollapsed);
+    }
+  }
+
+  toggleQuestion(index: number): void {
+    const answer = this.currentStepAnswers?.[index];
+    if (answer) {
+      answer.collapsed = !answer.collapsed;
+    }
+  }
+
+  updateFindingNote(findingId: string, note: string): void {
+    const stepId = this.currentStep?.id;
+    if (stepId == null) return;
+    const stepFindings = this.findings[stepId] ?? [];
+    const finding = stepFindings.find(f => f.id === findingId);
+    if (finding) {
+      finding.note = note;
+    }
+  }
+
+  getEvidenceItems(answer: any): { id: number; name: string; url: string; index: number }[] {
+    const items: { id: number; name: string; url: string; index: number }[] = [];
+    let idx = 1;
+
+    const tryAdd = (obj: any) => {
+      if (!obj || typeof obj !== 'object') return;
+      const id = obj.id || obj.mediaId || obj.fileId || obj.attachmentId;
+      if (!id) return;
+      const name = obj.name || obj.fileName || obj.mediaName || obj.attachmentName || `Evidence ${idx}`;
+      const url = obj.url || obj.fileUrl || obj.mediaUrl || '';
+      items.push({ id, name, url, index: idx++ });
+    };
+
+    if (answer.fileMedia) {
+      tryAdd(answer.fileMedia);
+    }
+    if (Array.isArray(answer.files)) {
+      for (const f of answer.files) {
+        tryAdd(f.media || f.file || f);
+      }
+    }
+
+    const extraProps = ['evidence', 'attachments', 'documents', 'media', 'filesList'];
+    for (const prop of extraProps) {
+      const val = answer[prop];
+      if (Array.isArray(val)) {
+        for (const item of val) {
+          tryAdd(item);
+        }
+      } else if (val && typeof val === 'object') {
+        tryAdd(val);
+      }
+    }
+
+    for (const key of Object.keys(answer)) {
+      if (['fileMedia', 'files', ...extraProps].includes(key)) continue;
+      const val = answer[key];
+      if (Array.isArray(val) && val.length > 0 && typeof val[0] === 'object') {
+        for (const item of val) {
+          tryAdd(item);
+        }
+      } else if (val && typeof val === 'object' && val.id) {
+        tryAdd(val);
+      }
+    }
+
+    return items;
+  }
+
+  // ── Load data ─────────────────────────────────────────────────────
   loadRequest(id: number): void {
     const request$ = this.isAuditorMode
       ? this.reqSvc.auditorGetAuditById(id)
@@ -192,17 +275,8 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     request$.subscribe({
       next: req => {
         this.request = req;
-        log.info(LOG, 'audit loaded', { id, type: req.auditType, status: req.status });
-
-        if (req.status === 'ASSIGNED') {
-          this.autoStart(id);
-        }
-
-        // Load intake form template — each form step becomes a workspace step.
-        // This gives the stepper meaningful navigation (Prev/Next across each
-        // intake section) AND exact per-step answer filtering by fieldId.
+        if (req.status === 'ASSIGNED') this.autoStart(id);
         this.loadFormSteps(req.auditType);
-
         this.loadResults(id);
         this.loadOcr(id);
         this.cdr.detectChanges();
@@ -219,8 +293,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
           .sort((a, b) => (a.stepOrder ?? 0) - (b.stepOrder ?? 0));
 
         if (formSteps.length > 0) {
-          // Only surface steps that actually carry a mapped customer response —
-          // the auditor/admin workspace shouldn't list empty intake sections.
           this.steps = formSteps
             .map(s => ({
               id:        s.id,
@@ -231,13 +303,10 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
             .filter(s => this.answersForStep(s).length > 0);
 
           if (this.steps.length === 0) {
-            // Template exists but nothing mapped — fall back so the workspace
-            // isn't left empty.
             this.loadStepsByAuditType(auditType);
             return;
           }
         } else {
-          // No intake form steps — fall back to auditor process steps.
           this.loadStepsByAuditType(auditType);
           return;
         }
@@ -245,7 +314,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         this.steps.forEach(s => {
           if (this.drafts[s.id] === undefined) this.drafts[s.id] = '';
         });
-        // Re-apply any results that loaded before steps were ready.
         this.applyResultsToDrafts();
         this.ensureAiSuggestions(this.currentStep);
         this.cdr.detectChanges();
@@ -254,7 +322,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  // Fallback when no intake form template exists.
   private loadStepsByAuditType(auditType: string): void {
     this.reqSvc.getProcessStepsByAuditType(auditType, this.isAuditorMode).subscribe({
       next: steps => {
@@ -311,7 +378,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Match results to current steps by stepName (resilient when results load before steps). */
   private applyResultsToDrafts(): void {
     if (!this.steps.length || !this.results.length) return;
     for (const r of this.results) {
@@ -325,12 +391,10 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ── Meta (de)serialization ───────────────────────────────────────
   private emptyMeta(): StepMeta {
     return { verdicts: {}, findings: [], recommendations: [] };
   }
 
-  /** Split a stored description into the visible note and the hidden meta block. */
   private parseStepBody(body: string): { note: string; meta: StepMeta } {
     const i = body.indexOf(META_OPEN);
     if (i === -1) return { note: body, meta: this.emptyMeta() };
@@ -346,12 +410,11 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         findings:        parsed.findings        ?? [],
         recommendations: parsed.recommendations ?? []
       };
-    } catch { /* ignore malformed */ }
+    } catch { /* ignore */ }
     const note = (body.substring(0, i) + body.substring(j + META_CLOSE.length)).trim();
     return { note, meta };
   }
 
-  /** Re-build the description string from the step note + meta state. */
   private composeStepBody(stepId: number): string {
     const note = (this.drafts[stepId] ?? '').trim();
     const meta: StepMeta = {
@@ -376,7 +439,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     if (this.request?.status === 'COMPLETED') return;
     if (!this.verdicts[stepId]) this.verdicts[stepId] = {};
     if (this.verdicts[stepId][fieldId] === v) {
-      delete this.verdicts[stepId][fieldId]; // toggle off
+      delete this.verdicts[stepId][fieldId];
       log.info(LOG, 'verdict cleared', { stepId, fieldId });
     } else {
       this.verdicts[stepId][fieldId] = v;
@@ -385,7 +448,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  /** Roll-up of per-question verdicts into a step-level status. */
   stepRollup(step: WorkspaceStep): StepRollup {
     const map = this.verdicts[step.id] ?? {};
     const vals = Object.values(map);
@@ -395,20 +457,17 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return 'compliant';
   }
 
-  /** Number of questions in the step that have been verdicted. */
   stepVerdictedCount(step: WorkspaceStep): number {
     const map = this.verdicts[step.id] ?? {};
     return Object.keys(map).length;
   }
 
-  /** Overall progress across all steps (% of steps with any verdict). */
   get overallProgress(): number {
     if (!this.steps.length) return 0;
     const touched = this.steps.filter(s => this.stepRollup(s) !== 'pending').length;
     return Math.round((touched / this.steps.length) * 100);
   }
 
-  /** Counts of findings across all steps. */
   get totalFindings(): number {
     return Object.values(this.findings).reduce((n, arr) => n + arr.length, 0);
   }
@@ -489,6 +548,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     if (r) { r.description = text; }
   }
 
+  // ── Getters ──────────────────────────────────────────────────────
   get currentStep(): WorkspaceStep | null {
     return this.steps[this.activeStep] ?? null;
   }
@@ -507,7 +567,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     if (this.currentStep) this.drafts[this.currentStep.id] = val;
   }
 
-  /** Public helper for templates: true if current step has any saveable content. */
   hasCurrentContent(): boolean {
     return !!this.currentStep && this.hasStepContent(this.currentStep.id);
   }
@@ -519,8 +578,8 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     );
   }
 
- saveDraft(): void { this.persist('DRAFT'); }
- // saveResult(): void { this.persist('SAVED'); }
+  // ── Save / persist ──────────────────────────────────────────────
+  saveDraft(): void { this.persist('DRAFT'); }
 
   deleteCurrentResult(): void {
     const existing = this.currentResult;
@@ -544,6 +603,152 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return 'pending';
   }
 
+  // ── Persist helpers ─────────────────────────────────────────────
+  private hasStepContent(stepId: number): boolean {
+    if ((this.drafts[stepId] ?? '').trim()) return true;
+    if (Object.keys(this.verdicts[stepId] ?? {}).length) return true;
+    if ((this.findings[stepId] ?? []).length) return true;
+    if ((this.recommendations[stepId] ?? []).length) return true;
+    return false;
+  }
+
+  private persistAsync(status: 'DRAFT' | 'SAVED'): Promise<void> {
+    return new Promise((resolve) => {
+      if (!this.request || !this.currentStep) { resolve(); return; }
+      const step     = this.currentStep;
+      const desc     = this.composeStepBody(step.id);
+      const existing = this.currentResult;
+
+      if (!this.hasStepContent(step.id)) { resolve(); return; }
+
+      const payload = {
+        processStepId: -1,
+        stepName:      step.name,
+        description:   desc,
+        status
+      };
+
+      const obs = existing
+        ? this.resSvc.update(this.request.id, existing.id, payload)
+        : this.resSvc.saveOrUpdate(this.request.id, payload);
+
+      obs.subscribe({
+        next: result => {
+          const idx = this.results.findIndex(r => r.id === result.id);
+          if (idx !== -1) this.results[idx] = result;
+          else this.results.push(result);
+          this.cdr.detectChanges();
+          resolve();
+        },
+        error: () => resolve()
+      });
+    });
+  }
+
+  private persist(status: 'DRAFT' | 'SAVED'): void {
+    if (!this.request || !this.currentStep) return;
+    this.isSaving = true;
+    const step     = this.currentStep;
+    const desc     = this.composeStepBody(step.id);
+    const existing = this.currentResult;
+
+    const payload = {
+      processStepId: -1,
+      stepName:      step.name,
+      description:   desc,
+      status
+    };
+
+    const obs = existing
+      ? this.resSvc.update(this.request.id, existing.id, payload)
+      : this.resSvc.saveOrUpdate(this.request.id, payload);
+
+    obs.subscribe({
+      next: result => {
+        const idx = this.results.findIndex(r => r.id === result.id);
+        if (idx !== -1) this.results[idx] = result;
+        else this.results.push(result);
+        this.isSaving = false;
+        this.flash(status === 'DRAFT' ? 'Draft saved.' : 'Step saved.', false);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isSaving = false;
+        this.flash('Failed to save.', true);
+      }
+    });
+  }
+
+  // ── Submit ──────────────────────────────────────────────────────
+  submitAudit(): void {
+    if (!this.request) return;
+    log.info(LOG, 'submit audit', { id: this.request.id, steps: this.steps.length });
+    this.isCompleting = true;
+
+    const savePromises = this.steps
+      .filter(s => this.hasStepContent(s.id))
+      .map(s => new Promise<void>((resolve) => {
+        const existing = this.results.find(r => r.stepName === s.name);
+        const payload = {
+          processStepId: -1,
+          stepName:      s.name,
+          description:   this.composeStepBody(s.id),
+          status:        'SAVED' as const
+        };
+        const obs = existing
+          ? this.resSvc.update(this.request!.id, existing.id, payload)
+          : this.resSvc.saveOrUpdate(this.request!.id, payload);
+        obs.subscribe({ next: result => {
+          const idx = this.results.findIndex(r => r.id === result.id);
+          if (idx !== -1) this.results[idx] = result;
+          else this.results.push(result);
+          resolve();
+        }, error: () => resolve() });
+      }));
+
+    Promise.all(savePromises).then(() => {
+      const complete$ = this.isAuditorMode
+        ? this.reqSvc.auditorCompleteAudit(this.request!.id)
+        : this.reqSvc.adminCompleteRequest(this.request!.id);
+
+      complete$.subscribe({
+        next: updated => {
+          this.request      = updated;
+          this.isCompleting = false;
+          this.flash('Audit completed successfully!', false);
+          setTimeout(() => this.goBack(), 1500);
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.isCompleting = false;
+          this.flash('Failed to complete audit.', true);
+        }
+      });
+    });
+  }
+
+  // ── Navigation ──────────────────────────────────────────────────
+  async goToStep(idx: number): Promise<void> {
+    if (!this.request || this.request?.status === 'COMPLETED') {
+      this.activeStep = idx;
+      this.ensureAiSuggestions(this.currentStep);
+      return;
+    }
+    if (this.currentStep && this.hasStepContent(this.currentStep.id)) {
+      await this.persistAsync('DRAFT');
+    }
+    this.activeStep = idx;
+    this.ensureAiSuggestions(this.currentStep);
+    this.cdr.detectChanges();
+  }
+
+  goBack(): void {
+    this.router.navigate(
+      this.isAuditorMode ? ['/auditor/audits'] : ['/admin/audits']
+    );
+  }
+
+  // ── File viewer ──────────────────────────────────────────────────
   openFileViewer(url: string, name: string): void {
     this.viewingFileName = name;
     this.viewingFileUrl  = null;
@@ -568,14 +773,19 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
+  isOfficeDocument(name: string): boolean {
+    const officeExts = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'];
+    const ext = name.split('.').pop()?.toLowerCase() || '';
+    return officeExts.includes(ext);
+  }
+
   closeFileViewer(): void {
     this.showFileViewer  = false;
     this.viewingFileUrl  = null;
     this.viewingFileName = null;
   }
 
-  // ── OCR ────────────────────────────────────────────────────────────
-  /** Fetch all OCR rows for the audit and index them by mediaId. */
+  // ── OCR ──────────────────────────────────────────────────────────
   loadOcr(auditId: number, scheduleNext = true): void {
     const token   = this.tokenSvc.getToken();
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
@@ -596,7 +806,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** Re-poll every 4s while any row is PENDING/RUNNING. Stops once all done/failed. */
   private scheduleOcrPoll(auditId: number): void {
     if (this.ocrPollHandle) {
       clearTimeout(this.ocrPollHandle);
@@ -605,8 +814,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     const pending = Object.values(this.ocrByMedia).some(
       r => r.status === 'PENDING' || r.status === 'RUNNING'
     );
-    // Always re-poll at least once after first load — fresh submits may not
-    // have created rows yet.
     const empty = Object.keys(this.ocrByMedia).length === 0;
     if (pending || empty) {
       this.ocrPollHandle = setTimeout(
@@ -619,10 +826,8 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return this.ocrByMedia[mediaId] ?? null;
   }
 
-  /** Friendly evidence label: temp UUID filenames become "Evidence N". */
   displayName(name: string | undefined | null, index = 0): string {
     if (!name) return `Evidence ${index}`;
-    // UUID pattern: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx (filenames are prefixed with one)
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i.test(name);
     return isUuid ? `Evidence ${index}` : name;
   }
@@ -638,7 +843,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return 'Extracted text';
   }
 
-  /** Fuller tooltip for the evidence text badge. */
   ocrTitle(r: OcrResult | null): string {
     if (!r) return 'Text extraction is queued for this document';
     switch (r.status) {
@@ -650,31 +854,43 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return 'View extracted text';
   }
 
-  // ── Evidence relevance highlight (OCR text tab) ──────────────────
-  /** Toggle for shading question-relevant lines in the extracted text. */
-  ocrHighlightOn = true;
-  ocrRelevanceLoading = false;
-  ocrRelevanceFailed  = false;   // drives keyword fallback
-  private _ocrHlCache: { key: string; html: SafeHtml } | null = null;
-  private ocrRelevance: Record<string, RelevanceSegment[]> = {};
-  private ocrRelevanceTruncated: Record<string, boolean> = {};
-  private ocrRelevanceRequested = new Set<string>();
-  @ViewChild('ocrTextEl') private ocrTextEl?: ElementRef<HTMLElement>;
+  isRetryable(r: OcrResult | null): boolean {
+    return !!r && r.status === 'FAILED';
+  }
 
+  retryOcr(mediaId: number | undefined | null, ev?: Event): void {
+    if (ev) ev.stopPropagation();
+    if (mediaId == null || !this.request) return;
+    const token   = this.tokenSvc.getToken();
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    const url = `${environment.apiUrl}/audits/${this.request.id}/ocr/media/${mediaId}/retry`;
+    this.http.post<OcrResult>(url, {}, { headers }).subscribe({
+      next: row => {
+        this.ocrByMedia[row.mediaId] = row;
+        this.cdr.detectChanges();
+        if (this.request) this.scheduleOcrPoll(this.request.id);
+      }
+    });
+  }
+
+  ocrClass(r: OcrResult | null): string {
+    if (!r) return 'ocr-badge ocr-badge--pending';
+    switch (r.status) {
+      case 'DONE':    return 'ocr-badge ocr-badge--done';
+      case 'FAILED':  return 'ocr-badge ocr-badge--failed';
+      default:        return 'ocr-badge ocr-badge--pending';
+    }
+  }
+
+  // ── Evidence relevance ──────────────────────────────────────────
   private relevanceKey(mediaId: number, query: string): string {
     return `${mediaId}|${query}`;
   }
 
-  /** The relevance target for the open evidence: the answered question. */
   private get drawerRelevanceQuery(): string {
     return (this.drawerQuery || this.currentStep?.name || '').trim();
   }
 
-  /**
-   * Fetch sentence-level semantic relevance for the open evidence against its
-   * audit question. Idempotent per (file, question); on failure the renderer
-   * silently falls back to keyword highlighting.
-   */
   ensureRelevance(): void {
     const media = this.drawerMedia;
     const o = this.drawerOcr();
@@ -692,13 +908,13 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         this.ocrRelevance[key] = res?.segments ?? [];
         this.ocrRelevanceTruncated[key] = !!res?.truncated;
         this.ocrRelevanceLoading = false;
-        this._ocrHlCache = null;            // bust render cache
+        this._ocrHlCache = null;
         log.info(LOG, 'relevance scored', { segments: res?.segments?.length ?? 0, truncated: !!res?.truncated });
         this.cdr.detectChanges();
       },
       error: () => {
         this.ocrRelevanceLoading = false;
-        this.ocrRelevanceFailed  = true;    // renderer uses keyword fallback
+        this.ocrRelevanceFailed  = true;
         log.warn(LOG, 'relevance unavailable — using keyword fallback', { mediaId: media.id });
         this.ocrRelevanceRequested.delete(key);
         this._ocrHlCache = null;
@@ -707,14 +923,12 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** True once semantic segments are available for the open evidence. */
   get hasSemanticRelevance(): boolean {
     const media = this.drawerMedia;
     if (!media) return false;
     return (this.ocrRelevance[this.relevanceKey(media.id, this.drawerRelevanceQuery)]?.length ?? 0) > 0;
   }
 
-  /** Number of "most relevant" (strong) sentences in the open evidence. */
   get strongRelevanceCount(): number {
     const media = this.drawerMedia;
     if (!media) return 0;
@@ -722,23 +936,16 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return segs.filter(s => s.level >= 2).length;
   }
 
-  /** True when the document was too long and was scored only up to the cap. */
   get relevanceTruncated(): boolean {
     const media = this.drawerMedia;
     return !!media && !!this.ocrRelevanceTruncated[this.relevanceKey(media.id, this.drawerRelevanceQuery)];
   }
 
-  /** Scroll the extracted-text pane to the first strongly-relevant line. */
   jumpToMostRelevant(): void {
     const el = this.ocrTextEl?.nativeElement?.querySelector('.ocr-hl--2');
     el?.scrollIntoView({ block: 'center', behavior: 'smooth' });
   }
 
-  /**
-   * Render the OCR text with the most question-relevant sentences shaded.
-   * Prefers semantic segments (offsets from the RAG service); falls back to
-   * keyword marking while loading or if the relevance service is unreachable.
-   */
   highlightedOcrText(text: string): SafeHtml {
     const media = this.drawerMedia;
     const query = this.drawerRelevanceQuery;
@@ -755,7 +962,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return safe;
   }
 
-  /** Wrap the highest-scoring sentence spans (by char offset) in <mark>. */
   private buildSemanticHtml(text: string, segs: RelevanceSegment[]): string {
     const marks = segs.filter(s => s.level > 0).sort((a, b) => a.start - b.start);
     let out = '';
@@ -772,7 +978,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return out;
   }
 
-  /** Offline fallback: mark question keywords in the text. */
   private buildKeywordHtml(text: string): string {
     const keywords = this.relevanceKeywords();
     let html = this.escapeHtml(text);
@@ -788,7 +993,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return html;
   }
 
-  /** Meaningful terms from the step name + its question labels. */
   private relevanceKeywords(): string[] {
     const stop = new Set([
       'the','and','for','that','with','this','have','are','was','from','your','firm',
@@ -808,93 +1012,59 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
-  ocrClass(r: OcrResult | null): string {
-    if (!r) return 'ocr-badge ocr-badge--pending';
-    switch (r.status) {
-      case 'DONE':    return 'ocr-badge ocr-badge--done';
-      case 'FAILED':  return 'ocr-badge ocr-badge--failed';
-      default:        return 'ocr-badge ocr-badge--pending';
+  toggleOcrHighlight(): void {
+    this.ocrHighlightOn = !this.ocrHighlightOn;
+    this._ocrHlCache = null;
+    if (this.ocrHighlightOn) this.ensureRelevance();
+  }
+
+  /**
+   * Libère l'URL de l'objet blob précédent pour éviter les fuites mémoire
+   */
+  private releaseDrawerBlob(): void {
+    if (this.drawerObjectUrl) {
+      try {
+        URL.revokeObjectURL(this.drawerObjectUrl);
+      } catch (e) {
+        // Ignorer les erreurs de révocation
+      }
+      this.drawerObjectUrl = null;
     }
   }
 
-  openOcrViewer(mediaId: number | undefined | null): void {
-    const r = this.ocrFor(mediaId);
-    if (!r) return;
-    this.viewingOcr   = r;
-    this.showOcrViewer = true;
-  }
-
-  closeOcrViewer(): void {
-    this.showOcrViewer = false;
-    this.viewingOcr   = null;
-  }
-
-  /** Re-queue OCR for a single evidence file. */
-  retryOcr(mediaId: number | undefined | null, ev?: Event): void {
-    if (ev) ev.stopPropagation();
-    if (mediaId == null || !this.request) return;
-    const token   = this.tokenSvc.getToken();
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    const url = `${environment.apiUrl}/audits/${this.request.id}/ocr/media/${mediaId}/retry`;
-    this.http.post<OcrResult>(url, {}, { headers }).subscribe({
-      next: row => {
-        this.ocrByMedia[row.mediaId] = row;
-        this.cdr.detectChanges();
-        if (this.request) this.scheduleOcrPoll(this.request.id);
-      }
-    });
-  }
-
-  /** True when the badge should act as a Retry button (failed or stuck). */
-  isRetryable(r: OcrResult | null): boolean {
-    return !!r && r.status === 'FAILED';
-  }
-
-  // ── Phase 3: Evidence Drawer ──────────────────────────────────────
   /**
-   * Open the unified evidence drawer for a file: shows preview (image / PDF /
-   * generic) + OCR text + one-click "Link to finding". Replaces the older
-   * separate file viewer + OCR modal flows for evidence chips.
+   * Retourne le résultat OCR du fichier actuellement affiché dans le drawer
    */
-  openEvidence(media: { id: number; url: string; name: string },
-               index = 0,
-               query = '',
-               tab: 'preview' | 'ocr' = 'preview'): void {
-    log.info(LOG, 'open evidence', { name: this.displayName(media.name, index), tab });
-    this.releaseDrawerBlob();
-    this.drawerMedia      = media;
-    this.drawerMediaIndex = index;
-    this.drawerQuery      = query;
-    this.drawerTab     = tab;
-    this.showDrawer    = true;
-    this.drawerLoading = true;
-    this.drawerBlobUrl = null;
-    if (tab === 'ocr') this.ensureRelevance();
-
-    const token   = this.tokenSvc.getToken();
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    const full    = this.getFileUrl(media.url);
-    console.log('Fetching file:', full);
-
-    this.http.get(full, { headers, responseType: 'blob' }).subscribe({
-      next: blob => {
-        console.log('Blob received, type:', blob.type, 'size:', blob.size);
-        const obj = URL.createObjectURL(blob);
-        this.drawerObjectUrl = obj;
-        this.drawerBlobUrl   = this.sanitizer.bypassSecurityTrustResourceUrl(obj);
-        this.drawerLoading   = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        console.error('Failed to fetch file:', Error);
-
-        this.drawerBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(full);
-        this.drawerLoading = false;
-        this.cdr.detectChanges();
-      }
-    });
+  drawerOcr(): OcrResult | null {
+    if (!this.drawerMedia) return null;
+    return this.ocrFor(this.drawerMedia.id);
   }
 
+  /**
+   * Crée un nouveau finding pré‑rempli avec le contenu de la preuve
+   */
+  linkEvidenceToFinding(): void {
+    if (!this.drawerMedia || !this.currentStep) return;
+    if (this.request?.status === 'COMPLETED') return;
+
+    const ocr = this.drawerOcr();
+    const fullText = (ocr?.rawText || '').trim();
+    const fileName = this.displayName(this.drawerMedia.name, this.drawerMediaIndex);
+
+    this.addFinding();
+    const list = this.findings[this.currentStep.id] ?? [];
+    const last = list[list.length - 1];
+    if (last) {
+      last.description = `Evidence: ${fileName}` +
+        (fullText ? `\n\nOCR extracted text:\n${fullText}` : '');
+    }
+    this.flash('Finding created from evidence.', false);
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Ferme le drawer evidence
+   */
   closeDrawer(): void {
     this.showDrawer = false;
     this.drawerMedia = null;
@@ -902,56 +1072,98 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.releaseDrawerBlob();
   }
 
-  setDrawerTab(t: 'preview' | 'ocr'): void {
-    this.drawerTab = t;
-    if (t === 'ocr') this.ensureRelevance();
+  /**
+   * Change l'onglet du drawer evidence (preview / ocr)
+   */
+  setDrawerTab(tab: 'preview' | 'ocr'): void {
+    this.drawerTab = tab;
+    if (tab === 'ocr') this.ensureRelevance();
   }
 
-  /** Toggle relevance shading; fetch semantic scores the first time it's on. */
-  toggleOcrHighlight(): void {
-    this.ocrHighlightOn = !this.ocrHighlightOn;
-    this._ocrHlCache = null;
-    if (this.ocrHighlightOn) this.ensureRelevance();
-  }
+  // ── Evidence Drawer ─────────────────────────────────────────────
+  openEvidence(media: { id: number; url: string; name: string },
+               index = 0,
+               query = '',
+               tab: 'preview' | 'ocr' = 'preview'): void {
 
-  private releaseDrawerBlob(): void {
-    if (this.drawerObjectUrl) {
-      try { URL.revokeObjectURL(this.drawerObjectUrl); } catch { /* noop */ }
-      this.drawerObjectUrl = null;
+    this.releaseDrawerBlob();
+    this.drawerMedia = media;
+    this.drawerMediaIndex = index;
+    this.drawerQuery = query;
+    this.showDrawer = true;
+    this.drawerLoading = true;
+    this.drawerBlobUrl = null;
+    this.drawerTab = tab;
+
+    // 🔹 Cas des fichiers DOCX : on récupère le PDF en blob avec token
+    if (media.name.toLowerCase().endsWith('.docx')) {
+      // 1. Récupérer l'URL du PDF converti
+      const previewUrlEndpoint = `${environment.apiUrl}/media/${media.id}/preview`;
+      const token = this.tokenSvc.getToken();
+      const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+
+      this.http.get(previewUrlEndpoint, { headers, responseType: 'text' })
+        .subscribe({
+          next: (pdfPath) => {
+            if (!pdfPath) {
+              this.drawerLoading = false;
+              return;
+            }
+            // 2. Construire l'URL complète du PDF
+            const fullPdfUrl = this.getFileUrl(pdfPath);
+            // 3. Télécharger le PDF en blob avec le token
+            this.http.get(fullPdfUrl, { headers, responseType: 'blob' })
+              .subscribe({
+                next: (blob) => {
+                  const objectUrl = URL.createObjectURL(blob);
+                  this.drawerObjectUrl = objectUrl;
+                  this.drawerBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(objectUrl);
+                  this.drawerLoading = false;
+                  this.cdr.detectChanges();
+                },
+                error: (err) => {
+                  log.error(LOG, 'preview PDF load failed', err);
+                  this.drawerLoading = false;
+                  this.cdr.detectChanges();
+                }
+              });
+          },
+          error: (err) => {
+            log.error(LOG, 'preview URL fetch failed', err);
+            this.drawerLoading = false;
+            this.cdr.detectChanges();
+          }
+        });
+      return;
     }
+
+    // 🔹 Pour les autres fichiers (images, PDF) : chargement classique en blob
+    const token = this.tokenSvc.getToken();
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    const full = this.getFileUrl(media.url);
+
+    this.http.get(full, { headers, responseType: 'blob' }).subscribe({
+      next: blob => {
+        const obj = URL.createObjectURL(blob);
+        this.drawerObjectUrl = obj;
+        this.drawerBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(obj);
+        this.drawerLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.drawerBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(full);
+        this.drawerLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
-  drawerOcr(): OcrResult | null {
-    return this.drawerMedia ? this.ocrFor(this.drawerMedia.id) : null;
-  }
-
-  /** Seed a new Finding on the current step pre-filled with evidence + OCR snippet. */
-  linkEvidenceToFinding(): void {
-    if (!this.drawerMedia || !this.currentStep) return;
-    if (this.request?.status === 'COMPLETED') return;
-
-    const ocr     = this.drawerOcr();
-    const snippet = (ocr?.rawText || '').trim().slice(0, 280);
-    const tail    = snippet && (ocr?.rawText || '').length > 280 ? '…' : '';
-
-    this.addFinding();
-    const list = this.findings[this.currentStep.id] ?? [];
-    const last = list[list.length - 1];
-    if (last) {
-      last.description = `Evidence: ${this.displayName(this.drawerMedia.name, this.drawerMediaIndex)}` +
-        (snippet ? `\n\nOCR excerpt:\n${snippet}${tail}` : '');
-    }
-    this.flash('Finding seeded from evidence.', false);
-    this.cdr.detectChanges();
-  }
-
-  // ── Phase 4: RICS clause picker ──────────────────────────────────
+  // ── Clause picker ────────────────────────────────────────────────
   openClausePicker(findingId: string): void {
     if (this.request?.status === 'COMPLETED') return;
     this.pickerOpenFor = findingId;
     this.pickerQuery   = '';
     this.pickerResults = [];
-    // Pre-seed with the finding's own description or the step name for context.
     const stepId = this.currentStep?.id;
     if (stepId != null) {
       const f = (this.findings[stepId] ?? []).find(x => x.id === findingId);
@@ -1000,7 +1212,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     const f = (this.findings[stepId] ?? []).find(x => x.id === findingId);
     if (!f) return;
     if (!f.clauses) f.clauses = [];
-    if (f.clauses.some(c => c.ruleId === hit.rule_id)) return; // dedupe
+    if (f.clauses.some(c => c.ruleId === hit.rule_id)) return;
     f.clauses.push({
       ruleId:      hit.rule_id,
       section:     hit.payload?.section,
@@ -1019,7 +1231,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // ── Phase 5: AI suggestion actions ────────────────────────────────
+  // ── AI suggestions actions ──────────────────────────────────────
   suggestionToFinding(text: string): void {
     if (!this.currentStep || this.request?.status === 'COMPLETED') return;
     this.addFinding();
@@ -1056,23 +1268,9 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return !!this.dismissedSuggestions[id]?.has(text);
   }
 
-  getFileUrl(url: string): string {
-    return `${this.serverBase}${url}`;
-  }
+  // ── AI context ───────────────────────────────────────────────────
+  aiContextProvider = (): string => this.buildAiContext();
 
-  isImage(name: string): boolean {
-    return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(name);
-  }
-
-  toggleBot(): void { this.botOpen = !this.botOpen; }
-
-  /**
-   * Assemble a compact, text-only snapshot of the audit under review for the
-   * AI assistant: the current step, its customer answers, and any
-   * OCR-extracted evidence text. Passed to <app-audit-bot> so the assistant
-   * can summarise evidence and reason about compliance for THIS audit rather
-   * than answering generically.
-   */
   buildAiContext(): string {
     const r = this.request;
     const step = this.currentStep;
@@ -1124,10 +1322,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return ctx.length > 20000 ? ctx.slice(0, 20000) + '\n…(truncated)' : ctx;
   }
 
-  /** Bound provider handed to the assistant so it always reads fresh state. */
-  aiContextProvider = (): string => this.buildAiContext();
-
-  /** Push an assistant reply into the current step as a finding, recommendation, or note. */
   onAiInsert(e: { target: 'finding' | 'recommendation' | 'note'; text: string }): void {
     const text = (e?.text || '').trim();
     if (!text || !this.currentStep || this.request?.status === 'COMPLETED') return;
@@ -1154,13 +1348,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  // ── Step-aware AI suggestions (heuristic, client-side stub) ──
-  /**
-   * Suggestions shown in the "AI Suggestions" box. Prefers grounded hints
-   * fetched from the RAG knowledge base (RICS evidence-check, cited to clause
-   * IDs); falls back to lightweight heuristics while loading or if the RAG
-   * service is unreachable.
-   */
+  // ── AI suggestions (from RAG) ──────────────────────────────────
   get currentSuggestions(): string[] {
     const step = this.currentStep;
     if (!step) return [];
@@ -1174,10 +1362,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return !!step && !!this.aiSuggestLoading[step.id] && !this.aiSuggestions[step.id]?.length;
   }
 
-  /**
-   * Fetch grounded, clause-cited suggestions for a step from the RAG service.
-   * Idempotent per step; a failed/empty fetch silently keeps the heuristics.
-   */
   private ensureAiSuggestions(step: WorkspaceStep | null): void {
     if (!step || step.id == null || this.aiSuggestRequested.has(step.id)) return;
     this.aiSuggestRequested.add(step.id);
@@ -1209,11 +1393,8 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   private heuristicSuggestions(step: WorkspaceStep): string[] {
     const name = (step.name || '').toLowerCase();
-    const ansCount = this.request?.answers?.length ?? 0;
     const fileCount = this.evidenceFileCount;
-
     const stepAnsCount = this.currentStepAnswers.length;
-    void ansCount;
     const generic = [
       `Review the ${stepAnsCount} answer${stepAnsCount === 1 ? '' : 's'} mapped to this step for completeness.`,
       fileCount > 0
@@ -1255,82 +1436,99 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     ];
   }
 
-  // ── Evidence helpers ──
-  /**
-   * Answers that belong to the current step.
-   * If the step carries `fieldIds` (intake-form-based), filter by exact membership.
-   * If `fieldIds` is empty (process-step fallback / default step), show all answers.
-   */
+  // ── Answers ──────────────────────────────────────────────────────
   get currentStepAnswers() {
     return this.currentStep ? this.answersForStep(this.currentStep) : [];
   }
 
-  /**
-   * Resolve the customer answers that belong to a given step, pairing main
-   * answers with their supporting notes and evidence files. Returns an empty
-   * array when nothing is mapped — used both to render a step and to decide
-   * whether the step should appear in the workspace at all.
-   */
   answersForStep(step: WorkspaceStep) {
-  const answers = this.request?.answers ?? [];
-  if (!step) return [];
-  if (!step.fieldIds || step.fieldIds.length === 0) return [];
+    const answers = this.request?.answers ?? [];
+    if (!step) return [];
+    if (!step.fieldIds || step.fieldIds.length === 0) return [];
 
-  // Index answers by fieldId so we can walk the step's fields in TEMPLATE
-  // order. Each L2 question is laid out as consecutive fields — the radio
-  // question, its supporting-note textarea, then its evidence FILE field — so
-  // grouping by that order attaches each note/evidence to the question it
-  // actually belongs to. The previous logic filtered the answers into three
-  // arrays and zipped them by index, which shifted a file onto the wrong
-  // question whenever an earlier question had no evidence (e.g. Q3's file
-  // showing under Q1).
-  const byField = new Map<number, any>();
-  for (const a of answers) byField.set(a.fieldId, a);
+    // Index answers by fieldId so we can walk the step's fields in TEMPLATE
+    // order. Each L2 question is laid out as consecutive fields — the radio
+    // question, its supporting-note textarea, then its evidence FILE field — so
+    // grouping by that order attaches each note/evidence to the question it
+    // actually belongs to. The previous logic filtered the answers into three
+    // arrays and zipped them by index, which shifted a file onto the wrong
+    // question whenever an earlier question had no evidence (e.g. Q3's file
+    // showing under Q1).
+    const byField = new Map<number, any>();
+    for (const a of answers) byField.set(a.fieldId, a);
 
-  const classify = (ans: any): 'evidence' | 'note' | 'main' => {
-    const label = (ans.fieldLabel || '').toLowerCase();
-    if (label === 'evidence files') return 'evidence';
-    if (label.includes('response') || label.includes('supporting')) return 'note';
-    return 'main';
-  };
-  const mergeFiles = (target: any, src: any) => {
-    if (src.fileMedia && !target.fileMedia) target.fileMedia = src.fileMedia;
-    if (src.files?.length) target.files = [...(target.files || []), ...src.files];
-  };
+    const classify = (ans: any): 'evidence' | 'note' | 'main' => {
+      const label = (ans.fieldLabel || '').toLowerCase();
+      if (label === 'evidence files') return 'evidence';
+      if (label.includes('response') || label.includes('supporting')) return 'note';
+      return 'main';
+    };
+    const mergeFiles = (target: any, src: any) => {
+      if (src.fileMedia && !target.fileMedia) target.fileMedia = src.fileMedia;
+      if (src.files?.length) target.files = [...(target.files || []), ...src.files];
+    };
 
-  const result: any[] = [];
-  let current: any = null;
+    const result: any[] = [];
+    let current: any = null;
 
-  for (const fieldId of step.fieldIds) {
-    const ans = byField.get(fieldId);
-    if (!ans) continue;
-    const kind = classify(ans);
-    if (kind === 'main' || !current) {
-      // Start a new question block. (A leading note/evidence with no preceding
-      // main is kept as its own block rather than silently dropped.)
-      current = { ...ans };
-      result.push(current);
-    } else if (kind === 'note') {
-      if (ans.answerValue && !current.answerValue?.includes(ans.answerValue)) {
-        current.answerValue = `${current.answerValue || ''}\n\n**Supporting note:** ${ans.answerValue}`;
+    for (const fieldId of step.fieldIds) {
+      const ans = byField.get(fieldId);
+      if (!ans) continue;
+      const kind = classify(ans);
+      if (kind === 'main' || !current) {
+        // Start a new question block. (A leading note/evidence with no preceding
+        // main is kept as its own block rather than silently dropped.)
+        current = { ...ans, collapsed: false };
+        result.push(current);
+      } else if (kind === 'note') {
+        if (ans.answerValue && !current.answerValue?.includes(ans.answerValue)) {
+          current.answerValue = `${current.answerValue || ''}\n\n**Supporting note:** ${ans.answerValue}`;
+        }
+        mergeFiles(current, ans);
+      } else {
+        mergeFiles(current, ans);
       }
-      mergeFiles(current, ans);
-    } else {
-      mergeFiles(current, ans);
     }
+    return result;
   }
 
-  return result;
-}
-  get evidenceFileCount(): number {
-  let total = 0;
-  for (const a of this.currentStepAnswers) {
-    if (a.fileMedia) total++;
-    if (a.files?.length) total += a.files.length;
+  getPreviewUrl(media: { url: string; name: string }): SafeResourceUrl {
+    const fullUrl = this.getFileUrl(media.url);
+    if (this.isOfficeDocument(media.name)) {
+      const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(fullUrl)}&embedded=true`;
+      return this.sanitizer.bypassSecurityTrustResourceUrl(viewerUrl);
+    }
+    return this.sanitizer.bypassSecurityTrustResourceUrl(fullUrl);
   }
-  return total;
-}
-  // ── Quick-insert chip → append snippet to current draft ──
+
+  get evidenceFileCount(): number {
+    let total = 0;
+    for (const a of this.currentStepAnswers) {
+      if (a.fileMedia) total++;
+      if (a.files?.length) total += a.files.length;
+    }
+    return total;
+  }
+
+  // ── Utilities ──────────────────────────────────────────────────
+  getFileUrl(url: string): string {
+    return `${this.serverBase}${url}`;
+  }
+
+  isImage(name: string): boolean {
+    return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(name);
+  }
+
+  isPdf(name: string): boolean {
+    return /\.pdf$/i.test(name);
+  }
+
+  isOfficeDoc(name: string): boolean {
+    return /\.(docx?|xlsx?|pptx?)$/i.test(name);
+  }
+
+  toggleBot(): void { this.botOpen = !this.botOpen; }
+
   insertSnippet(label: string): void {
     if (!this.currentStep || this.request?.status === 'COMPLETED') return;
     const map: Record<string, string> = {
@@ -1345,10 +1543,14 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  goBack(): void {
-    this.router.navigate(
-      this.isAuditorMode ? ['/auditor/audits'] : ['/admin/audits']
-    );
+  private flash(msg: string, isError: boolean): void {
+    if (isError) {
+      this.saveError = msg;
+      setTimeout(() => { this.saveError = ''; this.cdr.detectChanges(); }, 3500);
+    } else {
+      this.saveMsg = msg;
+      setTimeout(() => { this.saveMsg = ''; this.cdr.detectChanges(); }, 3500);
+    }
   }
 
   revertToDraft(): void {
@@ -1366,155 +1568,4 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
       }
     });
   }
-
-  private flash(msg: string, isError: boolean): void {
-    if (isError) {
-      this.saveError = msg;
-      setTimeout(() => { this.saveError = ''; this.cdr.detectChanges(); }, 3500);
-    } else {
-      this.saveMsg = msg;
-      setTimeout(() => { this.saveMsg = ''; this.cdr.detectChanges(); }, 3500);
-    }
-  }
-
-
-  async goToStep(idx: number): Promise<void> {
-  if (!this.request || this.request?.status === 'COMPLETED') {
-    this.activeStep = idx;
-    this.ensureAiSuggestions(this.currentStep);
-    return;
-  }
-  // Auto-save current step as DRAFT if there's any content or meta
-  if (this.currentStep && this.hasStepContent(this.currentStep.id)) {
-    await this.persistAsync('DRAFT');
-  }
-  this.activeStep = idx;
-  this.ensureAiSuggestions(this.currentStep);
-  this.cdr.detectChanges();
-}
-
-/** True if the step has either a note or any verdict/finding/rec. */
-private hasStepContent(stepId: number): boolean {
-  if ((this.drafts[stepId] ?? '').trim()) return true;
-  if (Object.keys(this.verdicts[stepId] ?? {}).length) return true;
-  if ((this.findings[stepId] ?? []).length) return true;
-  if ((this.recommendations[stepId] ?? []).length) return true;
-  return false;
-}
-
-private persistAsync(status: 'DRAFT' | 'SAVED'): Promise<void> {
-  return new Promise((resolve) => {
-    if (!this.request || !this.currentStep) { resolve(); return; }
-    const step     = this.currentStep;
-    const desc     = this.composeStepBody(step.id);
-    const existing = this.currentResult;
-
-    if (!this.hasStepContent(step.id)) { resolve(); return; }
-
-    const payload = {
-      processStepId: -1,
-      stepName:      step.name,
-      description:   desc,
-      status
-    };
-
-    const obs = existing
-      ? this.resSvc.update(this.request.id, existing.id, payload)
-      : this.resSvc.saveOrUpdate(this.request.id, payload);
-
-    obs.subscribe({
-      next: result => {
-        const idx = this.results.findIndex(r => r.id === result.id);
-        if (idx !== -1) this.results[idx] = result;
-        else this.results.push(result);
-        this.cdr.detectChanges();
-        resolve();
-      },
-      error: () => resolve()
-    });
-  });
-}
-
-private persist(status: 'DRAFT' | 'SAVED'): void {
-  if (!this.request || !this.currentStep) return;
-  this.isSaving = true;
-  const step     = this.currentStep;
-  const desc     = this.composeStepBody(step.id);
-  const existing = this.currentResult;
-
-  const payload = {
-    processStepId: -1,
-    stepName:      step.name,
-    description:   desc,
-    status
-  };
-
-  const obs = existing
-    ? this.resSvc.update(this.request.id, existing.id, payload)
-    : this.resSvc.saveOrUpdate(this.request.id, payload);
-
-  obs.subscribe({
-    next: result => {
-      const idx = this.results.findIndex(r => r.id === result.id);
-      if (idx !== -1) this.results[idx] = result;
-      else this.results.push(result);
-      this.isSaving = false;
-      this.flash(status === 'DRAFT' ? 'Draft saved.' : 'Step saved.', false);
-      this.cdr.detectChanges();
-    },
-    error: () => {
-      this.isSaving = false;
-      this.flash('Failed to save.', true);
-    }
-  });
-}
-
-// ★ Submit: save ALL steps with content, then complete
-submitAudit(): void {
-  if (!this.request) return;
-  log.info(LOG, 'submit audit', { id: this.request.id, steps: this.steps.length });
-  this.isCompleting = true;
-
-  // Save all steps that have content as SAVED
-  const savePromises = this.steps
-    .filter(s => this.hasStepContent(s.id))
-    .map(s => new Promise<void>((resolve) => {
-      const existing = this.results.find(r => r.stepName === s.name);
-      const payload = {
-        processStepId: -1,
-        stepName:      s.name,
-        description:   this.composeStepBody(s.id),
-        status:        'SAVED' as const
-      };
-      const obs = existing
-        ? this.resSvc.update(this.request!.id, existing.id, payload)
-        : this.resSvc.saveOrUpdate(this.request!.id, payload);
-      obs.subscribe({ next: result => {
-        const idx = this.results.findIndex(r => r.id === result.id);
-        if (idx !== -1) this.results[idx] = result;
-        else this.results.push(result);
-        resolve();
-      }, error: () => resolve() });
-    }));
-
-  Promise.all(savePromises).then(() => {
-    const complete$ = this.isAuditorMode
-      ? this.reqSvc.auditorCompleteAudit(this.request!.id)
-      : this.reqSvc.adminCompleteRequest(this.request!.id);
-
-    complete$.subscribe({
-      next: updated => {
-        this.request      = updated;
-        this.isCompleting = false;
-        this.flash('Audit completed successfully!', false);
-        setTimeout(() => this.goBack(), 1500);
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.isCompleting = false;
-        this.flash('Failed to complete audit.', true);
-      }
-    });
-  });
-}
 }
