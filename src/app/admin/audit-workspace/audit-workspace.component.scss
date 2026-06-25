@@ -1341,3 +1341,43 @@
 }
 .ws-drawer__office-fallback { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 60px 20px; color: rgb(var(--fg-rgb) / .7); text-align: center; }
 .ws-drawer__office-download { padding: 8px 16px; border-radius: 8px; background: rgb(var(--accent-rgb)); color: white; text-decoration: none; font-weight: 600; }
+
+/* ── Findings & Recommendations: collapsible bottom drawer (toggle) ── */
+.ws-deck-bottom-wrapper {
+  max-height: 2000px;
+  overflow: hidden;
+  transition: max-height 0.4s ease-in-out;
+}
+
+.ws-deck-bottom-wrapper.collapsed {
+  max-height: 0;
+}
+
+.bottom-toggle-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.bottom-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 16px;
+  font-size: 14px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: rgb(var(--fg-rgb) / .85);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.bottom-toggle-btn:hover {
+  background: rgb(var(--fg-rgb) / .06);
+}
+
+.bottom-toggle-btn .btn-icon {
+  font-size: 12px;
+  transition: transform 0.2s;
+}

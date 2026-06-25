@@ -101,6 +101,8 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   showChat = false;
   allQuestionsCollapsed = false;
   isRailCollapsed = false;
+  isExporting = false;
+  bottomDeckExpanded = true;
 
   // verdicts[stepId][fieldId] = verdict
   verdicts:        Record<number, Record<number, Verdict>> = {};
@@ -186,6 +188,10 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   toggleRail(): void {
     this.isRailCollapsed = !this.isRailCollapsed;
+  }
+
+  toggleBottomDeck(): void {
+    this.bottomDeckExpanded = !this.bottomDeckExpanded;
   }
 
   toggleChat(): void {
@@ -724,6 +730,39 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
           this.flash('Failed to complete audit.', true);
         }
       });
+    });
+  }
+
+  /** Download a server-generated PDF report for the completed audit. */
+  exportReport(): void {
+    if (!this.request) return;
+    this.isExporting = true;
+
+    const token = this.tokenSvc.getToken();
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    const url = `${environment.apiUrl}/audits/${this.request.id}/report`;
+
+    this.http.get(url, { headers, responseType: 'blob' }).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = `audit_${this.request!.id}_report.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(objectUrl);
+
+        this.isExporting = false;
+        this.flash('Report downloaded successfully.', false);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        log.error(LOG, 'export report failed', err);
+        this.isExporting = false;
+        this.flash('Failed to generate report.', true);
+        this.cdr.detectChanges();
+      }
     });
   }
 

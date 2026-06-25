@@ -10,6 +10,7 @@ import java.util.Optional;
 @Repository
 public interface AuditStepResultRepository extends JpaRepository<AuditStepResult, Long> {
     List<AuditStepResult> findByAuditRequestIdOrderByCreatedAtAsc(Long requestId);
+    List<AuditStepResult> findByAuditRequestId(Long auditId);
     Optional<AuditStepResult> findByAuditRequestIdAndProcessStepId(
             Long requestId, Long processStepId);
 }

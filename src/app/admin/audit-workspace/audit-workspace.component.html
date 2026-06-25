@@ -52,6 +52,15 @@
         </button>
       </ng-container>
 
+      <!-- Export the audit PDF report (enabled once completed & all steps saved) -->
+      <button class="ws-btn"
+              [class.ws-btn--complete]="request?.status === 'COMPLETED' && allStepsSaved"
+              [disabled]="!(request?.status === 'COMPLETED' && allStepsSaved) || isExporting"
+              (click)="exportReport()">
+        <span class="mini-spin" *ngIf="isExporting"></span>
+        {{ isExporting ? 'Generating…' : 'Export PDF' }}
+      </button>
+
       <div class="ws-completed-badge" *ngIf="request?.status === 'COMPLETED'">
         ✓ Audit Completed
       </div>
@@ -275,7 +284,8 @@
         </div>
       </div>
 
-      <!-- ===== FINDINGS & RECOMMENDATIONS (always visible) ===== -->
+      <!-- ===== FINDINGS & RECOMMENDATIONS (collapsible bottom drawer) ===== -->
+      <div class="ws-deck-bottom-wrapper" [class.collapsed]="!bottomDeckExpanded">
       <div class="ws-deck-bottom">
         <!-- Findings -->
         <div class="deck-section">
@@ -379,6 +389,15 @@
                     title="Remove">×</button>
           </div>
         </div>
+      </div>
+      </div>
+
+      <!-- Bottom toggle button (centered) -->
+      <div class="bottom-toggle-wrapper">
+        <button class="bottom-toggle-btn" (click)="toggleBottomDeck()">
+          <span class="btn-label">Findings & Recommendations</span>
+          <span class="btn-icon">{{ bottomDeckExpanded ? '▲' : '▼' }}</span>
+        </button>
       </div>
 
       <!-- Step nav -->

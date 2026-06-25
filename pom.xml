@@ -30,6 +30,13 @@
         <java.version>17</java.version>
     </properties>
     <dependencies>
+        <!-- OpenPDF (com.lowagie.text) for server-side audit PDF report generation -->
+        <dependency>
+            <groupId>com.github.librepdf</groupId>
+            <artifactId>openpdf</artifactId>
+            <version>1.3.30</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-keyvalue -->
         <dependency>
             <groupId>org.springframework.data</groupId>
