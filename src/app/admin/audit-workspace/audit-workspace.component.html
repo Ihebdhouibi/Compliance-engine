@@ -406,7 +406,11 @@
 
         <!-- Mid-audit: advance to the next step -->
         <button *ngIf="activeStep < steps.length - 1"
-                class="ef-btn ef-btn--next" (click)="goToStep(activeStep + 1)">Next →</button>
+                class="ef-btn ef-btn--next" 
+                [disabled]="!isStepFullyVerdicted(currentStep)"
+                [title]="!isStepFullyVerdicted(currentStep) ? 'Please provide a verdict for all questions before proceeding' : 'Go to next step'"
+
+                (click)="goToStep(activeStep + 1)">Next →</button>
 
         <!-- Last step: complete/submit the audit -->
         <button *ngIf="activeStep >= steps.length - 1"
