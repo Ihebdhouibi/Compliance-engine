@@ -402,7 +402,7 @@
       <div class="center-nav">
         <button class="ef-btn" (click)="goToStep(activeStep - 1)" [disabled]="activeStep === 0">← Prev</button>
         <button *ngIf="activeStep < steps.length - 1"
-                class="ef-btn ef-btn--next" 
+                class="ef-btn ef-btn--next"
                 [disabled]="!isStepFullyVerdicted(currentStep)"
                 [title]="!isStepFullyVerdicted(currentStep) ? 'Please provide a verdict for all questions before proceeding' : 'Go to next step'"
                 (click)="goToStep(activeStep + 1)">Next →</button>
