@@ -51,13 +51,11 @@
           {{ isCompleting ? 'Submitting…' : 'Submit Audit' }}
         </button>
       </ng-container>
-
-      <!-- Export the audit PDF report (enabled once completed & all steps saved) -->
       <button class="ws-btn"
-              [class.ws-btn--complete]="request?.status === 'COMPLETED' && allStepsSaved"
-              [disabled]="!(request?.status === 'COMPLETED' && allStepsSaved) || isExporting"
-              (click)="exportReport()">
-        <span class="mini-spin" *ngIf="isExporting"></span>
+        [class.ws-btn--complete]="request?.status === 'COMPLETED' && allStepsSaved"
+        [disabled]="! (request?.status === 'COMPLETED' && allStepsSaved) || isExporting"
+        (click)="exportReport()">
+      <span class="mini-spin" *ngIf="isExporting"></span>
         {{ isExporting ? 'Generating…' : 'Export PDF' }}
       </button>
 
@@ -284,112 +282,112 @@
         </div>
       </div>
 
-      <!-- ===== FINDINGS & RECOMMENDATIONS (collapsible bottom drawer) ===== -->
+      <!-- ===== FINDINGS & RECOMMENDATIONS (bottom drawer with toggle) ===== -->
       <div class="ws-deck-bottom-wrapper" [class.collapsed]="!bottomDeckExpanded">
-      <div class="ws-deck-bottom">
-        <!-- Findings -->
-        <div class="deck-section">
-          <div class="deck-section__head">
-            <span class="deck-section__title">Findings</span>
-            <button class="deck-section__add" (click)="addFinding()"
-                    [disabled]="request?.status === 'COMPLETED'">+ Add</button>
+        <div class="ws-deck-bottom">
+          <!-- Findings -->
+          <div class="deck-section">
+            <div class="deck-section__head">
+              <span class="deck-section__title">Findings</span>
+              <button class="deck-section__add" (click)="addFinding()"
+                      [disabled]="request?.status === 'COMPLETED'">+ Add</button>
+            </div>
+            <div class="deck-empty" *ngIf="currentFindings().length === 0">
+              No findings recorded for this step.
+            </div>
+            <div class="finding" *ngFor="let f of currentFindings()">
+              <div class="finding__head">
+                <select class="finding__sev" [value]="f.severity"
+                        (change)="updateFindingSeverity(f.id, $any($event.target).value)"
+                        [disabled]="request?.status === 'COMPLETED'">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+                <span class="finding__sev-dot" [ngClass]="'finding__sev-dot--' + f.severity"></span>
+                <button class="finding__del" (click)="removeFinding(f.id)"
+                        [disabled]="request?.status === 'COMPLETED'"
+                        title="Remove">×</button>
+              </div>
+              <textarea class="finding__text"
+                        [value]="f.description"
+                        (input)="updateFindingText(f.id, $any($event.target).value)"
+                        [disabled]="request?.status === 'COMPLETED'"
+                        placeholder="Describe the finding, clause reference, and evidence cited…"
+                        rows="4"></textarea>
+
+              <!-- RICS clauses -->
+              <div class="clause-row">
+                <span class="clause-chip" *ngFor="let c of (f.clauses || [])"
+                      [title]="c.requirement || c.ruleId">
+                  <strong>{{ c.ruleId }}</strong>
+                  <span class="clause-chip__title" *ngIf="c.shortTitle"> · {{ c.shortTitle }}</span>
+                  <button class="clause-chip__del" *ngIf="request?.status !== 'COMPLETED'"
+                          (click)="detachClause(f.id, c.ruleId)" title="Remove">×</button>
+                </span>
+                <button class="clause-add-btn" *ngIf="request?.status !== 'COMPLETED'"
+                        (click)="openClausePicker(f.id)">+ Clause</button>
+              </div>
+
+              <!-- Clause picker -->
+              <div class="clause-picker" *ngIf="pickerOpenFor === f.id">
+                <div class="clause-picker__head">
+                  <input type="text" class="clause-picker__input"
+                         [(ngModel)]="pickerQuery"
+                         (input)="onPickerQueryChange()"
+                         placeholder="Search RICS clauses (e.g. governance, transparency, oversight)…"
+                         autofocus/>
+                  <button class="clause-picker__close" (click)="closeClausePicker()" title="Close">×</button>
+                </div>
+                <div class="clause-picker__body">
+                  <div class="clause-picker__loading" *ngIf="pickerLoading">Searching…</div>
+                  <div class="clause-picker__empty"
+                       *ngIf="!pickerLoading && pickerQuery.trim().length >= 3 && pickerResults.length === 0">
+                    No matching clauses.
+                  </div>
+                  <div class="clause-picker__empty"
+                       *ngIf="!pickerLoading && pickerQuery.trim().length < 3">
+                    Type at least 3 characters.
+                  </div>
+                  <button class="clause-result" *ngFor="let r of pickerResults"
+                          (click)="attachClause(f.id, r); closeClausePicker()">
+                    <div class="clause-result__head">
+                      <strong>{{ r.rule_id }}</strong>
+                      <span class="clause-result__section" *ngIf="r.payload.section">§{{ r.payload.section }}</span>
+                      <span class="clause-result__score">{{ (r.score * 100).toFixed(0) }}%</span>
+                    </div>
+                    <div class="clause-result__title" *ngIf="r.payload.short_title">{{ r.payload.short_title }}</div>
+                    <div class="clause-result__req" *ngIf="r.payload.requirement_text">{{ r.payload.requirement_text }}</div>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="deck-empty" *ngIf="currentFindings().length === 0">
-            No findings recorded for this step.
-          </div>
-          <div class="finding" *ngFor="let f of currentFindings()">
-            <div class="finding__head">
-              <select class="finding__sev" [value]="f.severity"
-                      (change)="updateFindingSeverity(f.id, $any($event.target).value)"
-                      [disabled]="request?.status === 'COMPLETED'">
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="critical">Critical</option>
-              </select>
-              <span class="finding__sev-dot" [ngClass]="'finding__sev-dot--' + f.severity"></span>
-              <button class="finding__del" (click)="removeFinding(f.id)"
+
+          <!-- Recommendations -->
+          <div class="deck-section">
+            <div class="deck-section__head">
+              <span class="deck-section__title">Recommendations</span>
+              <button class="deck-section__add" (click)="addRecommendation()"
+                      [disabled]="request?.status === 'COMPLETED'">+ Add</button>
+            </div>
+            <div class="deck-empty" *ngIf="currentRecs().length === 0">
+              No recommendations yet.
+            </div>
+            <div class="rec" *ngFor="let r of currentRecs()">
+              <textarea class="rec__text"
+                        [value]="r.description"
+                        (input)="updateRecText(r.id, $any($event.target).value)"
+                        [disabled]="request?.status === 'COMPLETED'"
+                        placeholder="Recommend a corrective action, owner and timeframe…"
+                        rows="4"></textarea>
+              <button class="rec__del" (click)="removeRecommendation(r.id)"
                       [disabled]="request?.status === 'COMPLETED'"
                       title="Remove">×</button>
             </div>
-            <textarea class="finding__text"
-                      [value]="f.description"
-                      (input)="updateFindingText(f.id, $any($event.target).value)"
-                      [disabled]="request?.status === 'COMPLETED'"
-                      placeholder="Describe the finding, clause reference, and evidence cited…"
-                      rows="4"></textarea>
-
-            <!-- RICS clauses -->
-            <div class="clause-row">
-              <span class="clause-chip" *ngFor="let c of (f.clauses || [])"
-                    [title]="c.requirement || c.ruleId">
-                <strong>{{ c.ruleId }}</strong>
-                <span class="clause-chip__title" *ngIf="c.shortTitle"> · {{ c.shortTitle }}</span>
-                <button class="clause-chip__del" *ngIf="request?.status !== 'COMPLETED'"
-                        (click)="detachClause(f.id, c.ruleId)" title="Remove">×</button>
-              </span>
-              <button class="clause-add-btn" *ngIf="request?.status !== 'COMPLETED'"
-                      (click)="openClausePicker(f.id)">+ Clause</button>
-            </div>
-
-            <!-- Clause picker -->
-            <div class="clause-picker" *ngIf="pickerOpenFor === f.id">
-              <div class="clause-picker__head">
-                <input type="text" class="clause-picker__input"
-                       [(ngModel)]="pickerQuery"
-                       (input)="onPickerQueryChange()"
-                       placeholder="Search RICS clauses (e.g. governance, transparency, oversight)…"
-                       autofocus/>
-                <button class="clause-picker__close" (click)="closeClausePicker()" title="Close">×</button>
-              </div>
-              <div class="clause-picker__body">
-                <div class="clause-picker__loading" *ngIf="pickerLoading">Searching…</div>
-                <div class="clause-picker__empty"
-                     *ngIf="!pickerLoading && pickerQuery.trim().length >= 3 && pickerResults.length === 0">
-                  No matching clauses.
-                </div>
-                <div class="clause-picker__empty"
-                     *ngIf="!pickerLoading && pickerQuery.trim().length < 3">
-                  Type at least 3 characters.
-                </div>
-                <button class="clause-result" *ngFor="let r of pickerResults"
-                        (click)="attachClause(f.id, r); closeClausePicker()">
-                  <div class="clause-result__head">
-                    <strong>{{ r.rule_id }}</strong>
-                    <span class="clause-result__section" *ngIf="r.payload.section">§{{ r.payload.section }}</span>
-                    <span class="clause-result__score">{{ (r.score * 100).toFixed(0) }}%</span>
-                  </div>
-                  <div class="clause-result__title" *ngIf="r.payload.short_title">{{ r.payload.short_title }}</div>
-                  <div class="clause-result__req" *ngIf="r.payload.requirement_text">{{ r.payload.requirement_text }}</div>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
-
-        <!-- Recommendations -->
-        <div class="deck-section">
-          <div class="deck-section__head">
-            <span class="deck-section__title">Recommendations</span>
-            <button class="deck-section__add" (click)="addRecommendation()"
-                    [disabled]="request?.status === 'COMPLETED'">+ Add</button>
-          </div>
-          <div class="deck-empty" *ngIf="currentRecs().length === 0">
-            No recommendations yet.
-          </div>
-          <div class="rec" *ngFor="let r of currentRecs()">
-            <textarea class="rec__text"
-                      [value]="r.description"
-                      (input)="updateRecText(r.id, $any($event.target).value)"
-                      [disabled]="request?.status === 'COMPLETED'"
-                      placeholder="Recommend a corrective action, owner and timeframe…"
-                      rows="4"></textarea>
-            <button class="rec__del" (click)="removeRecommendation(r.id)"
-                    [disabled]="request?.status === 'COMPLETED'"
-                    title="Remove">×</button>
-          </div>
-        </div>
-      </div>
       </div>
 
       <!-- Bottom toggle button (centered) -->
@@ -403,16 +401,8 @@
       <!-- Step nav -->
       <div class="center-nav">
         <button class="ef-btn" (click)="goToStep(activeStep - 1)" [disabled]="activeStep === 0">← Prev</button>
-
-        <!-- Mid-audit: advance to the next step -->
         <button *ngIf="activeStep < steps.length - 1"
-                class="ef-btn ef-btn--next" 
-                [disabled]="!isStepFullyVerdicted(currentStep)"
-                [title]="!isStepFullyVerdicted(currentStep) ? 'Please provide a verdict for all questions before proceeding' : 'Go to next step'"
-
-                (click)="goToStep(activeStep + 1)">Next →</button>
-
-        <!-- Last step: complete/submit the audit -->
+                class="ef-btn ef-btn--next" (click)="goToStep(activeStep + 1)">Next →</button>
         <button *ngIf="activeStep >= steps.length - 1"
                 class="ef-btn ef-btn--complete" (click)="submitAudit()"
                 [disabled]="isCompleting || request?.status === 'COMPLETED'">
