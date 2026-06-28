@@ -50,8 +50,9 @@ public class AuditStepResultController extends BaseController {
             @PathVariable Long requestId,
             @PathVariable Long resultId,
             @RequestBody SaveStepResultRequest req) {
+        String username = getCurrentUser().getUsername();
         return ResponseEntity.ok(
-                resultService.updateResult(resultId, req));
+                resultService.updateResult(requestId, resultId, req, username));
     }
 
     @DeleteMapping("/{resultId}")
