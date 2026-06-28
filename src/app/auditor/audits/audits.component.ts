@@ -122,7 +122,6 @@ closeResults(): void {
     this.reportSvc.downloadAuditReport(audit.id).subscribe({
       next: () => {
         this.isExportingId = null;
-        this.flash('Report downloaded.');
         this.cdr.detectChanges();
       },
       error: () => {
