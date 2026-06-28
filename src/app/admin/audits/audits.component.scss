@@ -703,3 +703,17 @@ input[type="date"] {
     border-color: color-mix(in srgb, rgb(var(--success-rgb)) 50%, transparent);
   }
 }
+
+// ── Export report button
+.act--export {
+  background: color-mix(in srgb, rgb(var(--accent-rgb)) 10%, transparent);
+  color: rgb(var(--accent-rgb));
+  border: 1px solid color-mix(in srgb, rgb(var(--accent-rgb)) 25%, transparent);
+
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, rgb(var(--accent-rgb)) 22%, transparent);
+    border-color: color-mix(in srgb, rgb(var(--accent-rgb)) 50%, transparent);
+  }
+
+  &:disabled { opacity: .55; cursor: default; }
+}

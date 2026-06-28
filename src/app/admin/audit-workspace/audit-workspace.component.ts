@@ -13,9 +13,11 @@ import { AuditProcessStepService, AuditProcessStep } from '../../services/audit-
 import { AuditStepResultService, AuditStepResult } from '../../services/audit-step-result.service';
 import { TokenService } from '../../shared/token.service';
 import { AuditBotComponent } from '../../layout/audit-bot/audit-bot.component';
-import { AuditRequest } from '../../models/audit.model';
+import { AuditRequest, AuditJournalEntry } from '../../models/audit.model';
+import { UserStoreService } from '../../shared/user-store.service';
 import { environment } from '../../environments/environment';
 import { RicsSearchService, RicsRuleResult, RicsEvidenceItem, RelevanceSegment } from '../../services/rics-search.service';
+import { ReportService } from '../../services/report.service';
 import { log } from '../../core/logging/log';
 
 const LOG = 'ng.audit-workspace';
@@ -104,6 +106,13 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   isExporting = false;
   bottomDeckExpanded = true;
 
+  // ── Editing a completed audit ──────────────────────────────────────
+  editMode      = false;
+  isSavingEdits = false;
+  showHistory   = false;
+  isLoadingJournal = false;
+  journal: AuditJournalEntry[] = [];
+
   // verdicts[stepId][fieldId] = verdict
   verdicts:        Record<number, Record<number, Verdict>> = {};
   findings:        Record<number, Finding[]>        = {};
@@ -168,10 +177,15 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   private tokenSvc  = inject(TokenService);
   private cdr       = inject(ChangeDetectorRef);
   private ricsSvc   = inject(RicsSearchService);
+  private reportSvc = inject(ReportService);
+  private userStore = inject(UserStoreService);
 
   // ── Lifecycle ──────────────────────────────────────────────────────
+  private wantEdit = false;
+
   ngOnInit(): void {
     this.isAuditorMode = this.router.url.includes('/auditor/');
+    this.wantEdit = this.route.snapshot.queryParamMap.get('edit') === '1';
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.loadRequest(id);
   }
@@ -285,6 +299,10 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         this.loadFormSteps(req.auditType);
         this.loadResults(id);
         this.loadOcr(id);
+        if (req.status === 'COMPLETED') {
+          this.loadJournal(id);
+          if (this.wantEdit && this.canEditCompleted) this.editMode = true;
+        }
         this.cdr.detectChanges();
       },
       error: () => this.flash('Failed to load audit request.', true)
@@ -442,7 +460,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   setVerdict(stepId: number, fieldId: number, v: Verdict): void {
-    if (this.request?.status === 'COMPLETED') return;
+    if (this.isLocked) return;
     if (!this.verdicts[stepId]) this.verdicts[stepId] = {};
     if (this.verdicts[stepId][fieldId] === v) {
       delete this.verdicts[stepId][fieldId];
@@ -512,7 +530,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   addFinding(): void {
-    if (!this.currentStep || this.request?.status === 'COMPLETED') return;
+    if (!this.currentStep || this.isLocked) return;
     const id = this.currentStep.id;
     if (!this.findings[id]) this.findings[id] = [];
     this.findings[id].push({
@@ -552,7 +570,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   addRecommendation(): void {
-    if (!this.currentStep || this.request?.status === 'COMPLETED') return;
+    if (!this.currentStep || this.isLocked) return;
     const id = this.currentStep.id;
     if (!this.recommendations[id]) this.recommendations[id] = [];
     this.recommendations[id].push({
@@ -597,6 +615,19 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   hasCurrentContent(): boolean {
     return !!this.currentStep && this.hasStepContent(this.currentStep.id);
+  }
+
+  /** True when the audit is completed and not being actively edited. */
+  get isLocked(): boolean {
+    return this.request?.status === 'COMPLETED' && !this.editMode;
+  }
+
+  /** Only admins or the assigned auditor may edit a completed audit. */
+  get canEditCompleted(): boolean {
+    if (this.request?.status !== 'COMPLETED') return false;
+    if (this.userStore.isAdmin()) return true;
+    const me = this.userStore.currentUser();
+    return !!me && me.id === this.request?.assignedTo?.id;
   }
 
   get allStepsSaved(): boolean {
@@ -760,21 +791,8 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     if (!this.request) return;
     this.isExporting = true;
 
-    const token = this.tokenSvc.getToken();
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    const url = `${environment.apiUrl}/audits/${this.request.id}/report`;
-
-    this.http.get(url, { headers, responseType: 'blob' }).subscribe({
-      next: (blob) => {
-        const objectUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = objectUrl;
-        link.download = `audit_${this.request!.id}_report.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(objectUrl);
-
+    this.reportSvc.downloadAuditReport(this.request.id).subscribe({
+      next: () => {
         this.isExporting = false;
         this.flash('Report downloaded successfully.', false);
         this.cdr.detectChanges();
@@ -786,6 +804,96 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // ── Editing a completed audit ───────────────────────────────────
+  enableEdit(): void {
+    if (!this.canEditCompleted) return;
+    this.editMode = true;
+    this.flash('Editing a completed audit — all changes are logged.', false);
+    this.cdr.detectChanges();
+  }
+
+  cancelEdit(): void {
+    // Re-load persisted results so unsaved in-memory edits are discarded.
+    this.editMode = false;
+    if (this.request) this.loadResults(this.request.id);
+    this.cdr.detectChanges();
+  }
+
+  /**
+   * Persist edits to a completed audit (all steps with content saved as SAVED)
+   * without re-running the completion flow. Each change is journalled server-side.
+   */
+  saveChanges(): void {
+    if (!this.request) return;
+    this.isSavingEdits = true;
+
+    const savePromises = this.steps
+      .filter(s => this.hasStepContent(s.id))
+      .map(s => new Promise<void>((resolve) => {
+        const existing = this.results.find(r => r.stepName === s.name);
+        const payload = {
+          processStepId: -1,
+          stepName:      s.name,
+          description:   this.composeStepBody(s.id),
+          status:        'SAVED' as const
+        };
+        const obs = existing
+          ? this.resSvc.update(this.request!.id, existing.id, payload)
+          : this.resSvc.saveOrUpdate(this.request!.id, payload);
+        obs.subscribe({
+          next: result => {
+            const idx = this.results.findIndex(r => r.id === result.id);
+            if (idx !== -1) this.results[idx] = result;
+            else this.results.push(result);
+            resolve();
+          },
+          error: () => resolve()
+        });
+      }));
+
+    Promise.all(savePromises).then(() => {
+      this.isSavingEdits = false;
+      this.editMode = false;
+      this.flash('Changes saved.', false);
+      this.loadJournal(this.request!.id);
+      this.cdr.detectChanges();
+    });
+  }
+
+  toggleHistory(): void {
+    this.showHistory = !this.showHistory;
+    if (this.showHistory && this.journal.length === 0 && this.request) {
+      this.loadJournal(this.request.id);
+    }
+  }
+
+  loadJournal(id: number): void {
+    this.isLoadingJournal = true;
+    this.reportSvc.getAuditJournal(id).subscribe({
+      next: entries => {
+        this.journal = entries;
+        this.isLoadingJournal = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoadingJournal = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  /** Human label for a journal entry's changed field. */
+  journalFieldLabel(entry: AuditJournalEntry): string {
+    if (entry.changeType === 'NOTE') return 'Note';
+    if (entry.changeType === 'VERDICT') {
+      const fieldId = Number(entry.fieldRef);
+      const ans = this.request?.answers?.find(a => a.fieldId === fieldId);
+      return ans?.fieldLabel || `Question ${entry.fieldRef}`;
+    }
+    if (entry.changeType === 'FINDING') return 'Finding';
+    return 'Recommendation';
   }
 
   // ── Navigation ──────────────────────────────────────────────────
@@ -1117,7 +1225,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
    */
   linkEvidenceToFinding(): void {
     if (!this.drawerMedia || !this.currentStep) return;
-    if (this.request?.status === 'COMPLETED') return;
+    if (this.isLocked) return;
 
     const ocr = this.drawerOcr();
     const fullText = (ocr?.rawText || '').trim();
@@ -1232,7 +1340,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   // ── Clause picker ────────────────────────────────────────────────
   openClausePicker(findingId: string): void {
-    if (this.request?.status === 'COMPLETED') return;
+    if (this.isLocked) return;
     this.pickerOpenFor = findingId;
     this.pickerQuery   = '';
     this.pickerResults = [];
@@ -1305,7 +1413,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   // ── AI suggestions actions ──────────────────────────────────────
   suggestionToFinding(text: string): void {
-    if (!this.currentStep || this.request?.status === 'COMPLETED') return;
+    if (!this.currentStep || this.isLocked) return;
     this.addFinding();
     const list = this.findings[this.currentStep.id] ?? [];
     const last = list[list.length - 1];
@@ -1316,7 +1424,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   suggestionToRecommendation(text: string): void {
-    if (!this.currentStep || this.request?.status === 'COMPLETED') return;
+    if (!this.currentStep || this.isLocked) return;
     this.addRecommendation();
     const list = this.recommendations[this.currentStep.id] ?? [];
     const last = list[list.length - 1];
@@ -1396,7 +1504,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
 
   onAiInsert(e: { target: 'finding' | 'recommendation' | 'note'; text: string }): void {
     const text = (e?.text || '').trim();
-    if (!text || !this.currentStep || this.request?.status === 'COMPLETED') return;
+    if (!text || !this.currentStep || this.isLocked) return;
     const stepId = this.currentStep.id;
     log.info(LOG, 'insert from AI assistant', { target: e.target, chars: text.length });
 
@@ -1602,7 +1710,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   toggleBot(): void { this.botOpen = !this.botOpen; }
 
   insertSnippet(label: string): void {
-    if (!this.currentStep || this.request?.status === 'COMPLETED') return;
+    if (!this.currentStep || this.isLocked) return;
     const map: Record<string, string> = {
       'Compliance OK':       '\n\n✓ Compliance assessment: Requirements met. ',
       'Risk identified':     '\n\n⚠ Risk identified: ',

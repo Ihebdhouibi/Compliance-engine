@@ -51,6 +51,23 @@
           {{ isCompleting ? 'Submitting…' : 'Submit Audit' }}
         </button>
       </ng-container>
+      <!-- Editing a completed audit -->
+      <ng-container *ngIf="request?.status === 'COMPLETED' && editMode">
+        <button class="ws-btn ws-btn--complete"
+                (click)="saveChanges()"
+                [disabled]="isSavingEdits">
+          <span class="mini-spin" *ngIf="isSavingEdits"></span>
+          {{ isSavingEdits ? 'Saving…' : 'Save changes' }}
+        </button>
+        <button class="ws-btn ws-btn--draft"
+                (click)="cancelEdit()"
+                [disabled]="isSavingEdits">Cancel</button>
+      </ng-container>
+
+      <button class="ws-btn ws-btn--edit"
+              *ngIf="request?.status === 'COMPLETED' && !editMode && canEditCompleted"
+              (click)="enableEdit()">✎ Edit</button>
+
       <button class="ws-btn"
         [class.ws-btn--complete]="request?.status === 'COMPLETED' && allStepsSaved"
         [disabled]="! (request?.status === 'COMPLETED' && allStepsSaved) || isExporting"
@@ -59,10 +76,52 @@
         {{ isExporting ? 'Generating…' : 'Export PDF' }}
       </button>
 
-      <div class="ws-completed-badge" *ngIf="request?.status === 'COMPLETED'">
+      <button class="ws-btn ws-btn--history"
+              *ngIf="request?.status === 'COMPLETED'"
+              [class.ws-btn--complete]="showHistory"
+              (click)="toggleHistory()">⟲ History</button>
+
+      <div class="ws-completed-badge" *ngIf="request?.status === 'COMPLETED' && !editMode">
         ✓ Audit Completed
       </div>
+      <div class="ws-completed-badge ws-completed-badge--editing" *ngIf="editMode">
+        ✎ Editing — changes are logged
+      </div>
     </div>
+  </div>
+
+  <!-- ══ EDIT HISTORY (journal of changes after completion) ══ -->
+  <div class="ws-history" *ngIf="showHistory && request?.status === 'COMPLETED'">
+    <div class="ws-history__head">
+      <span class="ws-history__title">Change history</span>
+      <button class="ws-history__close" (click)="toggleHistory()" title="Close">×</button>
+    </div>
+    <div class="ws-history__loading" *ngIf="isLoadingJournal">Loading history…</div>
+    <div class="ws-history__empty" *ngIf="!isLoadingJournal && journal.length === 0">
+      No changes have been made since this audit was completed.
+    </div>
+    <ul class="ws-history__list" *ngIf="!isLoadingJournal && journal.length">
+      <li class="ws-history__item" *ngFor="let e of journal">
+        <span class="ws-history__badge" [ngClass]="'ws-history__badge--' + e.action.toLowerCase()">
+          {{ e.action }}
+        </span>
+        <div class="ws-history__body">
+          <div class="ws-history__line">
+            <strong>{{ journalFieldLabel(e) }}</strong>
+            <span class="ws-history__step" *ngIf="e.stepName"> · {{ e.stepName }}</span>
+          </div>
+          <div class="ws-history__diff">
+            <span class="ws-history__old" *ngIf="e.oldValue">{{ e.oldValue }}</span>
+            <span class="ws-history__arrow" *ngIf="e.oldValue && e.newValue">→</span>
+            <span class="ws-history__new" *ngIf="e.newValue">{{ e.newValue }}</span>
+          </div>
+          <div class="ws-history__meta">
+            <span *ngIf="e.changedBy">{{ e.changedBy.firstName }} {{ e.changedBy.lastName }}</span>
+            <span> · {{ e.changedAt | date:'medium' }}</span>
+          </div>
+        </div>
+      </li>
+    </ul>
   </div>
 
   <!-- ══ 3-PANE COCKPIT ══ -->
@@ -167,7 +226,7 @@
           <ng-container *ngFor="let s of currentSuggestions">
             <li *ngIf="!isDismissed(s)" class="ai-suggest-item">
               <span class="ai-suggest-item__text">{{ s }}</span>
-              <div class="ai-suggest-item__actions" *ngIf="request?.status !== 'COMPLETED'">
+              <div class="ai-suggest-item__actions" *ngIf="!isLocked">
                 <button class="ai-suggest-btn ai-suggest-btn--find"
                         (click)="suggestionToFinding(s)" title="Convert to finding">→ Finding</button>
                 <button class="ai-suggest-btn ai-suggest-btn--rec"
@@ -259,7 +318,7 @@
             </div>
 
             <!-- Verdict -->
-            <div class="verdict-row" *ngIf="request?.status !== 'COMPLETED'">
+            <div class="verdict-row" *ngIf="!isLocked">
               <span class="verdict-row__lbl">Verdict</span>
               <button type="button" class="vchip vchip--compliant"
                       [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'compliant'"
@@ -274,7 +333,7 @@
                       [class.vchip--on]="verdictFor(currentStep.id, a.fieldId) === 'na'"
                       (click)="setVerdict(currentStep.id, a.fieldId, 'na')">N/A</button>
             </div>
-            <div class="verdict-row verdict-row--readonly" *ngIf="request?.status === 'COMPLETED' && verdictFor(currentStep.id, a.fieldId) as v">
+            <div class="verdict-row verdict-row--readonly" *ngIf="isLocked && verdictFor(currentStep.id, a.fieldId) as v">
               <span class="verdict-row__lbl">Verdict</span>
               <span class="vchip vchip--on" [ngClass]="'vchip--' + v">{{ v }}</span>
             </div>
@@ -290,7 +349,7 @@
             <div class="deck-section__head">
               <span class="deck-section__title">Findings</span>
               <button class="deck-section__add" (click)="addFinding()"
-                      [disabled]="request?.status === 'COMPLETED'">+ Add</button>
+                      [disabled]="isLocked">+ Add</button>
             </div>
             <div class="deck-empty" *ngIf="currentFindings().length === 0">
               No findings recorded for this step.
@@ -299,7 +358,7 @@
               <div class="finding__head">
                 <select class="finding__sev" [value]="f.severity"
                         (change)="updateFindingSeverity(f.id, $any($event.target).value)"
-                        [disabled]="request?.status === 'COMPLETED'">
+                        [disabled]="isLocked">
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
                   <option value="high">High</option>
@@ -307,13 +366,13 @@
                 </select>
                 <span class="finding__sev-dot" [ngClass]="'finding__sev-dot--' + f.severity"></span>
                 <button class="finding__del" (click)="removeFinding(f.id)"
-                        [disabled]="request?.status === 'COMPLETED'"
+                        [disabled]="isLocked"
                         title="Remove">×</button>
               </div>
               <textarea class="finding__text"
                         [value]="f.description"
                         (input)="updateFindingText(f.id, $any($event.target).value)"
-                        [disabled]="request?.status === 'COMPLETED'"
+                        [disabled]="isLocked"
                         placeholder="Describe the finding, clause reference, and evidence cited…"
                         rows="4"></textarea>
 
@@ -323,10 +382,10 @@
                       [title]="c.requirement || c.ruleId">
                   <strong>{{ c.ruleId }}</strong>
                   <span class="clause-chip__title" *ngIf="c.shortTitle"> · {{ c.shortTitle }}</span>
-                  <button class="clause-chip__del" *ngIf="request?.status !== 'COMPLETED'"
+                  <button class="clause-chip__del" *ngIf="!isLocked"
                           (click)="detachClause(f.id, c.ruleId)" title="Remove">×</button>
                 </span>
-                <button class="clause-add-btn" *ngIf="request?.status !== 'COMPLETED'"
+                <button class="clause-add-btn" *ngIf="!isLocked"
                         (click)="openClausePicker(f.id)">+ Clause</button>
               </div>
 
@@ -370,7 +429,7 @@
             <div class="deck-section__head">
               <span class="deck-section__title">Recommendations</span>
               <button class="deck-section__add" (click)="addRecommendation()"
-                      [disabled]="request?.status === 'COMPLETED'">+ Add</button>
+                      [disabled]="isLocked">+ Add</button>
             </div>
             <div class="deck-empty" *ngIf="currentRecs().length === 0">
               No recommendations yet.
@@ -379,11 +438,11 @@
               <textarea class="rec__text"
                         [value]="r.description"
                         (input)="updateRecText(r.id, $any($event.target).value)"
-                        [disabled]="request?.status === 'COMPLETED'"
+                        [disabled]="isLocked"
                         placeholder="Recommend a corrective action, owner and timeframe…"
                         rows="4"></textarea>
               <button class="rec__del" (click)="removeRecommendation(r.id)"
-                      [disabled]="request?.status === 'COMPLETED'"
+                      [disabled]="isLocked"
                       title="Remove">×</button>
             </div>
           </div>
@@ -428,7 +487,7 @@
         <textarea class="deck-note"
                   [value]="currentDraft"
                   (input)="setDraft($any($event.target).value)"
-                  [disabled]="request?.status === 'COMPLETED'"
+                  [disabled]="isLocked"
                   placeholder="Overall observations and conclusion for this step…"
                   rows="5"></textarea>
       </div>
@@ -575,7 +634,7 @@
       </ng-container>
     </div>
 
-    <footer class="ws-drawer__foot" *ngIf="request?.status !== 'COMPLETED'">
+    <footer class="ws-drawer__foot" *ngIf="!isLocked">
       <button class="ws-drawer__link" (click)="linkEvidenceToFinding()" [disabled]="!currentStep">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
           <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>

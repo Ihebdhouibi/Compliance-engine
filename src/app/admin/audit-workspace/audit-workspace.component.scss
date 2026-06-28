@@ -82,6 +82,17 @@
     color: rgb(var(--success-rgb)); font-weight: 700;
     &:hover:not(:disabled) { background: rgb(var(--success-rgb) / .22); }
   }
+  &--edit {
+    background: rgb(var(--accent-rgb) / .12);
+    border-color: rgb(var(--accent-rgb) / .3);
+    color: rgb(var(--accent-rgb)); font-weight: 700;
+    &:hover:not(:disabled) { background: rgb(var(--accent-rgb) / .22); }
+  }
+  &--history {
+    background: rgb(var(--fg-rgb) / .04); border-color: rgb(var(--border-rgb));
+    color: rgb(var(--fg-rgb) / .7);
+    &:hover:not(:disabled) { background: rgb(var(--fg-rgb) / .08); color: rgb(var(--fg-strong-rgb)); }
+  }
   &:disabled { opacity: .4; cursor: not-allowed; }
 }
 
@@ -91,6 +102,44 @@
   background: rgb(var(--success-rgb) / .12);
   border: 1px solid rgb(var(--success-rgb) / .28);
   color: rgb(var(--success-rgb)); font-size: .8rem; font-weight: 700;
+
+  &--editing {
+    background: rgb(var(--accent-rgb) / .12);
+    border-color: rgb(var(--accent-rgb) / .28);
+    color: rgb(var(--accent-rgb));
+  }
+}
+
+// ═══ EDIT HISTORY (journal) ═════════════════════════════════
+.ws-history {
+  margin: 0 18px 14px; padding: 14px 16px;
+  background: rgb(var(--bg-card-rgb) / .7);
+  border: 1px solid rgb(var(--accent-rgb) / .14); border-radius: 12px;
+
+  &__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  &__title { font-family: t.$font-display; font-size: .9rem; font-weight: 700; color: rgb(var(--fg-strong-rgb)); }
+  &__close { border: none; background: transparent; cursor: pointer; font-size: 1.1rem; line-height: 1; color: rgb(var(--fg-rgb) / .5); }
+  &__loading, &__empty { font-size: .82rem; color: rgb(var(--fg-rgb) / .5); padding: 8px 0; }
+  &__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  &__item {
+    display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 9px;
+    background: rgb(var(--bg-app-rgb) / .4); border: 1px solid rgb(var(--accent-rgb) / .08);
+  }
+  &__badge {
+    flex-shrink: 0; font-family: t.$font-mono; font-size: .58rem; letter-spacing: .08em;
+    text-transform: uppercase; padding: 3px 7px; border-radius: 5px; font-weight: 700;
+    &--added    { background: rgb(var(--success-rgb) / .14); color: rgb(var(--success-rgb)); }
+    &--modified { background: rgb(var(--warning-rgb) / .14); color: rgb(var(--warning-rgb)); }
+    &--removed  { background: rgb(var(--danger-rgb) / .14);  color: rgb(var(--danger-rgb)); }
+  }
+  &__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  &__line { font-size: .84rem; color: rgb(var(--fg-strong-rgb)); }
+  &__step { color: rgb(var(--fg-rgb) / .5); font-weight: 400; }
+  &__diff { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: .8rem; }
+  &__old { color: rgb(var(--danger-rgb)); text-decoration: line-through; opacity: .8; }
+  &__arrow { color: rgb(var(--fg-rgb) / .4); }
+  &__new { color: rgb(var(--success-rgb)); }
+  &__meta { font-size: .72rem; color: rgb(var(--fg-rgb) / .45); }
 }
 
 .mini-spin {

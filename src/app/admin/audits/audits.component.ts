@@ -11,6 +11,7 @@ import { AuditRequest, AuditStatus, AssignAuditPayload } from '../../models/audi
 import { User } from '../../models/user.model';
 import { TokenService } from '../../shared/token.service';
 import { AuditStepResultService, AuditStepResult } from '../../services/audit-step-result.service';
+import { ReportService } from '../../services/report.service';
 
 type TabMode = 'all' | 'mine';
 
@@ -67,6 +68,7 @@ isLoadingResults = false;
   isLoadingFile     = false;
 
   isTakingId: number | null = null;
+  isExportingId: number | null = null;
   successMsg = '';
 
   readonly statuses: AuditStatus[] =
@@ -83,7 +85,8 @@ isLoadingResults = false;
     private http:      HttpClient,
     private tokenSvc:  TokenService,
     private router:    Router,
-   private resSvc: AuditStepResultService
+   private resSvc: AuditStepResultService,
+   private reportSvc: ReportService
   ) {}
 
   ngOnInit(): void {
@@ -102,6 +105,13 @@ isLoadingResults = false;
   // ── Navigation
   openWorkspace(req: AuditRequest): void {
     this.router.navigate(['/admin/audits/workspace', req.id]);
+  }
+
+  // Open a completed audit in edit mode (changes are journalled server-side)
+  editCompleted(req: AuditRequest): void {
+    this.router.navigate(['/admin/audits/workspace', req.id], {
+      queryParams: { edit: 1 }
+    });
   }
 
   // Admin always navigates to admin workspace to view results
@@ -131,6 +141,23 @@ closeResults(): void {
   this.stepResults     = [];
   this.renderer.removeStyle(document.body, 'overflow');
 }
+
+  // ── Export report (completed audits)
+  exportReport(req: AuditRequest): void {
+    if (this.isExportingId) return;
+    this.isExportingId = req.id;
+    this.reportSvc.downloadAuditReport(req.id).subscribe({
+      next: () => {
+        this.isExportingId = null;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isExportingId = null;
+        this.flash('Failed to generate report.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   // ── Data loading
   loadRequests(): void {

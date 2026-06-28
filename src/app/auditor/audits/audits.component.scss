@@ -179,6 +179,16 @@ table { width: 100%; border-collapse: collapse;
     border-color: color-mix(in srgb, rgb(var(--success-rgb)) 45%, transparent);
   }
 }
+
+  &--export {
+  background: color-mix(in srgb, rgb(var(--accent-rgb)) 10%, transparent);
+  color: rgb(var(--accent-rgb));
+  border: 1px solid color-mix(in srgb, rgb(var(--accent-rgb)) 22%, transparent);
+  &:hover:not(:disabled) {
+    background: color-mix(in srgb, rgb(var(--accent-rgb)) 22%, transparent);
+    border-color: color-mix(in srgb, rgb(var(--accent-rgb)) 45%, transparent);
+  }
+}
 }
 
 // ── Pagination
