@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../environments/environment';
 import { TokenService } from '../shared/token.service';
+import { AuditJournalEntry } from '../models/audit.model';
 
 /**
  * Shared helper for downloading server-generated audit PDF reports.
@@ -13,6 +14,13 @@ export class ReportService {
   private http     = inject(HttpClient);
   private tokenSvc = inject(TokenService);
   private base     = environment.apiUrl;
+
+  /** Field-level change history for an audit (edits made after completion). */
+  getAuditJournal(auditId: number): Observable<AuditJournalEntry[]> {
+    return this.http.get<AuditJournalEntry[]>(
+      `${this.base}/audits/${auditId}/journal`
+    );
+  }
 
   /** Fetch the report PDF as a blob (auth header attached explicitly). */
   fetchAuditReport(auditId: number): Observable<Blob> {

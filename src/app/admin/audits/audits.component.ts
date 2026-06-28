@@ -107,6 +107,13 @@ isLoadingResults = false;
     this.router.navigate(['/admin/audits/workspace', req.id]);
   }
 
+  // Open a completed audit in edit mode (changes are journalled server-side)
+  editCompleted(req: AuditRequest): void {
+    this.router.navigate(['/admin/audits/workspace', req.id], {
+      queryParams: { edit: 1 }
+    });
+  }
+
   // Admin always navigates to admin workspace to view results
  openResults(req: AuditRequest): void {
   this.resultsRequest  = req;

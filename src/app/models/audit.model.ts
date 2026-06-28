@@ -208,6 +208,22 @@ export interface AuditAnswerScoring {
   answer?:                 AuditRequestAnswer;
 }
 
+// ── Audit change journal (history of edits to completed audits)
+export type AuditJournalChangeType = 'VERDICT' | 'FINDING' | 'RECOMMENDATION' | 'NOTE';
+export type AuditJournalAction     = 'ADDED' | 'MODIFIED' | 'REMOVED';
+
+export interface AuditJournalEntry {
+  id:         number;
+  changedBy?: User;
+  changedAt:  string;
+  stepName?:  string;
+  changeType: AuditJournalChangeType;
+  action:     AuditJournalAction;
+  fieldRef?:  string;
+  oldValue?:  string;
+  newValue?:  string;
+}
+
 // ── Request payloads — all unchanged
 export interface SubmitAuditAnswerPayload {
   fieldId:      number;
