@@ -11,6 +11,7 @@ import { User } from '../../models/user.model';
 import { TokenService } from '../../shared/token.service';
 
 import { AuditStepResultService, AuditStepResult } from '../../services/audit-step-result.service';
+import { ReportService } from '../../services/report.service';
 
 @Component({
   selector: 'app-auditor-audits',
@@ -48,6 +49,7 @@ isLoadingResults = false;
   isLoadingFile     = false;
 
   successMsg = '';
+  isExportingId: number | null = null;
 
   constructor(
     public  svc:       AuditRequestService,
@@ -59,7 +61,8 @@ isLoadingResults = false;
     private http:      HttpClient,
     private tokenSvc:  TokenService,
     private router:    Router,
-    private resSvc: AuditStepResultService
+    private resSvc: AuditStepResultService,
+    private reportSvc: ReportService
 
   ) {}
 
@@ -104,6 +107,24 @@ closeResults(): void {
   this.stepResults    = [];
   this.renderer.removeStyle(document.body, 'overflow');
 }
+
+  // ── Export report (completed audits)
+  exportReport(audit: AuditRequest): void {
+    if (this.isExportingId) return;
+    this.isExportingId = audit.id;
+    this.reportSvc.downloadAuditReport(audit.id).subscribe({
+      next: () => {
+        this.isExportingId = null;
+        this.flash('Report downloaded.');
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isExportingId = null;
+        this.flash('Failed to generate report.');
+        this.cdr.detectChanges();
+      }
+    });
+  }
 
   loadAudits(): void {
     this.isLoading = true;

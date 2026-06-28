@@ -16,6 +16,7 @@ import { AuditBotComponent } from '../../layout/audit-bot/audit-bot.component';
 import { AuditRequest } from '../../models/audit.model';
 import { environment } from '../../environments/environment';
 import { RicsSearchService, RicsRuleResult, RicsEvidenceItem, RelevanceSegment } from '../../services/rics-search.service';
+import { ReportService } from '../../services/report.service';
 import { log } from '../../core/logging/log';
 
 const LOG = 'ng.audit-workspace';
@@ -168,6 +169,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   private tokenSvc  = inject(TokenService);
   private cdr       = inject(ChangeDetectorRef);
   private ricsSvc   = inject(RicsSearchService);
+  private reportSvc = inject(ReportService);
 
   // ── Lifecycle ──────────────────────────────────────────────────────
   ngOnInit(): void {
@@ -760,21 +762,8 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     if (!this.request) return;
     this.isExporting = true;
 
-    const token = this.tokenSvc.getToken();
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    const url = `${environment.apiUrl}/audits/${this.request.id}/report`;
-
-    this.http.get(url, { headers, responseType: 'blob' }).subscribe({
-      next: (blob) => {
-        const objectUrl = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = objectUrl;
-        link.download = `audit_${this.request!.id}_report.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(objectUrl);
-
+    this.reportSvc.downloadAuditReport(this.request.id).subscribe({
+      next: () => {
         this.isExporting = false;
         this.flash('Report downloaded successfully.', false);
         this.cdr.detectChanges();

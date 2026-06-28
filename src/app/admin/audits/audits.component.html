@@ -181,6 +181,21 @@
                     </svg>
                   </button>
 
+                  <!-- Export report — COMPLETED -->
+                  <button class="act act--export" title="Export report (PDF)"
+        *ngIf="r.status === 'COMPLETED'"
+        [disabled]="isExportingId === r.id"
+        (click)="exportReport(r)">
+                    <span class="mini-spin" *ngIf="isExportingId === r.id"></span>
+                    <svg *ngIf="isExportingId !== r.id" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" width="14" height="14"
+                         style="display:block;">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                  </button>
+
                 </div>
               </td>
             </tr>
