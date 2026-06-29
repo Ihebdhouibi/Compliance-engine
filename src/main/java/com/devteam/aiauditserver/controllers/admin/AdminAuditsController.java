@@ -1,6 +1,5 @@
 package com.devteam.aiauditserver.controllers.admin;
 
-
 import com.devteam.aiauditserver.Tools.util.BaseController;
 import com.devteam.aiauditserver.enums.Project.AuditStatus;
 import com.devteam.aiauditserver.enums.Project.AuditType;
@@ -18,7 +17,6 @@ import com.devteam.aiauditserver.requests.project.AddStepRequest;
 import com.devteam.aiauditserver.requests.project.AssignAuditRequest;
 import com.devteam.aiauditserver.requests.project.CreateAuditFormTemplateRequest;
 import com.devteam.aiauditserver.responses.Response.DynamicResponse;
-
 import com.devteam.aiauditserver.services.auth.UserService;
 import com.devteam.aiauditserver.services.project.audit.AuditFormTemplateService;
 import com.devteam.aiauditserver.services.project.audit.AuditRequestService;
@@ -77,8 +75,9 @@ public class AdminAuditsController extends BaseController {
         return ResponseEntity.ok(templateService.getById(id));
     }
 
+    // ✅ Allow ADMIN and AUDITOR to fetch template by type
     @GetMapping("/templates/type/{auditType}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
     public ResponseEntity<AuditFormTemplate> getTemplateByType(
             @PathVariable AuditType auditType) {
         return ResponseEntity.ok(templateService.getByAuditType(auditType));
@@ -263,8 +262,9 @@ public class AdminAuditsController extends BaseController {
         return ResponseEntity.noContent().build();
     }
 
+    // ✅ Allow ADMIN and AUDITOR to fetch process steps
     @GetMapping("/process-steps/{auditType}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'AUDITOR')")
     public ResponseEntity<List<AuditProcessStep>> getProcessStepsForAuditType(
             @PathVariable AuditType auditType) {
         return templateRepository.findByAuditType(auditType)

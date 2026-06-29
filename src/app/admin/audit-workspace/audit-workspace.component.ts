@@ -324,7 +324,6 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
               stepOrder: s.stepOrder,
               fieldIds:  (s.fields ?? []).map(f => f.id)
             }))
-            .filter(s => this.answersForStep(s).length > 0);
 
           if (this.steps.length === 0) {
             this.loadStepsByAuditType(auditType);

@@ -1,5 +1,5 @@
 package com.devteam.aiauditserver.Tools.scurity;
-
+import org.springframework.http.HttpMethod;
 import com.devteam.aiauditserver.Tools.util.JwtAuthenticationEntryPoint;
 import com.devteam.aiauditserver.services.Oathloginservice.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,16 +87,19 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .cors().and().csrf().disable()
-                .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .authorizeRequests()
-                .antMatchers(PUBLIC_ENDPOINTS).permitAll()
-                .anyRequest().authenticated();
+            .cors().and().csrf().disable()
+            .exceptionHandling().authenticationEntryPoint(unauthorizedHandler).and()
+            .sessionManagement()
+            .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            .and()
+            .authorizeRequests()
+            .antMatchers(HttpMethod.GET, "/api/v1/admin/audits/templates/type/**")
+                .hasAnyRole("ADMIN", "AUDITOR")
+            .antMatchers(HttpMethod.GET, "/api/v1/admin/audits/process-steps/**")
+                .hasAnyRole("ADMIN", "AUDITOR")
+            .antMatchers(PUBLIC_ENDPOINTS).permitAll()
+            .anyRequest().authenticated();
 
-        // Standard Filter for JWT, removing the oauth2Login block entirely
         http.addFilterBefore(authFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 }
