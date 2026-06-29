@@ -1,7 +1,7 @@
 import {
   Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ViewChild, ElementRef
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, ViewportScroller } from '@angular/common'; 
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -179,6 +179,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   private ricsSvc   = inject(RicsSearchService);
   private reportSvc = inject(ReportService);
   private userStore = inject(UserStoreService);
+  private viewportScroller = inject(ViewportScroller);   
 
   // ── Lifecycle ──────────────────────────────────────────────────────
   private wantEdit = false;
@@ -459,8 +460,13 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return this.verdicts[stepId]?.[fieldId] ?? null;
   }
 
+  // ✅ UPDATED: preserve scroll position when selecting a verdict
   setVerdict(stepId: number, fieldId: number, v: Verdict): void {
     if (this.isLocked) return;
+
+    // Save current scroll position
+    const [scrollX, scrollY] = this.viewportScroller.getScrollPosition();
+
     if (!this.verdicts[stepId]) this.verdicts[stepId] = {};
     if (this.verdicts[stepId][fieldId] === v) {
       delete this.verdicts[stepId][fieldId];
@@ -469,7 +475,11 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
       this.verdicts[stepId][fieldId] = v;
       log.info(LOG, 'verdict set', { stepId, fieldId, verdict: v });
     }
+
     this.cdr.detectChanges();
+
+    // Restore scroll position
+    this.viewportScroller.scrollToPosition([scrollX, scrollY]);
   }
 
   stepRollup(step: WorkspaceStep): StepRollup {
