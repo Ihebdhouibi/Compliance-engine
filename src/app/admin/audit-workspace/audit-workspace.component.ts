@@ -1,7 +1,7 @@
 import {
   Component, OnInit, OnDestroy, inject, ChangeDetectorRef, ViewChild, ElementRef
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, ViewportScroller } from '@angular/common'; 
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -179,6 +179,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   private ricsSvc   = inject(RicsSearchService);
   private reportSvc = inject(ReportService);
   private userStore = inject(UserStoreService);
+  private viewportScroller = inject(ViewportScroller);   // ✅ added
 
   // ── Lifecycle ──────────────────────────────────────────────────────
   private wantEdit = false;
@@ -324,7 +325,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
               stepOrder: s.stepOrder,
               fieldIds:  (s.fields ?? []).map(f => f.id)
             }))
-
+          // ✅ removed .filter(...) – all steps are now shown
           if (this.steps.length === 0) {
             this.loadStepsByAuditType(auditType);
             return;
@@ -458,8 +459,13 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return this.verdicts[stepId]?.[fieldId] ?? null;
   }
 
+  // ✅ Updated setVerdict – preserve scroll position
   setVerdict(stepId: number, fieldId: number, v: Verdict): void {
     if (this.isLocked) return;
+
+    // Save current scroll position
+    const [scrollX, scrollY] = this.viewportScroller.getScrollPosition();
+
     if (!this.verdicts[stepId]) this.verdicts[stepId] = {};
     if (this.verdicts[stepId][fieldId] === v) {
       delete this.verdicts[stepId][fieldId];
@@ -468,7 +474,11 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
       this.verdicts[stepId][fieldId] = v;
       log.info(LOG, 'verdict set', { stepId, fieldId, verdict: v });
     }
+
     this.cdr.detectChanges();
+
+    // Restore scroll position
+    this.viewportScroller.scrollToPosition([scrollX, scrollY]);
   }
 
   stepRollup(step: WorkspaceStep): StepRollup {
@@ -485,7 +495,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return Object.keys(map).length;
   }
 
-  // ─── NEW: Verdict completion validation ────────────────────────────
+  // ─── Verdict completion validation ────────────────────────────
   isStepFullyVerdicted(step: WorkspaceStep): boolean {
     const answers = this.answersForStep(step);
     if (answers.length === 0) return true;
@@ -740,6 +750,13 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   // ── Submit ──────────────────────────────────────────────────────
   submitAudit(): void {
     if (!this.request) return;
+    if (!this.currentStep) return;
+
+    if (!this.isStepFullyVerdicted(this.currentStep)) {
+      this.flash('Please provide a verdict for all questions before completing the audit.', true);
+      return;
+    }
+
     log.info(LOG, 'submit audit', { id: this.request.id, steps: this.steps.length });
     this.isCompleting = true;
 

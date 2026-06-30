@@ -465,9 +465,12 @@
                 [disabled]="!isStepFullyVerdicted(currentStep)"
                 [title]="!isStepFullyVerdicted(currentStep) ? 'Please provide a verdict for all questions before proceeding' : 'Go to next step'"
                 (click)="goToStep(activeStep + 1)">Next →</button>
+        <!-- ✅ "Complete" button – now locked until all verdicts are set -->
         <button *ngIf="activeStep >= steps.length - 1"
-                class="ef-btn ef-btn--complete" (click)="submitAudit()"
-                [disabled]="isCompleting || request?.status === 'COMPLETED'">
+                class="ef-btn ef-btn--complete"
+                [disabled]="isCompleting || request?.status === 'COMPLETED' || !isStepFullyVerdicted(currentStep)"
+                [title]="!isStepFullyVerdicted(currentStep) ? 'Please provide a verdict for all questions before completing the audit' : 'Complete the audit'"
+                (click)="submitAudit()">
           <span class="mini-spin" *ngIf="isCompleting"></span>
           {{ isCompleting ? 'Submitting…' : (request?.status === 'COMPLETED' ? 'Completed ✓' : 'Complete ✓') }}
         </button>
