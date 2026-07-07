@@ -621,9 +621,11 @@
             Large document — relevance scored on the first part only.
           </div>
           <div *ngIf="o.error" class="ws-drawer__ocr-error">{{ o.error }}</div>
-          <pre #ocrTextEl class="ws-drawer__ocr-text" *ngIf="o.rawText && ocrHighlightOn"
-               [innerHTML]="highlightedOcrText(o.rawText)"></pre>
-          <pre class="ws-drawer__ocr-text" *ngIf="o.rawText && !ocrHighlightOn">{{ o.rawText }}</pre>
+
+          <!-- ✅ REPLACED OCR PREVIEW WITH MARKDOWN-TO-HTML RENDERING -->
+          <div class="ws-drawer__ocr-text" *ngIf="o.rawText">
+            <div [innerHTML]="getFormattedOcrText(o.rawText)"></div>
+          </div>
           <div *ngIf="!o.rawText && !o.error" class="ws-drawer__ocr-empty">
             No text was extracted yet.
           </div>

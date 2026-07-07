@@ -20,6 +20,9 @@ import { RicsSearchService, RicsRuleResult, RicsEvidenceItem, RelevanceSegment }
 import { ReportService } from '../../services/report.service';
 import { log } from '../../core/logging/log';
 
+// ── ✅ New import for Markdown rendering ───────────────────────────────
+import { marked } from 'marked';
+
 const LOG = 'ng.audit-workspace';
 
 interface WorkspaceStep {
@@ -1747,5 +1750,16 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  getFormattedOcrText(raw: string): SafeHtml {
+    if (!raw) return '';
+    try {
+      const html = marked.parse(raw, { async: false }) as string;
+      return this.sanitizer.bypassSecurityTrustHtml(html);
+    } catch (e) {
+      // Fallback: escape and display as plain text
+      return this.sanitizer.bypassSecurityTrustHtml(`<pre>${this.escapeHtml(raw)}</pre>`);
+    }
   }
 }
