@@ -1,26 +1,15 @@
-from openai import OpenAI
+import os
 
-from api.config import OPENAI_API_KEY
+from api.config import QWEN_BASE_URL, QWEN_MODEL
 from api.logging_config import get_logger, timed
 
-_client = OpenAI(api_key=OPENAI_API_KEY)
-_log = get_logger("svc.openai")
 
-SYSTEM_PROMPT = """You are a RICS Compliance Assistant — an expert AI auditor grounded in the RICS Professional Standard: "Responsible use of artificial intelligence in surveying practice" (1st edition, September 2025, effective 9 March 2026).
+_log = get_logger("svc.qwen")
 
-RULES:
-1. Answer ONLY based on the RICS rules provided in the context below. Never invent or assume rules that are not provided.
-2. Always cite the rule ID (e.g. RICS-S3.1-06) when referencing a requirement.
-3. When quoting the standard, use the source_text_verbatim field — this is the exact original wording.
-4. When listing evidence an auditor should look for, use the evidence_implied field.
-5. If the context does not contain enough information to answer, say so explicitly. Do not guess.
-6. Keep answers structured: use bullet points or numbered lists for clarity.
-7. Distinguish clearly between what the RICS standard requires (mandatory — "must") and any interpretation.
-8. You may be given an AUDIT CONTEXT containing the firm's submitted answers and text extracted from their evidence documents (OCR). Use it to summarise the evidence, judge whether the firm's claims are supported, and help the auditor reach a verdict — but base every compliance determination and citation on the RICS rules above, never on the firm's own claims alone. If the audit context lacks the evidence needed to satisfy a rule, say what is missing."""
-
+# ── Ultra‑short system prompt ────────────────────────────────────────
+SYSTEM_PROMPT = """You are a RICS Compliance Assistant. Base answers ONLY on provided rules. Cite rule IDs. Use verbatim text when quoting. If info missing, say so. Be concise."""
 
 def build_context_block(rules: list[dict]) -> str:
-    """Format retrieved rules into a context block for the LLM prompt."""
     parts = []
     for r in rules:
         p = r["payload"]
@@ -34,26 +23,16 @@ Related rules: {', '.join(p.get('related_rules', []))}"""
         parts.append(block)
     return "\n\n".join(parts)
 
-
-def chat(
-    user_message: str,
-    rules: list[dict],
-    audit_context: str | None = None,
-    model: str = "gpt-4o-mini",
-) -> str:
-    """Send a grounded RAG query to GPT and return the response text.
-
-    ``audit_context`` — when provided by the workspace — carries the current
-    step's customer answers and OCR-extracted evidence text, letting the
-    assistant reason over the specific audit under review.
-    """
+def chat(user_message: str, rules: list[dict], audit_context: str | None = None) -> str:
     rules_block = build_context_block(rules)
+
+    # ── CRITICAL: Truncate audit_context to 1500 characters ──
+    if audit_context and len(audit_context) > 1500:
+        audit_context = audit_context[:1500] + "... [truncated]"
 
     sections = [f"CONTEXT (retrieved RICS rules):\n{rules_block}"]
     if audit_context and audit_context.strip():
-        sections.append(
-            f"AUDIT CONTEXT (the firm's answers and evidence under review):\n{audit_context.strip()}"
-        )
+        sections.append(f"AUDIT CONTEXT (summary):\n{audit_context.strip()}")
     sections.append(f"QUESTION:\n{user_message}")
 
     messages = [
@@ -61,13 +40,14 @@ def chat(
         {"role": "user", "content": "\n\n".join(sections)},
     ]
 
-    with timed(_log, "chat.completion", model=model, rules=len(rules),
+    with timed(_log, "chat.completion", model=QWEN_MODEL, rules=len(rules),
                has_audit_ctx=bool(audit_context and audit_context.strip())) as span:
         response = _client.chat.completions.create(
-            model=model,
+            model=QWEN_MODEL,
             messages=messages,
-            temperature=0.2,
-            max_tokens=1500,
+            temperature=0.2,        # Deterministic for speed
+            max_tokens=1500,        
+            timeout=900.0,
         )
         answer = response.choices[0].message.content
         usage = getattr(response, "usage", None)

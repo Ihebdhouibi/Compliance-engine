@@ -10,18 +10,20 @@ router = APIRouter(prefix="/chat", tags=["Chat Assistant"])
 qdrant = QdrantService()
 log = get_logger("fastapi.chat")
 
-
 @router.post("/", response_model=ChatResponse)
 def chat(req: ChatRequest):
-    """RAG-powered chat: retrieve relevant RICS rules then generate a grounded answer via GPT."""
     with timed(log, "chat", msg_chars=len(req.message), limit=req.limit,
                section=req.section or "-", ctx_chars=len(req.context or "")) as span:
         log.debug(f"chat.message > {req.message!r}")
         if req.context:
             log.debug(f"chat.context > {req.context!r}")
+        
+        # ── HARDCODE LIMIT TO 2 ──────────────────────────────────
+        limit = 5
+        
         hits = qdrant.search(
             query=req.message,
-            limit=req.limit,
+            limit=limit,
             section=req.section,
         )
         log.debug("chat.sources > " + ", ".join(f"{h['rule_id']}({h['score']:.2f})" for h in hits))
