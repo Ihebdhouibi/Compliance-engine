@@ -8,7 +8,7 @@ Format:
     HH:MM:SS | LEVEL | component.name      | cid=ab12cd34 | message
 
 Component names mirror the interaction map, e.g. ``fastapi.chat``,
-``svc.qdrant``, ``svc.openai``, ``svc.embedder``, ``fastapi.relevance``.
+``svc.qdrant``, ``svc``, ``svc.embedder``, ``fastapi.relevance``.
 """
 from __future__ import annotations
 
@@ -107,12 +107,7 @@ def setup_logging(level: int = logging.DEBUG) -> None:
     root.addHandler(_file_handler("fastapi.log", exclude=("svc.qdrant", "ng.")))
     root.setLevel(level)
 
-    # Quieten chatty third-party loggers so our lines stay readable.
-    for noisy in ("httpx", "httpcore", "urllib3", "openai", "uvicorn.access",
-                  "asyncio", "multipart", "python_multipart", "fastembed"):
-        logging.getLogger(noisy).setLevel(logging.WARNING)
-
-    _configured = True
+    
 
 
 def get_logger(name: str) -> logging.Logger:

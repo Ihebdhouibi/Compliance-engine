@@ -190,6 +190,6 @@ Compliance-engine/
 |-------|----------|
 | `docker` not found | Refresh PATH: `$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")` |
 | Qdrant connection refused | Ensure Docker Desktop is running and container is up: `docker start qdrant` |
-| OpenAI API error 401 | Check `OPENAI_API_KEY` in `.env` is valid |
+|  API error 401 | Check `OPENAI_API_KEY` in `.env` is valid |
 | Streamlit can't reach API | Make sure FastAPI is running on port 8000 first |
 | Embedding model download slow | First run downloads ~67MB model. Cached at `%LOCALAPPDATA%\Temp\fastembed_cache\` |
