@@ -50,7 +50,7 @@ every **call boundary** marked below is a log seam.
 | Spring Boot (`AiAuditServer`) | JVM 17 | 8080 | Auth, audit CRUD, results, OCR orchestration, notifications, file storage |
 | FastAPI AI engine | Python 3.11 | 8000 | RAG chat, rule search, evidence-check, routing, OCR, relevance |
 | Qdrant | Docker | 6333 | Vector store `rics_standards` (57 points, 384-dim) |
-|  | External | — | `gpt-4o-mini` chat completion |
+| Ollama | local/Docker | 11434 | `qwen3:8b` chat completion |
 | FastEmbed | in FastAPI | — | `BAAI/bge-small-en-v1.5` embeddings (shared) |
 | RapidOCR | in FastAPI | — | ONNX OCR text extraction |
 | Database | — | — | H2 (dev) / PostgreSQL (prod) |
@@ -75,7 +75,7 @@ every **call boundary** marked below is a log seam.
 | A3 | Angular → FastAPI | REST | `POST /rules/evidence-check` | `{query,limit}` → `{evidence}` | sync |
 | A4 | Angular → FastAPI | REST | `POST /relevance/highlight` | `{text,query}` → `{segments,truncated}` | sync |
 | E1 | FastAPI → Qdrant | REST | vector `search` | embedding → hits | sync |
-| E2 | FastAPI →  | HTTPS | chat completion `gpt-4o-mini` | messages → answer | sync |
+| E2 | FastAPI → Ollama | HTTP | chat completion `qwen3:8b` | messages → answer | sync |
 | E3 | FastAPI in-proc | call | FastEmbed `embed()` | text → vector (used by E1, A4) | sync |
 | E4 | FastAPI in-proc | call | RapidOCR `extract()` | file → text (used by O1) | sync |
 | D1 | Spring → DB | JPA | persist/read | entities | sync |
@@ -107,7 +107,7 @@ Angular        Spring(:8080)            FastAPI(:8000)        RapidOCR     DB
 audit-bot ─ A1 POST /chat/ {message, context=buildAiContext()} ─▶ FastAPI
                                                                    ├─ E3 embed(message)
                                                                    ├─ E1 Qdrant search ─▶ rules
-                                                                   ├─ E2 chat model (gpt-4o-mini, rules+context)
+                                                                   ├─ E2 chat model (qwen3:8b, rules+context)
                                             {answer, sources} ◀────┤
 audit-workspace (drawer, Extracted-text tab):
   A4 POST /relevance/highlight {text=rawText, query=drawerQuery(=fieldLabel)} ─▶ FastAPI
