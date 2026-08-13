@@ -46,7 +46,7 @@ def chat(user_message: str, rules: list[dict], audit_context: str | None = None)
             model=QWEN_MODEL,
             messages=messages,
             temperature=0.2,        # Deterministic for speed
-            max_tokens=1500,        
+            max_tokens=1500,
             timeout=900.0,
         )
         answer = response.choices[0].message.content

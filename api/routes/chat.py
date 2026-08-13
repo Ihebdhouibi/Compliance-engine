@@ -17,10 +17,10 @@ def chat(req: ChatRequest):
         log.debug(f"chat.message > {req.message!r}")
         if req.context:
             log.debug(f"chat.context > {req.context!r}")
-        
+
         # ── HARDCODE LIMIT TO 2 ──────────────────────────────────
         limit = 5
-        
+
         hits = qdrant.search(
             query=req.message,
             limit=limit,

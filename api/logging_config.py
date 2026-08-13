@@ -107,7 +107,7 @@ def setup_logging(level: int = logging.DEBUG) -> None:
     root.addHandler(_file_handler("fastapi.log", exclude=("svc.qdrant", "ng.")))
     root.setLevel(level)
 
-    
+
 
 
 def get_logger(name: str) -> logging.Logger:
