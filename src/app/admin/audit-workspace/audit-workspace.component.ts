@@ -328,7 +328,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
               stepOrder: s.stepOrder,
               fieldIds:  (s.fields ?? []).map(f => f.id)
             }))
-
+          // ✅ removed .filter(...) – all steps are now shown
           if (this.steps.length === 0) {
             this.loadStepsByAuditType(auditType);
             return;
@@ -498,7 +498,7 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
     return Object.keys(map).length;
   }
 
-  // ─── NEW: Verdict completion validation ────────────────────────────
+  // ─── Verdict completion validation ────────────────────────────
   isStepFullyVerdicted(step: WorkspaceStep): boolean {
     const answers = this.answersForStep(step);
     if (answers.length === 0) return true;
@@ -753,6 +753,13 @@ export class AuditWorkspaceComponent implements OnInit, OnDestroy {
   // ── Submit ──────────────────────────────────────────────────────
   submitAudit(): void {
     if (!this.request) return;
+    if (!this.currentStep) return;
+
+    if (!this.isStepFullyVerdicted(this.currentStep)) {
+      this.flash('Please provide a verdict for all questions before completing the audit.', true);
+      return;
+    }
+
     log.info(LOG, 'submit audit', { id: this.request.id, steps: this.steps.length });
     this.isCompleting = true;
 
