@@ -49,7 +49,8 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 
 ```env
-OPENAI_API_KEY=sk-your-openai-api-key-here
+QWEN_BASE_URL=http://localhost:11434/v1
+QWEN_MODEL=qwen3:8b
 QDRANT_URL=http://localhost:6333
 QDRANT_COLLECTION=rics_standards
 EMBEDDING_MODEL=BAAI/bge-small-en-v1.5
@@ -190,6 +191,6 @@ Compliance-engine/
 |-------|----------|
 | `docker` not found | Refresh PATH: `$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")` |
 | Qdrant connection refused | Ensure Docker Desktop is running and container is up: `docker start qdrant` |
-|  API error 401 | Check `OPENAI_API_KEY` in `.env` is valid |
+|  LLM connection refused | Ensure Ollama is running and reachable at `QWEN_BASE_URL` in `.env` |
 | Streamlit can't reach API | Make sure FastAPI is running on port 8000 first |
 | Embedding model download slow | First run downloads ~67MB model. Cached at `%LOCALAPPDATA%\Temp\fastembed_cache\` |

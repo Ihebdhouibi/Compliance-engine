@@ -5,7 +5,7 @@ text into sentences and score how semantically close each sentence is to the
 question (cosine similarity over shared FastEmbed embeddings). The auditor's
 UI shades the most relevant sentences so the compliance proof is easy to find.
 
-Embeddings are local (no OpenAI cost). Character offsets into the *original*
+Embeddings are local (no external API cost). Character offsets into the *original*
 text are returned so the frontend can highlight without re-joining/reformatting.
 """
 from __future__ import annotations

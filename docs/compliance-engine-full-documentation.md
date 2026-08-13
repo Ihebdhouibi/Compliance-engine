@@ -52,7 +52,7 @@ The system consists of three main branches:
 |-----------|--------------|
 | **Frontend** | Angular 19, TypeScript, SCSS, RxJS, Angular Signals, STOMP WebSocket, SockJS |
 | **Backend (main)** | Spring Boot 2.7.18, Java 17, Spring Security, JPA/Hibernate, H2, WebSocket |
-| **AI Engine** | FastAPI, Python 3.12, Qdrant, FastEmbed, OpenAI API, PaddleOCR (optional) |
+| **AI Engine** | FastAPI, Python 3.12, Qdrant, FastEmbed, Ollama (Qwen), PaddleOCR (optional) |
 | **Database** | H2 (dev), PostgreSQL (production ready) |
 | **Vector DB** | Qdrant (local or cloud) |
 | **Build Tools** | Maven (Spring Boot), npm (Angular), pip (Python) |
