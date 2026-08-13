@@ -49,7 +49,7 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 
 ```env
-QWEN_BASE_URL=http://localhost:11434/v1
+QWEN_BASE_URL=http://localhost:11434
 QWEN_MODEL=qwen3:8b
 QDRANT_URL=http://localhost:6333
 QDRANT_COLLECTION=rics_standards

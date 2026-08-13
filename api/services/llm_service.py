@@ -1,10 +1,11 @@
-import os
+from ollama import Client
 
-from api.config import QWEN_BASE_URL, QWEN_MODEL
+from api.config import QWEN_BASE_URL, QWEN_MODEL, QWEN_TIMEOUT
 from api.logging_config import get_logger, timed
 
 
 _log = get_logger("svc.qwen")
+_client = Client(host=QWEN_BASE_URL, timeout=QWEN_TIMEOUT)
 
 # ── Ultra‑short system prompt ────────────────────────────────────────
 SYSTEM_PROMPT = """You are a RICS Compliance Assistant. Base answers ONLY on provided rules. Cite rule IDs. Use verbatim text when quoting. If info missing, say so. Be concise."""
@@ -42,15 +43,15 @@ def chat(user_message: str, rules: list[dict], audit_context: str | None = None)
 
     with timed(_log, "chat.completion", model=QWEN_MODEL, rules=len(rules),
                has_audit_ctx=bool(audit_context and audit_context.strip())) as span:
-        response = _client.chat.completions.create(
+        response = _client.chat(
             model=QWEN_MODEL,
             messages=messages,
-            temperature=0.2,        # Deterministic for speed
-            max_tokens=1500,
-            timeout=900.0,
+            options={
+                "temperature": 0.2,   # Deterministic for speed
+                "num_predict": 1500,  # Equivalent to max_tokens
+            },
         )
-        answer = response.choices[0].message.content
-        usage = getattr(response, "usage", None)
+        answer = response.message.content
         span.set(answer_chars=len(answer or ""),
-                 tokens=getattr(usage, "total_tokens", None))
+                 tokens=(response.prompt_eval_count or 0) + (response.eval_count or 0))
         return answer
